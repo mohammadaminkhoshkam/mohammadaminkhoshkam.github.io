@@ -185,7 +185,7 @@
     document.getElementById("course-title").textContent = c.title || "SDR Lab";
     const meta = document.getElementById("course-meta");
     [["Course code", c.code], ["University", c.university], ["Semester", c.semester], ["Instructor", c.instructor],
-     ["Team", (c.team || []).join(", ")]].forEach(function (pair) {
+     ["Team" + (c.teamName ? " " + c.teamName : ""), (c.team || []).join(", ")]].forEach(function (pair) {
       if (!pair[1]) return;
       const s = el("span");
       s.appendChild(el("b", { text: pair[0] + ": " }));

@@ -45,6 +45,7 @@
         the same code can re-run in your browser.
       </p>
       <div class="course-meta">
+        <span><b>Team SDR:</b> Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
         <span><b>Session:</b> 1 November 2026 (14:35–15:17, from the file timestamps)</span>
         <span><b>Device:</b> ADALM-Pluto, ip:192.168.1.10, RX1 (antenna) / TX1→RX1 (loopback cable)</span>
         <span><b>Software:</b> GNU Radio 3.10 + gr-iio, own <span class="mono">SDR Lab IQ Recorder</span> block</span>
@@ -106,7 +107,8 @@
         </table>
       </div>
       <p class="dim small">Duration check: <span class="mono">rec_sec</span> limits every file to 80 MB, i.e. 3.846 s at 2.6 MS/s and 0.5 s at 20 MS/s — exactly what the full-length files show.
-        Three loopback files are shorter (1.8–3.5 s) because the recording was stopped (or a setting changed, which closes the file) before <span class="mono">rec_sec</span> ran out.</p>
+        Three loopback files are shorter (1.8–3.5 s) because the recording was stopped (or a setting changed, which closes the file) before <span class="mono">rec_sec</span> ran out.
+        The files carry the placeholder team ID <span class="mono">Team-XX</span> because the <span class="mono">team</span> variable of the flowgraph was not changed to our team name (SDR) before the session; the names are kept exactly as recorded.</p>
     </section>
 
     <!-- ===================== 2. part 1 ===================== -->
