@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 2 Pre-lab — Noise Figure, P1dB, IIP3</title>
+  <meta name="description" content="SDR Lab, Lab 2 pre-lab report (Team SDR): noise figure and Y-factor, P1dB, IIP3 and SFDR, with the offline GNU Radio simulations of the receiver model and of the antenna response.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f7bdc'/%3E%3Cpath d='M4 17c3-8 5-8 8 0s5 8 8 0 5-8 8 0' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .eq { font-family: var(--mono); font-size: .9rem; background: var(--bg-soft); padding: 8px 12px; border-radius: 8px; display: inline-block; margin: 4px 0; }
+    .fig { margin: 10px 0 18px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px; }
+    .fig img { width: 100%; height: auto; }
+    .fig figcaption { color: #5a6476; font-size: .84rem; padding: 6px 4px 0; }
+    tr.best td { background: color-mix(in srgb, var(--accent-2) 14%, transparent); font-weight: 600; }
+    .task { border-top: 1px solid var(--border); padding-top: 40px; margin-top: 40px; }
+    .task h2 { margin-bottom: 14px; }
+    .pdf-link { margin-left: 8px; }
+    @media print {
+      :root { --bg: #fff; --bg-elev: #fff; --bg-soft: #f2f4f7; --text: #111; --text-dim: #444; --border: #ccc; }
+      .nav, footer, .page-head canvas, .no-print { display: none !important; }
+      body { font-size: 10.5pt; }
+      .page-head { padding: 0 0 12px; }
+      .task { page-break-before: auto; margin-top: 18px; padding-top: 14px; }
+      .fig, table, .eq { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+      .container { max-width: none; padding: 0; }
+    }
+    @page { size: A4; margin: 16mm 14mm; }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a class="pill" href="../">SDR Lab</a>
+      <a href="#t4">Simulation</a>
+      <a href="prelab.pdf">PDF</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="page-head">
+    <canvas data-waves aria-hidden="true"></canvas>
+    <div class="container">
+      <a class="eyebrow" href="../">← SDR Lab · Lab 02 · Pre-lab report</a>
+      <h1>Noise Figure, P1dB and IIP3</h1>
+      <div class="course-meta">
+        <span><b>Team SDR:</b> Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+        <span><b>Course:</b> Software-Defined Radio Laboratory, Sharif University of Technology</span>
+        <span><b>Simulations:</b> run on our laptop with GNU Radio 3.10.12.0 (radioconda), course flowgraphs unchanged</span>
+        <span class="no-print"><a class="btn pdf-link" href="prelab.pdf">Download PDF</a></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="container lab-page">
+
+  <!-- ================================================================ task 1 -->
+  <section class="task" id="t1">
+    <span class="kicker">Task 1</span>
+    <h2>One-page summary</h2>
+    <p><b>What the noise figure measures.</b> Every real stage adds its own noise. The noise factor F = SNR<sub>in</sub>/SNR<sub>out</sub>, with the input at the reference temperature
+      T<sub>0</sub> = 290 K, tells by how much a stage degrades the signal-to-noise ratio; NF = 10 log<sub>10</sub> F. Equivalently, the stage behaves as a noiseless one fed by an extra
+      noise temperature T<sub>e</sub> = (F − 1)T<sub>0</sub>. Referred to the input, the noise floor in a bandwidth B is N<sub>floor</sub> = −174 dBm/Hz + NF + 10 log<sub>10</sub> B, which sets the
+      weakest signal the receiver can detect. In a cascade (Friis) each stage’s excess noise is divided by the gain in front of it, so the first stage dominates if it has enough
+      gain, a lossy element before the first amplifier adds its loss directly to NF, and in an SDR the noisy ADC at the end matters less the more gain sits in front of it — the
+      noise figure of an SDR therefore depends on its gain setting.</p>
+    <p><b>Why the Y-factor method needs no absolute power.</b> A calibrated noise source is switched between “off” (a matched load at T<sub>0</sub>) and “on” (an effective temperature
+      T<sub>h</sub>, quoted as ENR = (T<sub>h</sub> − T<sub>0</sub>)/T<sub>0</sub>). Because the receiver’s output noise power is linear in the source temperature, N = G k B (T<sub>source</sub> + T<sub>e</sub>),
+      the unknown gain G and bandwidth B cancel in the ratio Y = N<sub>on</sub>/N<sub>off</sub> = (T<sub>h</sub> + T<sub>e</sub>)/(T<sub>0</sub> + T<sub>e</sub>), and F = ENR/(Y − 1). Only a ratio of two
+      readings in the same (uncalibrated) dBFS scale is needed. The method requires a fixed gain (AGC off), a receiver that stays linear in the “on” state, and an ENR matched
+      to the NF so that Y is neither close to 1 (large error) nor so large that the receiver compresses.</p>
+    <p><b>What the third-order intercept predicts.</b> A weakly nonlinear stage y = a<sub>1</sub>x + a<sub>3</sub>x³ compresses a single tone (P1dB: the input at which the gain has dropped by
+      1 dB) and, for two close tones f<sub>1</sub>, f<sub>2</sub>, creates intermodulation products at 2f<sub>1</sub> − f<sub>2</sub> and 2f<sub>2</sub> − f<sub>1</sub> that fall next to the wanted signals and cannot be filtered out.
+      They rise 3 dB per dB of input while the tones rise 1 dB per dB; the input level where the two extrapolated lines meet is IIP3. From one measurement (P<sub>in</sub>, Δ) it gives
+      IIP3 = P<sub>in</sub> + Δ/2 and therefore predicts the level of the in-band distortion for any other pair of signals. Combined with the noise floor it gives the spur-free dynamic range,
+      SFDR = ⅔(IIP3 − N<sub>floor</sub>): the largest pair of signals whose IM3 products still stay below the noise. For a memoryless third-order model IIP3 ≈ P1dB + 9.6 dB; when the
+      limiting element is ADC clipping the intermodulation appears abruptly and the intercept loses its meaning, so the slope must always be checked.</p>
+  </section>
+
+  <!-- ================================================================ task 2 -->
+  <section class="task" id="t2">
+    <span class="kicker">Task 2</span>
+    <h2>Theory questions</h2>
+
+    <h3 class="sub-h">2.1 Noise temperature and Friis</h3>
+    <p>T<sub>e</sub> = (10<sup>NF/10</sup> − 1)·290 K:</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">NF (dB)</th><th class="num">1</th><th class="num">3</th><th class="num">6</th><th class="num">10</th></tr></thead>
+      <tbody><tr><td>T<sub>e</sub> (K)</td><td class="num">75.1</td><td class="num">288.6</td><td class="num">864.5</td><td class="num">2610.0</td></tr></tbody></table></div>
+    <p>Chain LNA (G = 20 dB → 100, NF = 1 dB → F = 1.259), filter (loss 3 dB → G = 0.501, F = 1.995), mixer + ADC (NF = 15 dB → F = 31.62):</p>
+    <p><span class="eq">F = 1.259 + (1.995 − 1)/100 + (31.62 − 1)/(100 × 0.501) = 1.259 + 0.0100 + 0.611 = 1.880 → NF = 2.74 dB</span></p>
+    <p>With the filter <i>before</i> the LNA:</p>
+    <p><span class="eq">F = 1.995 + (1.259 − 1)/0.501 + (31.62 − 1)/(0.501 × 100) = 1.995 + 0.517 + 0.611 = 3.123 → NF = 4.95 dB</span></p>
+    <p>The noise figure gets 2.20 dB worse: the 3 dB loss now adds directly to NF and also halves the gain that divides the noise of all later stages. Filters that must
+      come first (e.g. against strong out-of-band signals) should have as little loss as possible.</p>
+
+    <h3 class="sub-h">2.2 Y-factor relation</h3>
+    <p>With output noise N = GkB(T<sub>s</sub> + T<sub>e</sub>): Y = N<sub>on</sub>/N<sub>off</sub> = (T<sub>h</sub> + T<sub>e</sub>)/(T<sub>c</sub> + T<sub>e</sub>) ⇒ T<sub>e</sub> = (T<sub>h</sub> − Y T<sub>c</sub>)/(Y − 1).
+      With F = 1 + T<sub>e</sub>/T<sub>0</sub> and ENR = (T<sub>h</sub> − T<sub>0</sub>)/T<sub>0</sub>:</p>
+    <p><span class="eq">F = [ENR − Y (T<sub>c</sub>/T<sub>0</sub> − 1)] / (Y − 1)</span>, which reduces to <span class="eq">F = ENR/(Y − 1)</span> for T<sub>c</sub> = T<sub>0</sub>.</p>
+    <p>If T<sub>c</sub> ≠ T<sub>0</sub> (room warmer or colder than 290 K) the correction term Y(T<sub>c</sub>/T<sub>0</sub> − 1) must be kept; ignoring it biases NF, most for low-NF receivers where Y is large.
+      <b>Attenuator A at T<sub>0</sub> after the source:</b> the source temperature seen by the receiver is T′ = T/A + T<sub>0</sub>(1 − 1/A), so T′<sub>h</sub> − T′<sub>c</sub> = (T<sub>h</sub> − T<sub>0</sub>)/A and
+      ENR<sub>eff</sub> = ENR/A, i.e. <b>ENR<sub>eff,dB</sub> = ENR<sub>dB</sub> − A<sub>dB</sub></b> exactly, while the “off” temperature stays T<sub>0</sub>.</p>
+
+    <h3 class="sub-h">2.3 Sensitivity to a 0.1 dB error in Y</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Case</th><th class="num">True Y</th><th class="num">NF error, Y read +0.1 dB</th><th class="num">NF error, Y read −0.1 dB</th></tr></thead>
+      <tbody><tr><td>ENR 15 dB, NF 6 dB</td><td class="num">9.51 dB</td><td class="num">−0.11 dB</td><td class="num">+0.11 dB</td></tr>
+        <tr><td>ENR 15 dB, NF 25 dB</td><td class="num">0.41 dB</td><td class="num">−0.99 dB</td><td class="num">+1.25 dB</td></tr></tbody></table></div>
+    <p>Since F = ENR/(Y − 1), the error is amplified by Y/(Y − 1): harmless when Y ≫ 1, ten times larger when Y is only 1.1. <b>Rule:</b> choose ENR about 5–10 dB above the expected NF
+      (Y ≈ 5–10 dB), but low enough that the receiver stays linear with the source on.</p>
+
+    <h3 class="sub-h">2.4 Third-order nonlinearity</h3>
+    <p>With x = A cos ω<sub>1</sub>t + A cos ω<sub>2</sub>t in y = a<sub>1</sub>x + a<sub>3</sub>x³, expanding x³ gives at ω<sub>1</sub> (and ω<sub>2</sub>):
+      <span class="eq">(a<sub>1</sub> + 9/4·a<sub>3</sub>A²)·A</span>, and at 2ω<sub>1</sub> − ω<sub>2</sub>, 2ω<sub>2</sub> − ω<sub>1</sub>: <span class="eq">3/4·a<sub>3</sub>A³</span>. The IM3 amplitude grows as A³, i.e. <b>slope 3</b> in dB.</p>
+    <p>At the intercept the extrapolated amplitudes are equal: |a<sub>1</sub>|A<sub>IP3</sub> = ¾|a<sub>3</sub>|A<sub>IP3</sub>³ ⇒ A<sub>IP3</sub>² = 4/3·|a<sub>1</sub>/a<sub>3</sub>|. At any small input A the ratio of tone to IM3 is
+      Δ = 20 log(a<sub>1</sub>A / ¾a<sub>3</sub>A³) = 20 log(A<sub>IP3</sub>²/A²) = 2(IIP3 − P<sub>in</sub>), hence <span class="eq">IIP3 = P<sub>in</sub> + Δ/2</span>.
+      For one tone the gain is a<sub>1</sub> + ¾a<sub>3</sub>A²; it is 1 dB down when ¾|a<sub>3</sub>/a<sub>1</sub>|A<sub>1dB</sub>² = 1 − 10<sup>−1/20</sup> = 0.109, so A<sub>IP3</sub>²/A<sub>1dB</sub>² = (4/3)/(4/3 · 0.109) = 9.17,
+      i.e. <span class="eq">IIP3 − P1dB = 9.64 dB ≈ 9.6 dB</span>.
+      <b>Limits:</b> (1) it holds only for a memoryless, purely third-order model — fifth- and higher-order terms, memory effects and hard clipping (an ADC) break it; (2) both quantities
+      are small-signal extrapolations: P1dB is already outside the weakly nonlinear region and IIP3 is never actually reached, so measured values can differ by a few dB.</p>
+
+    <h3 class="sub-h">2.5 SFDR (NF = 8 dB, IIP3 = −10 dBm)</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">Bandwidth</th><th class="num">N<sub>floor</sub> = −174 + 8 + 10 log B</th><th class="num">SFDR = ⅔(IIP3 − N<sub>floor</sub>)</th></tr></thead>
+      <tbody><tr><td class="num">200 kHz</td><td class="num">−113.0 dBm</td><td class="num">68.7 dB</td></tr><tr><td class="num">10 kHz</td><td class="num">−126.0 dBm</td><td class="num">77.3 dB</td></tr></tbody></table></div>
+    <p>The noise power grows with the bandwidth (10 log B), while the IM3 products of two tones do not; a narrower measurement band lowers the floor and so widens the spur-free range (by ⅔ of
+      the floor change: 13 dB less floor → 8.7 dB more SFDR).</p>
+
+    <h3 class="sub-h">2.6 Gain in an SDR (8-bit ADC, full scale −30 dBm at 0 dB gain)</h3>
+    <p>Referred to the input, the ADC full scale (and with it P1dB and IIP3 when the ADC is the limit) is −30 dBm − G: with 10 dB more gain it drops by 10 dB, to −40 dBm. The ADC noise
+      referred to the input also drops by 10 dB, so the noise floor improves — but only as long as the ADC noise dominates. Once the input-referred ADC noise is well below the front-end
+      noise (kT<sub>0</sub>·F<sub>front-end</sub>), F → F<sub>front-end</sub> and more gain lowers the full scale without lowering the floor: the dynamic range shrinks dB for dB. In the course model the
+      ADC noise (dither + rounding) is −43.84 dBFS over 2.048 MHz; referred to the input it equals kT<sub>0</sub>B at 37.0 dB gain, which is why NF falls from 36.93 dB at 0 dB gain to
+      6.52 dB at 40 dB and only 6.08 dB at 50 dB (Task 4).</p>
+  </section>
+
+  <!-- ================================================================ task 3 -->
+  <section class="task" id="t3">
+    <span class="kicker">Task 3</span>
+    <h2>Measurement design (Table 4)</h2>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Quantity</th><th>Value</th><th>Numerical reason</th></tr></thead><tbody>
+      <tr><td>ENR for NF ≈ 7 dB</td><td>15 dB</td><td>Y = 1 + ENR/F = 8.64 dB: well above 1 and far from compression (task 2.3 rule: ENR ≈ NF + 5–10 dB).</td></tr>
+      <tr><td>ENR for NF ≈ 30 dB</td><td>35–40 dB</td><td>With ENR 15 dB, Y would be only 0.14 dB (a 0.1 dB error in Y → several dB in NF); with 35 dB, Y = 6.19 dB.</td></tr>
+      <tr><td>Attenuation after a 15 dB source</td><td>NF 7: 0 dB · NF 30: not possible</td><td>ENR<sub>eff</sub> = ENR − A can only go down; a 15 dB source cannot reach the 35 dB needed for NF ≈ 30 dB.</td></tr>
+      <tr><td>Attenuation after a 35 dB source</td><td>NF 7: 20 dB · NF 30: 0 dB</td><td>20 dB brings ENR<sub>eff</sub> to 15 dB and keeps the “on” level low; for NF 30 the full 35 dB is needed.</td></tr>
+      <tr><td>Averaging time, 400 kHz band, &lt; 0.05 dB</td><td>≥ 18.9 ms (use 0.1 s)</td><td>Std. of a power estimate ≈ 4.34/√(B τ) dB ⇒ τ ≥ (4.34/0.05)²/400 kHz. Confirmed in the simulation (Task 4).</td></tr>
+      <tr><td>Single-tone sweep</td><td>FS<sub>in</sub> − 40 dB … FS<sub>in</sub> + 8 dB, never above −10 dBm</td><td>FS<sub>in</sub> = −30 dBm − G. 1 dB steps, 0.25 dB in the last 12 dB before full scale (where the gain falls by 1 dB).</td></tr>
+      <tr><td>Two-tone frequencies</td><td>f<sub>1</sub> = 300 kHz, f<sub>2</sub> = 400 kHz (baseband)</td><td>Spacing 100 kHz; IM3 at 2f<sub>1</sub> − f<sub>2</sub> = 200 kHz and 2f<sub>2</sub> − f<sub>1</sub> = 500 kHz, far from DC and inside the 2.048 MHz band; 10 kHz meters do not overlap.</td></tr>
+      <tr><td>Power per tone for IM3 ≥ 10 dB above the 10 kHz floor (gain 0)</td><td>≥ −45.9 dBm</td><td>IM3<sub>in</sub> = 3P<sub>in</sub> − 2 IIP3 ≥ N<sub>10k</sub> + 10, with N<sub>10k</sub> = −174 + NF + 40 = −97.1 dBm and IIP3 = −25.37 dBm from Task 4.</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <!-- ================================================================ task 4 -->
+  <section class="task" id="t4">
+    <span class="kicker">Task 4</span>
+    <h2>Offline simulation of the receiver model (lab02_sim.grc)</h2>
+    <p><b>How we ran it.</b> The course flowgraph (class <span class="mono">lab08_sim</span> of <span class="mono">lab02_sim.py</span>, unchanged) was run on our laptop with GNU Radio 3.10.12.0: front end with NF = 6 dB
+      and IIP3 = −25 dBm, adjustable gain, 8-bit ADC with dither and clipping, full scale −30 dBm at 0 dB gain. Instead of reading the moving GUI numbers by eye, a small averaging sink was
+      connected to the flowgraph’s own band filters (10 kHz tone/IM3 meters, 400 kHz noise meter) and each reading is the mean power over a fixed number of samples after a settling time
+      (0.5 s of simulated time for noise, 0.1–0.25 s for tones). The throttle was opened so the whole campaign took 64 s. Scripts and raw results are linked at the end.</p>
+
+    <h3 class="sub-h">4.1 Noise figure with the Y-factor method, gain 40 and 10 dB</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">Gain</th><th class="num">ENR</th><th class="num">N<sub>off</sub> (dBFS)</th><th class="num">N<sub>on</sub> (dBFS)</th><th class="num">Y (dB)</th><th class="num">NF = ENR/(Y−1)</th></tr></thead><tbody>
+      <tr><td class="num">40 dB</td><td class="num">15 dB</td><td class="num">−41.85</td><td class="num">−32.79</td><td class="num">9.06</td><td class="num"><b>6.52 dB</b></td></tr>
+      <tr><td class="num">10 dB</td><td class="num">15 dB</td><td class="num">−51.40</td><td class="num">−51.11</td><td class="num">0.29</td><td class="num">26.66 dB (unreliable)</td></tr>
+      <tr><td class="num">10 dB</td><td class="num">35 dB</td><td class="num">−51.39</td><td class="num">−42.71</td><td class="num">8.68</td><td class="num"><b>26.95 dB</b></td></tr>
+    </tbody></table></div>
+    <p><b>ENR choice.</b> At 40 dB the expected NF is ≈ 6–7 dB, so ENR = 15 dB gives Y ≈ 9 dB — the values reproduce example 2 of the handout. At 10 dB gain the ADC noise dominates and
+      NF ≈ 27 dB: with ENR 15 dB, Y is only 0.29 dB and a 0.1 dB reading error would move NF by about 1.5 dB, so ENR = 35 dB was used (Y = 8.68 dB). Ten repeated
+      Y readings at 40 dB / ENR 15 dB scatter by 0.014 dB (std), i.e. ±0.016 dB in NF. Too much ENR is also wrong: at 50 dB gain with ENR 35 dB the “on” level reached
+      −6.95 dBFS, the ADC clipped and the method returned 9.69 dB instead of 6.08 dB.</p>
+    <figure class="fig" style="max-width:560px"><img src="img/noise_fluctuation.png" alt="Fluctuation of the noise reading vs averaging time"><figcaption>Standard deviation of the 400 kHz noise reading vs averaging time, from 30 readings each;
+      the dashed line is 4.34/√(Bτ). 0.05 dB needs about 18.9 ms.</figcaption></figure>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th class="num">τ (ms)</th><th class="num">std, simulation (dB)</th><th class="num">4.34/√(Bτ) (dB)</th></tr></thead><tbody><tr><td class="num">2</td><td class="num">0.132</td><td class="num">0.154</td></tr>
+<tr><td class="num">5</td><td class="num">0.118</td><td class="num">0.097</td></tr>
+<tr><td class="num">10</td><td class="num">0.071</td><td class="num">0.069</td></tr>
+<tr><td class="num">20</td><td class="num">0.049</td><td class="num">0.049</td></tr>
+<tr><td class="num">50</td><td class="num">0.030</td><td class="num">0.031</td></tr>
+<tr><td class="num">100</td><td class="num">0.022</td><td class="num">0.022</td></tr></tbody></table></div>
+
+    <h3 class="sub-h">4.2 Single-tone sweep and P1dB, gain 40 and 0 dB</h3>
+    <figure class="fig"><img src="img/p1db_sweeps.png" alt="Output vs input power at gain 40 and 0 dB"><figcaption>Output of the f<sub>1</sub> meter vs tone power. Small-signal gain 70.0 dB (gain 40) and 30.0 dB (gain 0), in dBFS per dBm.</figcaption></figure>
+    <p>Input P1dB = <b>−68.03 dBm at 40 dB gain</b> and <b>−34.64 dBm at 0 dB gain</b>. At 40 dB the full scale at the input is −70 dBm and the tone clips in the ADC almost exactly
+      there (P1dB ≈ full scale + 2 dB): the ADC is the limit. At 0 dB the front end’s cubic compression comes first (−34.6 dBm, below the −30 dBm full scale): the front end is the limit.</p>
+
+    <h3 class="sub-h">4.3 Two-tone test at gain 0 dB</h3>
+    <figure class="fig"><img src="img/two_tone.png" alt="Two-tone tests at gain 0 and 40 dB"><figcaption>Left: gain 0 — IM3 rises with slope 2.96 and meets the extrapolated tone line at IIP3.
+      Right: gain 40 — the IM3 products stay at the meter floor and jump up when the two-tone peak reaches the ADC full scale.</figcaption></figure>
+    <p>Using the 9 levels where the IM3 product is at least 10 dB above the meter floor (−67.8 dBFS) and the input is at least 3 dB below P1dB
+      (−46 … −38 dBm), the IM3 slope is <b>2.96</b> (expected 3), and IIP3 = P<sub>in</sub> + Δ/2 gives <b>−25.37 ± 0.16 dBm</b>:</p>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th class="num">P<sub>in</sub> per tone (dBm)</th><th class="num">Tone (dBFS)</th><th class="num">IM3 (dBFS)</th><th class="num">Δ (dB)</th><th class="num">IIP3 = P<sub>in</sub> + Δ/2</th></tr></thead><tbody><tr><td class="num">−46</td><td class="num">−16.21</td><td class="num">−57.59</td><td class="num">41.38</td><td class="num">−25.31</td></tr>
+<tr><td class="num">−45</td><td class="num">−15.26</td><td class="num">−54.76</td><td class="num">39.50</td><td class="num">−25.25</td></tr>
+<tr><td class="num">−44</td><td class="num">−14.33</td><td class="num">−51.86</td><td class="num">37.53</td><td class="num">−25.24</td></tr>
+<tr><td class="num">−43</td><td class="num">−13.42</td><td class="num">−48.93</td><td class="num">35.50</td><td class="num">−25.25</td></tr>
+<tr><td class="num">−42</td><td class="num">−12.54</td><td class="num">−45.98</td><td class="num">33.44</td><td class="num">−25.28</td></tr>
+<tr><td class="num">−41</td><td class="num">−11.68</td><td class="num">−42.99</td><td class="num">31.31</td><td class="num">−25.35</td></tr>
+<tr><td class="num">−40</td><td class="num">−10.87</td><td class="num">−40.00</td><td class="num">29.13</td><td class="num">−25.43</td></tr>
+<tr><td class="num">−39</td><td class="num">−10.10</td><td class="num">−37.00</td><td class="num">26.89</td><td class="num">−25.55</td></tr>
+<tr><td class="num">−38</td><td class="num">−9.42</td><td class="num">−34.00</td><td class="num">24.58</td><td class="num">−25.71</td></tr></tbody></table></div>
+    <p>P1dB + 9.6 dB = −25.04 dBm, so the measured IIP3 − P1dB = 9.26 dB: the memoryless third-order rule holds within a few tenths of a dB, as expected for this front-end model
+      (IIP3<sub>fe</sub> = −25 dBm).</p>
+
+    <h3 class="sub-h">4.4 Two-tone test at gain 40 dB</h3>
+    <p>Up to −76.0 dBm per tone the IM3 meters show only the noise floor (−58.2 dBFS): the front-end IM3 products are below the floor. At
+      −75 dBm they jump by 15.7 dB in a single 1 dB step (an apparent slope of 15.7) — this is where the peak of the two-tone signal (6 dB above the power
+      of one tone) reaches the ADC full scale of −70 dBm and the waveform is clipped. The intermodulation is created by hard clipping, not by a³x³: there is no region of slope 3 to
+      extrapolate, P<sub>in</sub> + Δ/2 changes with every level, and an “intercept point” has no clear meaning — which is why the slope must always be checked.</p>
+
+    <h3 class="sub-h">4.5 Noise figure and P1dB vs gain</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">Gain (dB)</th><th class="num">ENR (dB)</th><th class="num">Y (dB)</th><th class="num">NF, Y-factor (dB)</th><th class="num">NF, model (dB)</th>
+      <th class="num">Input P1dB (dBm)</th><th class="num">Full scale at input (dBm)</th><th class="num">Floor, 10 kHz (dBm)</th><th class="num">P1dB − floor (dB)</th></tr></thead><tbody><tr><td class="num">0</td><td class="num">45</td><td class="num">8.70</td><td class="num">36.93</td><td class="num">37.03</td><td class="num">−34.64</td><td class="num">−30</td><td class="num">−97.1</td><td class="num">62.4</td></tr>
+<tr><td class="num">5</td><td class="num">35</td><td class="num">4.86</td><td class="num">31.86</td><td class="num">32.04</td><td class="num">−34.63</td><td class="num">−35</td><td class="num">−102.1</td><td class="num">67.5</td></tr>
+<tr><td class="num">10</td><td class="num">35</td><td class="num">8.68</td><td class="num">26.95</td><td class="num">27.06</td><td class="num">−38.23</td><td class="num">−40</td><td class="num">−107.1</td><td class="num">68.8</td></tr>
+<tr class="best"><td class="num">15</td><td class="num">25</td><td class="num">4.76</td><td class="num">22.01</td><td class="num">22.14</td><td class="num">−43.07</td><td class="num">−45</td><td class="num">−112.0</td><td class="num">68.9</td></tr>
+<tr><td class="num">20</td><td class="num">25</td><td class="num">8.39</td><td class="num">17.29</td><td class="num">17.36</td><td class="num">−48.02</td><td class="num">−50</td><td class="num">−116.7</td><td class="num">68.7</td></tr>
+<tr><td class="num">25</td><td class="num">25</td><td class="num">12.30</td><td class="num">12.96</td><td class="num">13.00</td><td class="num">−53.01</td><td class="num">−55</td><td class="num">−121.0</td><td class="num">68.0</td></tr>
+<tr><td class="num">30</td><td class="num">15</td><td class="num">6.57</td><td class="num">9.51</td><td class="num">9.56</td><td class="num">−58.01</td><td class="num">−60</td><td class="num">−124.5</td><td class="num">66.5</td></tr>
+<tr><td class="num">40</td><td class="num">15</td><td class="num">9.06</td><td class="num">6.52</td><td class="num">6.52</td><td class="num">−68.03</td><td class="num">−70</td><td class="num">−127.5</td><td class="num">59.4</td></tr>
+<tr><td class="num">50</td><td class="num">15</td><td class="num">9.44</td><td class="num">6.08</td><td class="num">6.05</td><td class="num">−78.46</td><td class="num">−80</td><td class="num">−127.9</td><td class="num">49.5</td></tr></tbody></table></div>
+    <figure class="fig"><img src="img/nf_p1db_vs_gain.png" alt="Noise figure and P1dB vs gain"><figcaption>Left: Y-factor noise figure vs gain and the analytic model of the flowgraph. Right: input P1dB, the 10 kHz
+      noise floor and their difference.</figcaption></figure>
+    <p>The 10 dB grid of the task (0…50) was refined with gains 5, 15 and 25 dB. The Y-factor results agree with the analytic noise figure of the model,
+      F = F<sub>fe</sub> + N<sub>ADC,in</sub>/(kT<sub>0</sub>B), within about 0.3 dB. The distance P1dB − floor is largest at <b>15 dB gain (68.9 dB)</b>: below it the ADC noise
+      dominates (NF grows dB for dB as the gain falls), above it the floor hardly improves (NF → 6 dB) while P1dB keeps falling with the full scale. This is the gain trade-off of an SDR:
+      no single best gain, the dynamic range peaks at an intermediate setting.</p>
+  </section>
+
+  <!-- ================================================================ task 5 -->
+  <section class="task" id="t5">
+    <span class="kicker">Task 5</span>
+    <h2>Antenna frequency response (offline) and the antenna’s data sheet</h2>
+    <p><b>Table 1 — operating ranges on the product page</b> (<a href="https://www.javanelec.com/shop/product/13139/non-brand/antenna-gsm-3db-10cm/">Javan Electronic, “GSM 3DB 10 cm” antenna</a>):</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Range</th><th class="num">Lower limit (MHz)</th><th class="num">Upper limit (MHz)</th></tr></thead><tbody>
+      <tr><td>1</td><td class="num">2400</td><td class="num">2500</td></tr><tr><td>2</td><td class="num" colspan="2">not stated</td></tr><tr><td>3</td><td class="num" colspan="2">not stated</td></tr></tbody></table></div>
+    <p class="small dim">The specification table lists a single range, minimum 2.4 GHz – maximum 2.5 GHz (gain 2.4 dBi, 50 Ω, SMA, application “GSM, Wi-Fi”); it also says “4 band” but does not give the
+      individual bands, so ranges 2 and 3 are not stated. As the handout notes, a seller’s range is not necessarily a 3 dB bandwidth.</p>
+
+    <p><b>Simulation.</b> <span class="mono">lab02_antenna_response_simulation.py</span> was run unchanged; “Start sweep: 400–3000 MHz” with the default 20 MHz step, then both edges were re-measured
+      in 1 MHz steps with the script’s manual-frequency control. The pass band is flat; the maximum response is 0.02 dB (at 840 MHz).</p>
+    <figure class="fig"><img src="img/antenna_response.png" alt="Simulated antenna response"><figcaption>Simulated transmission response (RF-equivalent frequency). Dashed: peak − 3 dB (half power).</figcaption></figure>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Quantity (Table 5)</th><th class="num">1 MHz steps (MHz)</th><th class="num">20 MHz sweep (MHz)</th></tr></thead><tbody>
+      <tr><td>Lower cut-off f<sub>L</sub></td><td class="num"><b>808.4</b></td><td class="num">811.6</td></tr>
+      <tr><td>Upper cut-off f<sub>H</sub></td><td class="num"><b>1791.6</b></td><td class="num">1788.4</td></tr>
+      <tr><td>3 dB bandwidth BW = f<sub>H</sub> − f<sub>L</sub></td><td class="num"><b>983.1</b></td><td class="num">976.8</td></tr></tbody></table></div>
+    <p>The half-power edges lie about 8 MHz inside the nominal 800 and 1800 MHz marks of the plot (the model’s FIR cut-off sits at the −6 dB point and its transition is ≈ 50 MHz wide);
+      with 20 MHz steps the edges are only known to ± a few MHz, hence the 1 MHz re-measurement. Centre ≈ 1300.0 MHz. Note that the simulated 800–1800 MHz pass band is a teaching model
+      and does not match the seller’s 2.4–2.5 GHz figure — one more reason to measure an antenna rather than trust its listing.</p>
+  </section>
+
+  <!-- ================================================================ task 6 -->
+  <section class="task" id="t6">
+    <span class="kicker">Task 6</span>
+    <h2>Prediction table for our receiver (Table 6)</h2>
+    <p>Predictions from the model above (an RTL-SDR-like receiver: 8-bit ADC, 2.048 MS/s); the “measured” column is filled after the session.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Quantity</th><th>Prediction</th><th>Measured</th></tr></thead><tbody>
+      <tr><td>1</td><td>NF at the highest gain</td><td>≈ 6.08 dB (front end + small ADC share; typical RTL-SDR tuners 4–7 dB)</td><td></td></tr>
+      <tr><td>2</td><td>Change of NF when the gain is reduced by 20 dB</td><td>+3.4 dB from 50 → 30 dB; much more (≈ +10 dB) from 40 → 20 dB, where the ADC noise takes over</td><td></td></tr>
+      <tr><td>3</td><td>Change of input P1dB when the gain is reduced by 10 dB</td><td>+10.0 dB while the ADC limits (P1dB follows the full scale); only +3.6 dB at the lowest gains, where the front end limits</td><td></td></tr>
+      <tr><td>4</td><td>Y with ENR = 15 dB if NF = 7 dB</td><td>Y = 1 + 31.6/5.01 → 8.64 dB</td><td></td></tr>
+      <tr><td>5</td><td>NF increase with a 10 dB attenuator before the receiver</td><td>+10 dB (F<sub>total</sub> = L·F for a pad at T<sub>0</sub>)</td><td></td></tr>
+      <tr><td>6</td><td>Change of the IM3 level when each tone rises by 2 dB</td><td>+6 dB (slope 3) in the front-end-limited region; far more if the ADC clips</td><td></td></tr>
+      <tr><td>7</td><td>Is IIP3 − P1dB ≈ 9.6 dB for our receiver?</td><td>Only at low gain, where the analog front end limits (model: 9.26 dB). At high gain the 8-bit ADC clips first, IM3 appears abruptly and the rule does not apply.</td><td></td></tr>
+      <tr><td>8</td><td>NF and P1dB at the team’s assigned gain</td><td>To be filled after the gain is announced (use the table of Task 4.5)</td><td></td></tr>
+    </tbody></table></div>
+  </section>
+
+  <!-- ================================================================ task 7 -->
+  <section class="task" id="t7">
+    <span class="kicker">Task 7</span>
+    <h2>Three likely mistakes and how to prevent them</h2>
+    <ol class="bul">
+      <li><b>Damaging the receiver input with too much power.</b> A generator or an SDR transmitter connected without enough attenuation can exceed −10 dBm at the receiver.
+        <i>Prevention:</i> compute the level at the receiver before every connection (generator level − cable/pad loss), insert ≥ 30 dB when an SDR transmitter is the source, switch the
+        output off before (dis)connecting, and always start a power sweep at the lowest level.</li>
+      <li><b>Invalid Y reading.</b> If the AGC is on or the gain changes between the “off” and “on” readings, or the noise source drives the receiver into compression, Y is too small and NF
+        too large (in our simulation, ENR 35 dB at 50 dB gain gave 9.69 dB instead of 6.08 dB). <i>Prevention:</i> manual gain, AGC off, check that the “on” level is far below full
+        scale, average ≥ 0.1 s, and repeat with a second ENR (or a 10 dB pad, which must lower ENR<sub>eff</sub> by exactly 10 dB) — both must give the same NF.</li>
+      <li><b>Misreading intermodulation.</b> IM3 products may come from the two-tone source itself (combiner, generators) or from ADC clipping rather than from the analog front end.
+        <i>Prevention:</i> verify slope 3 over several levels; add a pad before the receiver — receiver-made IM3 drops 3 dB per dB, source-made IM3 only 1 dB per dB; keep the two-tone
+        peak at least 6 dB below full scale.</li>
+    </ol>
+  </section>
+
+  <section class="task no-print" id="files">
+    <span class="kicker">Files</span>
+    <h2>Scripts and raw results</h2>
+    <ul class="bul small">
+      <li>Simulation scripts and raw results: in the <a href="../#lab-02">Lab 2 files</a> on the SDR Lab page (<span class="mono">sim_measure.py</span>, <span class="mono">sim_extra.py</span>,
+        <span class="mono">antenna_measure.py</span>, <span class="mono">make_report.py</span>, <span class="mono">sim_results.json</span>, <span class="mono">antenna.json</span>).</li>
+      <li>All numbers of this page: <a href="prelab-data.json">prelab-data.json</a> · PDF version: <a href="prelab.pdf">prelab.pdf</a></li>
+    </ul>
+  </section>
+
+  <section class="task" id="refs">
+    <span class="kicker">References</span>
+    <ol class="bul small">
+      <li>D. M. Pozar, <i>Microwave Engineering</i>, 4th ed., Wiley, 2012 — noise and nonlinear distortion.</li>
+      <li>Keysight Technologies, “Noise figure measurement accuracy: the Y-factor method,” Application Note.</li>
+      <li>B. Razavi, <i>RF Microelectronics</i>, 2nd ed., Prentice Hall, 2012.</li>
+      <li>GNU Radio project, GNU Radio Wiki: block documentation, https://wiki.gnuradio.org</li>
+    </ol>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Team SDR — Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+    <a href="../">← Back to SDR Lab</a>
+  </div>
+</footer>
+<script src="../../assets/js/main.js"></script>
+</body>
+</html>

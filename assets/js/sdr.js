@@ -168,7 +168,7 @@
       lab.tasks.forEach(function (t) { ul.appendChild(el("li", { text: t })); });
       desc.appendChild(ul);
     }
-    if (lab.page) desc.appendChild(el("a", { class: "btn primary lab-open", href: lab.page, text: "Open the full lab report →" }));
+    if (lab.page) desc.appendChild(el("a", { class: "btn primary lab-open", href: lab.page, text: lab.pageLabel || "Open the full lab report →" }));
     const filesBox = el("div", { class: "file-groups" }, [el("p", { class: "notice", text: "Loading files…" })]);
     const body = el("div", { class: "lab-body", id: "body-" + lab.id }, [desc, filesBox]);
     head.setAttribute("aria-controls", body.id);

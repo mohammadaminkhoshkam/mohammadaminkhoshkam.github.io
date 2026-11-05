@@ -25,6 +25,22 @@
         "Band scans at 20 MS/s: GSM900 downlink, FM, 1.1 GHz; Welch PSD, 99 % OBW and x-dB bandwidth",
         "Reference-frequency error of the Pluto from the GSM 200 kHz grid"
       ]
+    },
+    {
+      "id": "lab-02",
+      "number": 2,
+      "title": "Noise Figure, P1dB and IIP3",
+      "date": "",
+      "status": "in-progress",
+      "page": "lab-02/prelab.html",
+      "pageLabel": "Open the pre-lab report →",
+      "summary": "Pre-lab done: Y-factor noise figure, P1dB, two-tone IIP3 and SFDR, and the gain trade-off of an SDR. The course receiver model and the antenna-response model were simulated in GNU Radio on our laptop; the dynamic range P1dB − floor peaks at 15 dB gain. The session itself is still to come.",
+      "tasks": [
+        "Theory: noise temperature, Friis, Y-factor derivation and sensitivity, IIP3 = Pin + Δ/2, SFDR",
+        "Simulation: NF vs gain (6.5 dB at 40 dB, 27 dB at 10 dB), P1dB, two-tone slope 2.96 and IIP3 = −25.4 dBm",
+        "Antenna model: 3 dB band 808.4–1791.6 MHz (BW 983 MHz)",
+        "Design and prediction tables for the session"
+      ]
     }
   ]
 }
