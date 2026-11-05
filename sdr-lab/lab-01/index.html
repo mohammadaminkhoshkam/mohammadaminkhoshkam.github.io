@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 1 — Spectrum Monitoring</title>
+  <meta name="description" content="SDR Lab, Lab 1: spectrum monitoring with an ADALM-Pluto and GNU Radio. Every number and plot is computed in the browser from the raw I/Q recordings.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f7bdc'/%3E%3Cpath d='M4 17c3-8 5-8 8 0s5 8 8 0 5-8 8 0' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a class="pill" href="../">SDR Lab</a>
+      <a href="#results">Results</a>
+      <a href="#questions">Questions</a>
+      <a href="#files">Files</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="page-head">
+    <canvas data-waves aria-hidden="true"></canvas>
+    <div class="container">
+      <a class="eyebrow" href="../">← SDR Lab · Lab 01</a>
+      <h1>Spectrum Monitoring</h1>
+      <p class="lead" style="color:var(--text-dim);max-width:760px">
+        Receiving the radio spectrum around us with an ADALM-Pluto (AD9363) and GNU Radio 3.10: frequency axis and
+        complex baseband, a loopback test with a known tone, band scans with Max Hold and waterfall, and identification
+        of real signals. <b>Every number and plot on this page is computed by JavaScript from the raw I/Q recordings</b> —
+        the same code can re-run in your browser.
+      </p>
+      <div class="course-meta">
+        <span><b>Session:</b> 1 November 2026 (14:35–15:17, from the file timestamps)</span>
+        <span><b>Device:</b> ADALM-Pluto, ip:192.168.1.10, RX1 (antenna) / TX1→RX1 (loopback cable)</span>
+        <span><b>Software:</b> GNU Radio 3.10 + gr-iio, own <span class="mono">SDR Lab IQ Recorder</span> block</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="container lab-page">
+
+    <!-- ===================== how the page works ===================== -->
+    <div class="card rc-card">
+      <div>
+        <h3>Computed from the raw recordings</h3>
+        <p>The 11 recordings were made with our recorder block (<span class="mono">.cf32</span>, complex64). The page loads
+          <span class="mono">results.json</span>, produced by <span class="mono">lab01-analysis.js</span> in Node on <span data-k="generated">…</span>.
+          Press the button to download the I/Q excerpts (<span id="rc-size">…</span> MB) and run exactly the same code here; the page then compares every
+          checked value with the published one.</p>
+        <p class="dim small">The analysis code is a line-by-line JavaScript port of our <span class="mono">analysis/lab01_analysis.py</span>;
+          on the same samples both give identical numbers (noise floor, 99 % OBW, B<sub>x</sub>, power, GSM offsets, loopback peaks).</p>
+      </div>
+      <div class="rc-actions">
+        <button class="btn primary" id="recompute">Recompute from the raw I/Q</button>
+        <div id="rc-progress" hidden><div class="progress"><i id="rc-bar"></i></div><p class="small" id="rc-msg"></p></div>
+      </div>
+    </div>
+
+    <!-- ===================== 0. setup ===================== -->
+    <section class="lab-sec" id="setup">
+      <div class="section-head"><span class="kicker">00 — setup</span><h2>Objectives, set-up and flowgraphs</h2></div>
+      <div class="grid grid-2">
+        <div>
+          <ul class="bul">
+            <li>Run the Pluto’s direct-conversion I/Q receiver from GNU Radio, set frequency, sample rate and gain, and read the real settings back from the device.</li>
+            <li>Use a known tone sent from the Pluto’s own transmitter over a loopback cable to test the frequency axis, positive/negative baseband frequencies and the display-centre artifact.</li>
+            <li>Scan the bands of Table 6 with waterfall and Max Hold, identify real signals, measure their centre frequency and bandwidth and guess the technology from the spectral signature.</li>
+            <li>Record raw I/Q with the standard name <span class="mono">teamID_labNN_fc_fs_gain_timestamp.cf32</span> for the post-session analysis.</li>
+          </ul>
+          <p class="dim small">Safety rules used: TX attenuation ≥ 40 dB (60 dB default), RX gain ≤ 10 dB on the loopback cable and ≤ 30 dB on the antenna, no antenna on TX1.</p>
+        </div>
+        <div class="card">
+          <div class="col-title">Flowgraphs</div>
+          <table class="tbl small">
+            <tr><th>lab01_monitor</th><td>PlutoSDR Source (manual gain, Filter Configuration = Off, RF bandwidth 20 MHz) → Frequency / Waterfall / Time sinks + IQ Recorder. <span class="mono">f_tune = int(fc + lo_shift)</span>, samp_rate chooser 2.6 / 5 / 10 / 20 MS/s, <span class="mono">rec_sec = min(4, 80e6 / (8·fs))</span>.</td></tr>
+            <tr><th>lab01_loopback</th><td>Same, plus Signal Source (complex cosine, f_tx, amplitude 0.5) → PlutoSDR Sink with LO = <span class="mono">int(fc)</span> (no lo_shift), tx_att 40…89 dB, rf_gain 0…10 dB.</td></tr>
+            <tr><th>Theory</th><td>Label of a bin: f<sub>label</sub> = f<sub>c</sub> + f<sub>bb</sub>, −fs/2 ≤ f<sub>bb</sub> &lt; fs/2, Δf = fs/N. Sweep step 0.8 fs (middle 80 % trusted).</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 1. recordings ===================== -->
+    <section class="lab-sec" id="recordings">
+      <div class="section-head"><span class="kicker">01 — data</span><h2>Recordings</h2>
+        <p><span data-k="inv-check">…</span> The browser analyses the first part of each file (last column), stored losslessly as 12-bit integers.</p></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>File</th><th>Part</th><th class="num">f<sub>c</sub> (MHz)</th><th class="num">f<sub>s</sub> (MS/s)</th><th class="num">Gain (dB)</th><th class="num">Duration (s)</th><th class="num">Samples N</th><th class="num">Size = 8·N</th><th class="num">Analysed</th></tr></thead>
+          <tbody id="inv-body"></tbody>
+        </table>
+      </div>
+      <p class="dim small">Duration check: <span class="mono">rec_sec</span> limits every file to 80 MB, i.e. 3.846 s at 2.6 MS/s and 0.5 s at 20 MS/s — exactly what the full-length files show.
+        Three loopback files are shorter (1.8–3.5 s) because the recording was stopped (or a setting changed, which closes the file) before <span class="mono">rec_sec</span> ran out.</p>
+    </section>
+
+    <!-- ===================== 2. part 1 ===================== -->
+    <section class="lab-sec" id="results">
+      <div class="section-head"><span class="kicker">02 — part 1</span><h2>First spectrum: GSM900 downlink at 20 MS/s</h2>
+        <p>fc = 945 MHz, 20 MS/s, gain 20 dB: almost the whole 935–955 MHz range in one view. Grey bands = untrusted outer 20 % of the display.</p></div>
+      <div id="p1-plot"></div>
+      <p>Two flat blocks about 4 MHz wide sit at <span data-k="umtsA-fc">…</span> and <span data-k="umtsB-fc">…</span> MHz — these are not GSM: their shape is analysed in question 8.
+        Narrow 200 kHz GSM carriers appear above 951.5 MHz.</p>
+    </section>
+
+    <!-- ===================== 3. part 2 ===================== -->
+    <section class="lab-sec" id="loopback">
+      <div class="section-head"><span class="kicker">03 — part 2</span><h2>Known signal over the loopback cable</h2>
+        <p>fc = 434 MHz, f<sub>tx</sub> = ±250 kHz, tx_att = 60 dB, rf_gain = 10 dB, 2.6 MS/s. The tone frequency is estimated with a 2²⁰-sample Hann window,
+          zero-padded to 2²¹ points, plus parabolic interpolation — far finer than the display resolution fs/N.</p></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th class="num">f<sub>tx</sub></th><th class="num">lo_shift</th><th class="num">f<sub>tune</sub> (MHz)</th><th class="num">Expected f<sub>c</sub> + f<sub>tx</sub> (MHz)</th><th class="num">Measured (MHz)</th><th class="num">Error</th><th class="num">fs/N</th></tr></thead>
+          <tbody id="lb-body"></tbody>
+        </table>
+      </div>
+      <p>Largest error over all five recordings: <b><span data-k="lb-worst">…</span> Hz</b> — four orders of magnitude below the 2.5 kHz display resolution.</p>
+      <div class="controls"><label>Recording <select id="lb-select"></select></label></div>
+      <div id="lb-plot"></div>
+      <p class="small dim">Strongest narrow peaks in this recording (fine frequency, level above the median of the zero-padded spectrum): <span id="lb-peaks"></span></p>
+
+      <h3 class="sub-h">LO test (question 4)</h3>
+      <p>Only the RX LO moves (f<sub>tune</sub> = fc + lo_shift); the transmitter stays at fc. Each peak is tracked across the four runs with f<sub>tx</sub> = +250 kHz and fitted with
+        <span class="mono">label = a + s · lo_shift</span> for an integer slope s; a track must appear in every run.</p>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr id="lo-head"></tr></thead><tbody id="lo-body"></tbody></table></div>
+      <div id="lo-plot"></div>
+    </section>
+
+    <!-- ===================== 4. part 3 ===================== -->
+    <section class="lab-sec" id="bands">
+      <div class="section-head"><span class="kicker">04 — part 3</span><h2>Band scans</h2>
+        <p>Welch average, Max Hold and the gap-free waterfall of every band recording (N = 1024, Blackman-Harris).</p></div>
+      <div class="controls"><label>Recording <select id="band-select"></select></label></div>
+      <div id="band-plot"></div>
+      <p class="callout" id="band-note"></p>
+      <p><b>Receiver spurs at integer-MHz baseband offsets.</b> The same lines appear at the same <i>baseband</i> offsets (±1, ±2, +6, ±8.98 MHz) in recordings made at
+        90, 945, 1089 and 1114 MHz. A real signal keeps its RF frequency when fc changes; these keep their offset from the LO, so they move with the LO
+        (slope s = 1 in the language of question 4) and are made inside the receiver. In the 2.6 MS/s file the pair sits at fc ± 1.000000 MHz to within
+        2 Hz — an external transmitter would appear shifted by the Pluto’s reference error (≈ +28 kHz at 1090 MHz, see below).</p>
+    </section>
+
+    <!-- ===================== 5. table 7 ===================== -->
+    <section class="lab-sec" id="table7">
+      <div class="section-head"><span class="kicker">05 — analysis 1</span><h2>Signal characteristics (Table 7)</h2>
+        <p>Welch PSD (linear averaging), 99 % occupied bandwidth (ITU-R SM.443, 0.5 % each side, noise floor subtracted), power inside the 99 % band,
+          and the manual’s x-dB bandwidth on the Max-Hold curve: x = 20 dB if the peak is ≥ 26 dB above the floor, otherwise 6 dB;
+          f<sub>c,sig</sub> = (f<sub>L</sub> + f<sub>U</sub>)/2, B<sub>x</sub> = f<sub>U</sub> − f<sub>L</sub>. N is chosen so that fs/N ≤ B/20.</p></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Band</th><th class="num">f<sub>c</sub> 99 % (MHz)</th><th class="num">B<sub>99</sub> (kHz)</th><th class="num">f<sub>c,sig</sub> (MHz)</th><th class="num">B<sub>x</sub> (kHz)</th><th class="num">x</th><th class="num">Peak − floor (dB)</th><th class="num">Power (dBFS)</th><th class="num">fs (MS/s) / Δf (kHz)</th><th>Behaviour and technology</th><th>I/Q file</th></tr></thead>
+          <tbody id="t7-body"></tbody>
+        </table>
+      </div>
+      <div class="t7grid" id="t7-plots"></div>
+      <p class="small dim">Blue band: 99 % OBW. Orange: peak − x level and the x-dB edges f<sub>L</sub>, f<sub>U</sub>. Grey curve: Max Hold (of 8-frame averages, like GNU Radio’s
+        FFT averaging with Max Hold); a single-frame Max Hold of a 0.1 s excerpt is dominated by noise spikes. For the GSM carriers (only 15–17 dB above the floor)
+        x = 6 dB and B<sub>x</sub> follows the ragged top of the GMSK spectrum, so <b>B<sub>99</sub> is the reliable width</b> here. Rows 5 and 6 are listed because they were
+        examined during the session; they turned out to be receiver artifacts. The manual asks for one transient signal (remote at 433.92 MHz or a phone uplink):
+        neither was recorded, see “what we would change”.</p>
+
+      <h3 class="sub-h">Wideband blocks: UMTS or LTE? (question 8, measured)</h3>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th class="num">Centre</th><th class="num">B<sub>−3 dB</sub> (MHz)</th><th class="num">B<sub>−12 dB</sub> (MHz)</th><th class="num">B<sub>−3</sub>/B<sub>−12</sub></th><th class="num">B<sub>99</sub> (MHz)</th><th class="num">Edge slope (dB/MHz)</th><th>Verdict</th></tr></thead>
+          <tbody id="q8-body"></tbody>
+        </table>
+      </div>
+      <p>Plateau = median PSD of the middle half of the 99 % band; edges where the PSD falls 3 and 12 dB below it (12 dB because the blocks are only ~18–22 dB above the floor).
+        Both blocks are 3.8 MHz wide at −3 dB — the WCDMA chip rate (RRC, α = 0.22, 3.84 Mchip/s) — with rounded shoulders, while a 5 MHz LTE carrier would be flat over
+        4.5 MHz with nearly vertical edges. The two carriers are <span data-k="umts-spacing">…</span> MHz apart (centres from the 99 % edges, ±1 bin = ±20 kHz each),
+        close to the nominal 5 MHz UMTS channel spacing: two adjacent UMTS900 carriers.</p>
+    </section>
+
+    <!-- ===================== 6. gsm / ppm ===================== -->
+    <section class="lab-sec" id="ppm">
+      <div class="section-head"><span class="kicker">06 — analysis 4</span><h2>Reference-frequency error from the GSM grid</h2>
+        <p>GSM900 downlink carriers sit on f = 935 + 0.2 n MHz and the base stations are accurate to 0.05 ppm, so the offset of each measured carrier centre from the grid
+          is the Pluto’s own error: label = f<sub>true</sub> − ε·f<sub>c</sub>. Centres are power-weighted centroids over ±90 kHz (noise floor subtracted), iterated until they converge;
+          only carriers inside the trusted 80 % are used.</p></div>
+      <div class="tbl-wrap">
+        <table class="tbl"><thead><tr><th class="num">Measured centre (MHz)</th><th class="num">Grid (MHz)</th><th class="num">ARFCN n</th><th class="num">Offset</th><th class="num">Peak − floor</th></tr></thead><tbody id="gsm-body"></tbody></table>
+      </div>
+      <div id="gsm-plot"></div>
+      <div class="kpi">
+        <div class="card stat"><div class="n"><span data-k="gsm-offset">…</span> kHz</div><div class="l">median label offset (± <span data-k="gsm-offset-unc">…</span> kHz std. error)</div></div>
+        <div class="card stat"><div class="n"><span data-k="gsm-eps">…</span> ppm</div><div class="l">ε = −offset / f<sub>c</sub> (± <span data-k="gsm-eps-unc">…</span> ppm)</div></div>
+        <div class="card stat"><div class="n">±<span data-k="gsm-spec">…</span> kHz</div><div class="l">±25 ppm specification at 945 MHz</div></div>
+      </div>
+      <p>The Pluto reads GSM carriers about 24 kHz too high, i.e. its 40 MHz reference runs slow by roughly 26 ppm — at the edge of the ±25 ppm specification of Table 2.
+        <b>Uncertainty:</b> only two carriers fall inside the trusted part of the 20 MS/s recording (the third, at 954 MHz, is at the display edge and coincides with the
+        receiver’s +8.98 MHz spur); the bin width is <span data-k="gsm-res">…</span> kHz; the two offsets differ by 14 kHz, which is larger than the bin and points to the
+        asymmetric, bursty GMSK spectra and the 0.1 s excerpt; oscillator warm-up adds a few ppm over a session. A 2.6 MS/s recording at 945 MHz with N = 8192 would cut
+        the bin to 0.3 kHz.</p>
+    </section>
+
+    <!-- ===================== 7. time ===================== -->
+    <section class="lab-sec" id="time">
+      <div class="section-head"><span class="kicker">07 — analysis 2</span><h2>Gap-free time analysis: is the 1090 MHz line ADS-B?</h2>
+        <p>At 2.6 MS/s every sample reaches the laptop, so the recording can be cut into consecutive frames with no gaps. ADS-B (1090 MHz) is a stream of 120 µs pulse
+          bursts and would stand out clearly from the floor.</p></div>
+      <div id="burst-plot"></div>
+      <p>In <span data-k="b-frames">…</span> consecutive <span data-k="b-us">…</span> µs frames (1 s) the channel power never crosses the threshold (<span data-k="b-thr">…</span> dBFS):
+        <b><span data-k="b-count">…</span> bursts</b>. Median <span data-k="b-p50">…</span>, 99th percentile <span data-k="b-p99">…</span>, maximum <span data-k="b-max">…</span> dBFS — a steady CW line.
+        Together with its exact fc + 1.000000 MHz position and its mirror at fc − 1 MHz, this is a receiver spur, not ADS-B; no aircraft transmission was received in this second.
+        The same burst code is the one prepared for the 433.92 MHz remote (band B), which was not recorded in this session.</p>
+    </section>
+
+    <!-- ===================== 8. services ===================== -->
+    <section class="lab-sec" id="services">
+      <div class="section-head"><span class="kicker">08 — analysis 5</span><h2>Services: predicted vs observed</h2></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Predicted (pre-report, Table 3)</th><th>Seen?</th><th>Frequency</th><th>Width</th><th>Reason for the technology guess</th></tr></thead>
+          <tbody>
+            <tr><td>FM broadcast 88–108 MHz</td><td class="bad">No</td><td>—</td><td>—</td><td>Only receiver spurs in the 80–100 MHz view; the GSM/LTE antenna is not resonant at 100 MHz (the manual warns stations look weaker).</td></tr>
+            <tr><td>Remote 433.92 MHz (OOK/FSK)</td><td class="dim">Not recorded</td><td>—</td><td>—</td><td>Band B was not captured; the loopback used the same band.</td></tr>
+            <tr><td>GSM900 downlink 935–960 MHz</td><td class="ok">Yes</td><td>952.2, 952.8 MHz (ARFCN 86, 89)</td><td><span data-k="gsm1-b99">…</span>, <span data-k="gsm2-b99">…</span> kHz (B<sub>99</sub>)</td><td>200 kHz channels on the 200 kHz grid; both never switch off in the recording → BCCH carriers (n = (f − 935)/0.2 = 86 and 89).</td></tr>
+            <tr><td>GSM900 uplink 890–915 MHz</td><td class="dim">Not recorded</td><td>—</td><td>—</td><td>Needs a phone transmitting nearby; no file in this session.</td></tr>
+            <tr><td>UMTS / LTE in the 900 MHz band</td><td class="ok">Yes — UMTS</td><td><span data-k="umtsA-fc">…</span>, <span data-k="umtsB-fc">…</span> MHz</td><td><span data-k="umtsA-b3">…</span> / <span data-k="umtsB-b3">…</span> MHz at −3 dB</td><td>Continuous flat block, −3 dB width = WCDMA chip rate, rounded RRC edges (question 8).</td></tr>
+            <tr><td>ADS-B 1090 MHz (extra band)</td><td class="bad">No</td><td>—</td><td>—</td><td>The 1090.000 MHz line is continuous and exactly LO + 1 MHz: receiver spur.</td></tr>
+            <tr><td>Wi-Fi / Bluetooth 2.4 GHz (extra)</td><td>Screenshots only</td><td>2400–2420 MHz</td><td>—</td><td>Horizontal streaks in the waterfall (short packets) — screenshots 6–8; no I/Q file.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== 9. predicted vs measured ===================== -->
+    <section class="lab-sec" id="pvm">
+      <div class="section-head"><span class="kicker">09 — summary</span><h2>Prediction vs measurement</h2></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Quantity</th><th>Predicted</th><th>Measured</th><th>Relative error</th><th>Quantified source of the difference</th></tr></thead>
+          <tbody>
+            <tr><td>Loopback tone (+250 kHz, lo_shift 0)</td><td class="num">434.250000 MHz</td><td class="num"><span data-k="lb0-meas">…</span> MHz</td><td class="num">&lt; 10⁻¹⁰</td><td><span data-k="lb0-err">…</span> Hz; interpolation residual of the zero-padded FFT (bin 1.24 Hz). TX and RX share the reference, so its error cancels.</td></tr>
+            <tr><td>GSM carrier occupied width</td><td class="num">≈ 250 kHz</td><td class="num"><span data-k="gsm1-b99">…</span> / <span data-k="gsm2-b99">…</span> kHz</td><td class="num"><span data-k="gsm1-err">…</span> % / <span data-k="gsm2-err">…</span> %</td><td>Δf = 4.88 kHz (each edge ±1 bin = ±2 %); peak only 15–17 dB above the floor, so the 0.5 % tails are partly noise; 0.1 s excerpt; the neighbouring carrier 600 kHz away.</td></tr>
+            <tr><td>UMTS width at −3 dB</td><td class="num">3.84 MHz</td><td class="num"><span data-k="umtsA-b3">…</span> / <span data-k="umtsB-b3">…</span> MHz</td><td class="num"><span data-k="umtsA-err">…</span> % / <span data-k="umtsB-err">…</span> %</td><td>Δf = 19.5 kHz: each edge is quantised to ±0.5 % of the width.</td></tr>
+            <tr><td>UMTS 99 % width</td><td class="num">≤ 5 MHz channel</td><td class="num"><span data-k="umtsA-b99">…</span> / <span data-k="umtsB-b99">…</span> MHz</td><td class="num">—</td><td>Inside the channel; floor subtraction at 18–22 dB SNR removes part of the RRC skirts.</td></tr>
+            <tr><td>Reference error |ε|</td><td class="num">≤ 25 ppm</td><td class="num"><span data-k="gsm-eps">…</span> ± <span data-k="gsm-eps-unc">…</span> ppm</td><td class="num">at the limit</td><td>Two carriers only, bin 4.88 kHz (5 ppm), 14 kHz spread between the two offsets.</td></tr>
+            <tr><td>File size, full recording</td><td class="num">8·fs·T = 80 000 000 B</td><td class="num">80 000 000 B</td><td class="num">0</td><td>—</td></tr>
+            <tr><td>Trusted part of the display</td><td class="num">80 % of fs</td><td class="num"><span data-k="q1-range1">…</span> % (±1 dB), <span data-k="q1-range3">…</span> % (±3 dB)</td><td class="num">−15…−35 %</td><td>The floor already bends inside ±0.4 fs (question 1): Filter Configuration Off + decimation filter roll-off and aliased noise.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== 10. questions ===================== -->
+    <section class="lab-sec" id="questions">
+      <div class="section-head"><span class="kicker">10 — questions</span><h2>Answers to the questions</h2></div>
+
+      <div class="qa">
+        <h3>Q1 · Edges versus the middle of the display</h3>
+        <p>Near ±fs/2 the analog low-pass and the half-band/FIR decimation filters are in their transition band, strong signals just outside ±fs/2 alias onto the opposite edge
+          (with <span class="mono">Filter Configuration = Off</span> the analog bandwidth stays at 20 MHz, wider than fs), and the Blackman-Harris main lobe mixes edge bins with folded ones.
+          Measured from the noise floor of mostly empty recordings, the floor stays within ±1 dB of its centre value over <b><span data-k="q1-range1">…</span> %</b> of fs and within
+          ±3 dB over <b><span data-k="q1-range3">…</span> %</b>:</p>
+        <div class="grid grid-2">
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Recording</th><th class="num">fs (MS/s)</th><th class="num">±1 dB</th><th class="num">±3 dB</th></tr></thead><tbody id="q1-body"></tbody></table></div>
+          <div id="q1-plot"></div>
+        </div>
+        <p>So the usable part is a bit narrower than the 80 % assumed by the sweep step 0.8 fs: for finding signals the 80 % rule is fine (a few dB of floor tilt), but levels
+          read in the outer 20–40 % should not be compared with levels in the middle.</p>
+
+        <h3>Q2 · Reference error from GSM carriers</h3>
+        <p>From the raw file (analysis 4): carrier centres are <span data-k="gsm-offset">…</span> kHz above the 935 + 0.2 n MHz grid on average, ε = <span data-k="gsm-eps">…</span> ± <span data-k="gsm-eps-unc">…</span> ppm,
+          at the edge of the ±25 ppm (±23.6 kHz at 945 MHz) specification. The difference is several bins (Δf = 4.88 kHz at N = 4096, 20 MS/s), so it is resolved; the live readings
+          of three carriers at N = 1024 were not written in the log book, so they cannot be compared here.</p>
+
+        <h3>Q3 · Telling +250 kHz from −250 kHz</h3>
+        <p>The samples are complex, x = I + jQ. A +250 kHz tone is e<sup>+j2π·250k·t</sup> (the phasor turns anticlockwise), a −250 kHz tone turns the other way; Q, 90° behind I, tells the
+          direction, so the complex spectrum is not symmetric. Measured: f<sub>tx</sub> = +250 kHz appears at <span data-k="lb0-meas">…</span> MHz (right of the centre),
+          −250 kHz at <span data-k="lbn-meas">…</span> MHz (left). With only I sampled the signal would be real, cos(2π·250k·t) = cos(−2π·250k·t): its spectrum is conjugate-symmetric,
+          both cases would look identical (two peaks at ±250 kHz with half the power), RF frequencies fc ± 250 kHz would fold onto each other and the usable width would halve to fs/2.</p>
+
+        <h3>Q4 · Classifying the peaks of the LO test</h3>
+        <p>The measured slopes (table in Part 2) give three kinds of peak. <b>s = 0</b>: the tone at 434.250 MHz and a line at 434.000 MHz — the TX LO leakage, a real RF signal on the cable
+          because the transmitter stays at fc while the receiver moves. <b>s = 1</b>: the line at the display centre (433.9 / 434.0 / 434.1 / 434.2 MHz) — receiver DC offset / LO leakage.
+          <b>s = ±4</b>: two strong lines at 434.25 ± 4·lo_shift (up to <span data-k="s4-level">…</span> dB above the median) that merge with the tone when lo_shift = 0. They move with the LO,
+          so by the manual’s criterion they are made inside the radio, but their slope is not one of the three textbook classes (0, 1, 2); the exact mixing mechanism is
+          not identified. No s = 2 receiver image was found above the 25 dB detection threshold, i.e. the image is suppressed by more than ~58 dB relative to the tone.
+          Note that at lo_shift = 0 the TX LO leakage and the RX centre artifact both fall on 434.000 MHz — only the LO test separates them.</p>
+
+        <h3>Q5 · Why the loopback label is exact but GSM carriers are not</h3>
+        <p>One 40 MHz reference makes both LO synthesizers and the sample clock. With an error ε the tone leaves at (1+ε)(fc + f<sub>tx</sub>), the RX LO is at (1+ε)fc, so baseband is (1+ε)f<sub>tx</sub>,
+          and the sample clock is (1+ε)fs — the FFT reports (1+ε)f<sub>tx</sub>/(1+ε) = f<sub>tx</sub>. The error cancels: measured <span data-k="lb0-err">…</span> Hz.
+          GSM base stations have their own, far better references (≤ 0.05 ppm), so only the Pluto’s error remains: ≈ +24 kHz at 945 MHz.</p>
+
+        <h3>Q6 · Continuous versus transient; what Max Hold shows</h3>
+        <p>Band C had the most continuous signals: in every frame of the recording both UMTS carriers and both GSM carriers stay at least 3 dB above the noise power of their
+          bandwidth (“on” in 100 % of the frames, Table 7) — as a GSM BCCH carrier must, since all its time slots are filled with dummy bursts. The 2.4 GHz band (screenshots 6–8)
+          was the most transient: short packets show up as horizontal streaks in the waterfall. Max Hold keeps the maximum of every
+          bin over time, so it (1) catches bursts that happened between two display updates, (2) shows their true peak level, which averaging pulls down, and (3) reveals the total
+          occupied width of channels that were active at different times; the instantaneous trace shows a single N-sample frame per update.</p>
+
+        <h3>Q7 · Remote bursts and the probability of interception</h3>
+        <p>Band B was not recorded, so the live count cannot be checked against a gap-free file. Model: each display update (T<sub>upd</sub> = 0.1 s) processes one frame of N = 1024 samples,
+          T<sub>N</sub> = N/fs = 0.39 ms at 2.6 MS/s; a burst of length T<sub>b</sub> is seen when it overlaps that frame, P ≈ min(1, (T<sub>b</sub> + T<sub>N</sub>)/T<sub>upd</sub>):
+          1.4 % for 1 ms, 10.4 % for 10 ms, 50 % for 50 ms, ≈ 100 % for ≥ 100 ms. A gap-free 2.6 MS/s file has P = 1 — the burst analysis above shows how it would be counted.</p>
+
+        <h3>Q8 · UMTS or LTE without demodulating</h3>
+        <p>UMTS: RRC (α = 0.22) on 3.84 Mchip/s → dome-shaped, B<sub>−3 dB</sub> ≈ 3.84 MHz, B<sub>−3</sub>/B<sub>−30</sub> ≈ 0.82, uniform texture in the waterfall. LTE 5 MHz: 300 × 15 kHz subcarriers →
+          flat 4.5 MHz with near-vertical edges (ratio ≈ 1), an empty DC subcarrier in the centre, 180 kHz × 1 ms resource blocks switching on and off in the waterfall, and a
+          cyclic-prefix autocorrelation peak at the 66.7 µs symbol length. Procedure: fs ≥ 1.25 × 5 MHz, carrier mid-display, Welch + Max Hold, measure B<sub>−3 dB</sub>, a deeper
+          width and the edge slope, look for the DC notch with Δf ≤ 5 kHz, then check the waterfall. Applied to our 945 MHz recording (table above), both blocks are <b>UMTS</b>.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 11. change ===================== -->
+    <section class="lab-sec" id="change">
+      <div class="section-head"><span class="kicker">11 — lessons</span><h2>What we would change next time</h2></div>
+      <ol class="bul">
+        <li><b>Record band B during a remote press</b> (434.5 MHz, 2.6 MS/s, full 3.8 s). Analysis 2 (gap-free bursts) and question 7 need it; the code is ready.</li>
+        <li><b>Record 945 MHz at 2.6 MS/s with N = 8192</b> for the reference-error estimate: more GSM carriers inside the trusted 80 % and a 0.3 kHz bin instead of two carriers at 4.9 kHz.</li>
+        <li><b>Fill in <span class="mono">log.md</span> during the session</b> — device read-backs, the working gain, live readings of the GSM carriers and the live burst count. Without them,
+          the live display cannot be compared with the files (questions 2 and 7).</li>
+        <li><b>Run an LO test on a band recording</b> (e.g. 1089 MHz with lo_shift = ±100 kHz) to show directly that the integer-MHz lines are receiver spurs, instead of inferring it
+          across recordings with different fc.</li>
+        <li><b>Record the 2.4 GHz scan and a phone uplink</b>, not only screenshots, so that a transient signal can be measured for Table 7.</li>
+      </ol>
+    </section>
+
+    <!-- ===================== 12. own file ===================== -->
+    <section class="lab-sec" id="own">
+      <div class="section-head"><span class="kicker">12 — tool</span><h2>Analyse a recording in your browser</h2>
+        <p>Choose a <span class="mono">.cf32</span> (complex64) or <span class="mono">.cs16</span> file. With a standard file name, fc and fs are read from the name. Nothing is uploaded —
+          the file is read locally and analysed with the same code.</p></div>
+      <div class="card own-card">
+        <div class="own-grid">
+          <label>Recording <input type="file" id="own-file" accept=".cf32,.cs16"></label>
+          <label>Seconds to read <input type="number" id="own-sec" value="0.5" min="0.01" step="0.1"></label>
+          <label>FFT size N <select id="own-nfft"><option>512</option><option selected>1024</option><option>2048</option><option>4096</option><option>8192</option></select></label>
+          <label>Signal from (MHz) <input type="number" id="own-fmin" step="0.001" placeholder="optional"></label>
+          <label>Signal to (MHz) <input type="number" id="own-fmax" step="0.001" placeholder="optional"></label>
+          <label>fc (MHz, if no standard name) <input type="number" id="own-fc" step="0.001"></label>
+          <label>fs (MS/s, if no standard name) <input type="number" id="own-fs" step="0.1"></label>
+          <div><button class="btn" id="own-run">Analyse</button></div>
+        </div>
+        <div id="own-out"></div>
+      </div>
+    </section>
+
+    <!-- ===================== 13. screenshots ===================== -->
+    <section class="lab-sec" id="screens">
+      <div class="section-head"><span class="kicker">13 — session</span><h2>Live display screenshots</h2>
+        <p>What the GNU Radio sinks showed during the session (Frequency Sink with Max Hold, Waterfall Sink).</p></div>
+      <div class="gallery">
+        <figure><a href="img/shot-01.jpg" target="_blank"><img src="img/shot-01.jpg" loading="lazy" alt="929 MHz at 2.6 MS/s"></a><figcaption>929 MHz, 2.6 MS/s — centre artifact and bowl-shaped floor.</figcaption></figure>
+        <figure><a href="img/shot-02.jpg" target="_blank"><img src="img/shot-02.jpg" loading="lazy" alt="1089 MHz at 20 MS/s"></a><figcaption>1089 MHz, 20 MS/s — lines at fc ± 1 MHz.</figcaption></figure>
+        <figure><a href="img/shot-03.jpg" target="_blank"><img src="img/shot-03.jpg" loading="lazy" alt="1114 MHz gain 10"></a><figcaption>1114 MHz, gain 10 dB — humps at fc ± 6.86 MHz.</figcaption></figure>
+        <figure><a href="img/shot-04.jpg" target="_blank"><img src="img/shot-04.jpg" loading="lazy" alt="1114 MHz gain 30"></a><figcaption>1114 MHz, gain 30 dB — humps gone, line at 1120 MHz.</figcaption></figure>
+        <figure><a href="img/shot-05.jpg" target="_blank"><img src="img/shot-05.jpg" loading="lazy" alt="1162 MHz"></a><figcaption>1162 MHz, 20 MS/s — narrow lines near 1160 and 1166 MHz.</figcaption></figure>
+        <figure><a href="img/shot-06.jpg" target="_blank"><img src="img/shot-06.jpg" loading="lazy" alt="2410 MHz"></a><figcaption>2410 MHz — Wi-Fi band, packets as horizontal streaks.</figcaption></figure>
+        <figure><a href="img/shot-07.jpg" target="_blank"><img src="img/shot-07.jpg" loading="lazy" alt="2410 MHz max and min hold"></a><figcaption>2410 MHz with Max Hold and Min Hold.</figcaption></figure>
+        <figure><a href="img/shot-08.jpg" target="_blank"><img src="img/shot-08.jpg" loading="lazy" alt="2400 MHz"></a><figcaption>2400 MHz (2390–2410 MHz).</figcaption></figure>
+        <figure><a href="img/shot-09.jpg" target="_blank"><img src="img/shot-09.jpg" loading="lazy" alt="Loopback minus 250 kHz"></a><figcaption>Loopback, f<sub>tx</sub> = −250 kHz — tone left of the centre.</figcaption></figure>
+        <figure><a href="img/shot-10.jpg" target="_blank"><img src="img/shot-10.jpg" loading="lazy" alt="LO test plus 100 kHz"></a><figcaption>LO test, lo_shift = +100 kHz.</figcaption></figure>
+        <figure><a href="img/shot-11.jpg" target="_blank"><img src="img/shot-11.jpg" loading="lazy" alt="LO test plus 200 kHz"></a><figcaption>LO test, lo_shift = +200 kHz.</figcaption></figure>
+        <figure><a href="img/shot-12.jpg" target="_blank"><img src="img/shot-12.jpg" loading="lazy" alt="LO test minus 100 kHz"></a><figcaption>LO test, lo_shift = −100 kHz.</figcaption></figure>
+        <figure><a href="img/shot-13.jpg" target="_blank"><img src="img/shot-13.jpg" loading="lazy" alt="945 MHz"></a><figcaption>945 MHz, 20 MS/s — UMTS blocks and GSM carriers.</figcaption></figure>
+        <figure><a href="img/shot-14.jpg" target="_blank"><img src="img/shot-14.jpg" loading="lazy" alt="90 MHz"></a><figcaption>90 MHz, 20 MS/s — FM band.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ===================== 14. files ===================== -->
+    <section class="lab-sec" id="files">
+      <div class="section-head"><span class="kicker">14 — code</span><h2>Code and data</h2></div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="col-title">Analysis on this page</div>
+          <ul class="bul small">
+            <li><a href="../../assets/js/sdr-dsp.js">sdr-dsp.js</a> — FFT, Welch, Max Hold, OBW, x-dB, bursts, fine peak, GSM grid (JS port of lab01_analysis.py)</li>
+            <li><a href="lab01-analysis.js">lab01-analysis.js</a> — which measurement runs on which recording</li>
+            <li><a href="lab01.js">lab01.js</a> — plots, tables, recompute and the file tool</li>
+            <li><a href="results.json">results.json</a> · <a href="data/manifest.json">data/manifest.json</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="col-title">Session files</div>
+          <ul class="bul small">
+            <li>GNU Radio flowgraphs, the IQ Recorder block and the Python analysis are in the <a href="../#lab-01">Lab 1 files</a> on the SDR Lab page.</li>
+            <li>I/Q excerpts: <span class="mono">data/*.cs16</span> — int16 little-endian, interleaved I/Q, value / 2048 = sample (lossless for the 12-bit AD9363).
+              The full 80 MB recordings are kept by the team.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Mohammad Amin Khoshkam</span>
+    <a href="../">← Back to SDR Lab</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script src="../../assets/js/sdr-dsp.js"></script>
+<script src="lab01-analysis.js"></script>
+<script src="lab01.js"></script>
+</body>
+</html>

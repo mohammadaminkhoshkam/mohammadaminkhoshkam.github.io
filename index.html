@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mohammad Amin Khoshkam</title>
+  <meta name="description" content="Mohammad Amin Khoshkam — Electrical Engineering student at Sharif University of Technology working on wireless communications, RF &amp; microwave design, biomedical signal processing and digital hardware.">
+  <meta property="og:title" content="Mohammad Amin Khoshkam">
+  <meta property="og:description" content="Electrical Engineering student at Sharif University of Technology.">
+  <meta property="og:image" content="https://mohammadaminkhoshkam.github.io/assets/img/profile.jpg">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f7bdc'/%3E%3Cpath d='M4 17c3-8 5-8 8 0s5 8 8 0 5-8 8 0' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="#top"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#coursework">Coursework</a>
+      <a href="#contact">Contact</a>
+      <a class="pill" href="sdr-lab/">SDR Lab</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <!-- ========== Hero ========== -->
+  <section class="hero">
+    <canvas data-waves aria-hidden="true"></canvas>
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">// electrical engineering @ sharif university of technology</span>
+        <h1>Hi, I'm <span class="grad">Mohammad Amin Khoshkam</span>.</h1>
+        <p class="lead">
+          I'm an Electrical Engineering student working across wireless communications, RF &amp; microwave
+          design, biomedical signal processing and digital hardware — from near-field THz MIMO channel
+          estimation to an 8.5&nbsp;GHz phased array and an ECG Holter device.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="#projects">See my work</a>
+          <a class="btn" href="sdr-lab/">SDR Lab reports</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+      <div class="portrait"><img src="assets/img/profile.jpg" alt="Portrait of Mohammad Amin Khoshkam" width="640" height="640"></div>
+    </div>
+  </section>
+
+  <!-- ========== About + Education ========== -->
+  <section class="block" id="about">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">01 — about</span>
+        <h2>About me</h2>
+      </div>
+      <div class="two-col">
+        <div class="reveal">
+          <p>
+            I'm a B.Sc. student in <b>Electrical Engineering at Sharif University of Technology</b> (2022 – present),
+            originally from Isfahan. My interests sit where theory meets hardware: <b>wireless communications and
+            estimation theory</b> (RIS-aided localization, THz MIMO), <b>RF &amp; microwave design</b> (phased arrays,
+            feed networks, full-wave simulation), <b>biomedical signal processing</b> (ECG and EEG with machine learning)
+            and <b>digital design</b> on FPGAs. My B.Sc. project, supervised by Dr. Rouhollah Amiri, studied
+            <a href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization" target="_blank" rel="noopener">localization
+            and synchronization of a mobile user aided by RISs with uncertain positions</a>.
+          </p>
+          <p>
+            Since 2023 I've been a teaching assistant for six undergraduate courses, and since 2022 I've taught
+            physics olympiad classes. I also served as Educational Officer and Vice Secretary of the Faculty of
+            Electrical Engineering Student Council.
+          </p>
+          <p>
+            This site also hosts my coursework, including the pre-reports and lab reports for the
+            <a href="sdr-lab/">Software-Defined Radio (SDR) Lab</a>.
+          </p>
+        </div>
+        <div class="card reveal">
+          <div class="col-title">Education</div>
+          <ul class="timeline">
+            <li>
+              <span class="when">2022 — Present</span>
+              <h3>B.Sc. Electrical Engineering</h3>
+              <div class="where">Sharif University of Technology, Tehran</div>
+            </li>
+            <li>
+              <span class="when">2016 — 2022</span>
+              <h3>High School Diploma</h3>
+              <div class="where">Shahid Ajei 1 Sampad High School, Isfahan</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Experience + Achievements ========== -->
+  <section class="block" id="experience">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">02 — experience</span>
+        <h2>Experience &amp; leadership</h2>
+      </div>
+      <div class="two-col">
+        <ul class="timeline reveal">
+          <li>
+            <span class="when">2023 — Present</span>
+            <h3>Teaching Assistant</h3>
+            <div class="where">Sharif University of Technology, Tehran</div>
+            <p>Teaching, grading and supporting students in:</p>
+            <ul class="tags">
+              <li class="tag">Engineering Mathematics</li><li class="tag">Logic Circuits</li>
+              <li class="tag">Electric Circuits I &amp; II</li><li class="tag">Signals and Systems</li>
+              <li class="tag">Communication Systems</li><li class="tag">Probability and Statistics</li>
+            </ul>
+          </li>
+          <li>
+            <span class="when">2024 — 2026</span>
+            <h3>Educational Officer, Vice Secretary</h3>
+            <div class="where">Faculty of Electrical Engineering Student Council</div>
+            <p>Organized academic events and educational initiatives to support student development.</p>
+          </li>
+          <li>
+            <span class="when">3-month internship</span>
+            <h3>Engineering Intern</h3>
+            <div class="where">Sarmad Company</div>
+            <p>Practical exposure to engineering workflows, technical problem solving and professional teamwork in an industrial environment.</p>
+          </li>
+          <li>
+            <span class="when">2022 — Present</span>
+            <h3>Physics Olympiad Instructor</h3>
+            <div class="where">Isfahan</div>
+            <p>Comprehensive lessons preparing students for competitive physics exams.</p>
+          </li>
+          <li>
+            <span class="when">2022 — 2023</span>
+            <h3>Academic Advisor</h3>
+            <div class="where">Shajareh Tayebeh Charity, Isfahan</div>
+            <p>Mentored underprivileged students through personalized academic guidance and educational planning.</p>
+          </li>
+        </ul>
+
+        <div class="grid">
+          <div class="card reveal">
+            <div class="col-title">Achievements</div>
+            <div class="award"><span class="medal">🥉</span><div><b>National Bronze Medal, Physics Olympiad</b><small>Iran · 2020</small></div></div>
+            <div class="award"><span class="medal">🏆</span><div><b>Alborz Prize</b><small>2021</small></div></div>
+          </div>
+          <div class="card reveal">
+            <div class="col-title">Certifications</div>
+            <div class="award"><span class="medal cert">✓</span><div><b>Natural Language Processing in Python</b><small>2025</small></div></div>
+            <div class="award"><span class="medal cert">✓</span><div><b>Large Language Models (LLMs) Concepts</b><small>2025</small></div></div>
+            <div class="award"><span class="medal cert">✓</span><div><b>Supervised Learning with scikit-learn</b><small>2025</small></div></div>
+            <div class="award"><span class="medal cert">✓</span><div><b>Product Management Bootcamp</b><small>Quera · 2025</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Projects ========== -->
+  <section class="block" id="projects">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">03 — projects</span>
+        <h2>Projects</h2>
+        <p>Research, hardware and software projects — from estimation theory to FPGAs and desktop apps.</p>
+      </div>
+
+      <div class="filters" role="group" aria-label="Filter projects">
+        <button class="chip" data-filter="all" aria-pressed="true">All</button>
+        <button class="chip" data-filter="comm" aria-pressed="false">Wireless &amp; Signal</button>
+        <button class="chip" data-filter="rf" aria-pressed="false">RF &amp; Circuits</button>
+        <button class="chip" data-filter="bio" aria-pressed="false">Biomedical &amp; ML</button>
+        <button class="chip" data-filter="digital" aria-pressed="false">Digital &amp; FPGA</button>
+        <button class="chip" data-filter="software" aria-pressed="false">Software</button>
+      </div>
+
+      <div class="grid grid-3">
+        <article class="card project reveal" data-cat="comm">
+          <div class="meta"><span class="cat">B.Sc. Project · Wireless</span><span class="year">2026</span></div>
+          <h3>RIS-Aided Localization &amp; Synchronization under Uncertain RIS Geometry</h3>
+          <p>Joint estimation of a mobile user's position, velocity, frequency error and clock offset with RISs whose
+            positions are only known through a prior: hybrid Cramér–Rao bound via Fisher information and a hybrid
+            MAP/ML estimator with variable projection. Supervised by Dr. Rouhollah Amiri.</p>
+          <ul class="tags"><li class="tag">RIS</li><li class="tag">Hybrid CRLB</li><li class="tag">MAP/ML</li><li class="tag">OFDM</li><li class="tag">MATLAB</li></ul>
+          <div class="links">
+            <a href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization" target="_blank" rel="noopener">Repository →</a>
+            <a href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization/blob/main/report/RIS_Localization_Report_EN.pdf" target="_blank" rel="noopener">Report (PDF) →</a>
+          </div>
+        </article>
+
+        <article class="card project reveal" data-cat="comm">
+          <div class="meta"><span class="cat">Wireless · THz MIMO</span><span class="year">2026</span></div>
+          <h3>RMT-Based Channel Estimation for Near-Field THz MIMO</h3>
+          <p>A simulation framework for near-field terahertz MIMO channel estimation using random matrix theory,
+            evaluating BER, SER, spectral efficiency and estimation error across antenna configurations.</p>
+          <ul class="tags"><li class="tag">Random matrix theory</li><li class="tag">MIMO</li><li class="tag">MATLAB / Python</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="rf">
+          <div class="meta"><span class="cat">RF · Antennas</span><span class="year">2025</span></div>
+          <h3>8.5-GHz Microstrip Phased Array with Wilkinson Feed</h3>
+          <p>Design and full-wave simulation of a beam-steering microstrip phased array with a Wilkinson
+            power-divider feed network — radiation pattern, impedance matching and array performance.</p>
+          <ul class="tags"><li class="tag">Keysight ADS</li><li class="tag">Ansys HFSS</li><li class="tag">Phased arrays</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/X-Band-Patch-Antenna-Array" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="bio">
+          <div class="meta"><span class="cat">Biomedical · Device</span><span class="year">2025 — now</span></div>
+          <h3>Heart Holter Device</h3>
+          <p>Developing an advanced cardiac Holter monitoring device that uses signal processing and machine
+            learning for enhanced ECG analysis.</p>
+          <ul class="tags"><li class="tag">ECG</li><li class="tag">Signal processing</li><li class="tag">Machine learning</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="bio software">
+          <div class="meta"><span class="cat">Biomedical · Web</span><span class="year">2025</span></div>
+          <h3>ECG-Based Age Prediction Web App</h3>
+          <p>A Django platform that estimates biological age from uploaded ECG images using a trained ML model
+            and extracted temporal and morphological ECG features.</p>
+          <ul class="tags"><li class="tag">Django</li><li class="tag">Python</li><li class="tag">ML</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="bio comm">
+          <div class="meta"><span class="cat">Biomedical · Signal</span><span class="year">2024</span></div>
+          <h3>EEG-Based Epileptic Seizure Prediction</h3>
+          <p>A MATLAB EEG analysis pipeline using spectral-entropy features for epileptic seizure prediction.</p>
+          <ul class="tags"><li class="tag">MATLAB</li><li class="tag">EEG</li><li class="tag">Spectral entropy</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="rf">
+          <div class="meta"><span class="cat">Circuits · Pulsed</span><span class="year">2024</span></div>
+          <h3>Subnanosecond Pulser Circuit</h3>
+          <p>Designed and tested an avalanche-transistor pulser that generates sub-nanosecond electrical pulses
+            with precise timing and signal control.</p>
+          <ul class="tags"><li class="tag">Avalanche transistor</li><li class="tag">Pulse circuits</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="rf">
+          <div class="meta"><span class="cat">Analog · Circuits</span><span class="year">2024</span></div>
+          <h3>Operational Amplifier Design</h3>
+          <p>Designed and simulated a custom operational amplifier circuit in LTspice for the Electronics course.</p>
+          <ul class="tags"><li class="tag">LTspice</li><li class="tag">Analog design</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/Operating-Amplifiers" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="digital">
+          <div class="meta"><span class="cat">Digital · CPU</span><span class="year">2024</span></div>
+          <h3>Single-Cycle &amp; Multi-Cycle Processors</h3>
+          <p>Designed and implemented single-cycle and multi-cycle CPU architectures in Verilog — datapath,
+            control unit and instruction execution.</p>
+          <ul class="tags"><li class="tag">Verilog</li><li class="tag">Computer architecture</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="digital">
+          <div class="meta"><span class="cat">FPGA · Imaging</span><span class="year">2023</span></div>
+          <h3>Real-Time Image Processing on Zynq</h3>
+          <p>A real-time image pipeline on a Zynq FPGA: SD-card image reading, grayscale conversion, filtering
+            and monitor output.</p>
+          <ul class="tags"><li class="tag">Zynq</li><li class="tag">Vivado</li><li class="tag">C</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="digital">
+          <div class="meta"><span class="cat">FPGA · FSM</span><span class="year">2023</span></div>
+          <h3>FPGA-Based Morse Code Decoder</h3>
+          <p>A Morse code decoder implemented in Verilog with finite state machines on an FPGA.</p>
+          <ul class="tags"><li class="tag">Verilog</li><li class="tag">FPGA</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="rf software">
+          <div class="meta"><span class="cat">Lab Automation</span></div>
+          <h3>GPIB Studio</h3>
+          <p>A desktop app for controlling HP RF test instruments (8563E, 8720D, 83752B) over GPIB and a
+            GDS-1104B scope over LAN, with automated tests, a simulation mode and data analysis.</p>
+          <ul class="tags"><li class="tag">Python</li><li class="tag">PySide6</li><li class="tag">GPIB / SCPI</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/GPIB-Studio" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="software">
+          <div class="meta"><span class="cat">Desktop App</span></div>
+          <h3>Vision-OS</h3>
+          <p>A gesture-controlled research workspace for Windows: webcam hand tracking, a PDF reader,
+            a knowledge board, a focus studio and a local AI assistant.</p>
+          <ul class="tags"><li class="tag">Tauri</li><li class="tag">React</li><li class="tag">TypeScript</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/Vision-OS" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="software">
+          <div class="meta"><span class="cat">Desktop App</span></div>
+          <h3>Marginal Research</h3>
+          <p>An offline workspace for reading research papers deeply: highlights, a three-pass reading guide,
+            claims &amp; evidence, spaced-repetition flashcards and a knowledge graph.</p>
+          <ul class="tags"><li class="tag">Electron</li><li class="tag">JavaScript</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/Marginal-Research" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="software">
+          <div class="meta"><span class="cat">Desktop App</span></div>
+          <h3>Rooznegar</h3>
+          <p>A Windows time tracker with a Persian UI and a Jalali calendar.</p>
+          <ul class="tags"><li class="tag">C#</li><li class="tag">.NET</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/Rooznegar" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="software">
+          <div class="meta"><span class="cat">Desktop App</span></div>
+          <h3>HabitWall</h3>
+          <p>Habits as a sticky note on your Windows desktop — local-first, with voice and natural-language input.</p>
+          <ul class="tags"><li class="tag">Tauri 2</li><li class="tag">React</li><li class="tag">SQLite</li></ul>
+          <div class="links"><a href="https://github.com/mohammadaminkhoshkam/HabitWall" target="_blank" rel="noopener">Repository →</a></div>
+        </article>
+
+        <article class="card project reveal" data-cat="software">
+          <div class="meta"><span class="cat">Web · Backend</span><span class="year">2023</span></div>
+          <h3>Online Food Ordering Platform</h3>
+          <p>A Java food ordering system with an SQL database backend for data management.</p>
+          <ul class="tags"><li class="tag">Java</li><li class="tag">SQL</li></ul>
+        </article>
+
+        <article class="card project reveal" data-cat="software">
+          <div class="meta"><span class="cat">Game</span><span class="year">2023</span></div>
+          <h3>Jungle Marble Blast</h3>
+          <p>A marble-shooting game in C++ with dynamic graphics and gameplay mechanics.</p>
+          <ul class="tags"><li class="tag">C++</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Skills ========== -->
+  <section class="block" id="skills">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">04 — skills</span>
+        <h2>Technical skills</h2>
+      </div>
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        <div class="card skill-group reveal">
+          <h3><span class="dot"></span>Programming</h3>
+          <ul class="tags">
+            <li class="tag">Python</li><li class="tag">MATLAB</li><li class="tag">Verilog</li><li class="tag">C / C++</li>
+            <li class="tag">Java</li><li class="tag">TypeScript</li><li class="tag">C#</li><li class="tag">SQL</li>
+          </ul>
+        </div>
+        <div class="card skill-group reveal">
+          <h3><span class="dot"></span>RF, Microwave &amp; Simulation</h3>
+          <ul class="tags">
+            <li class="tag">Keysight ADS</li><li class="tag">Ansys HFSS</li><li class="tag">CST Studio Suite</li>
+            <li class="tag">COMSOL Multiphysics</li><li class="tag">Altium Designer</li><li class="tag">LTspice</li>
+            <li class="tag">GPIB / SCPI instruments</li>
+          </ul>
+        </div>
+        <div class="card skill-group reveal">
+          <h3><span class="dot"></span>Hardware &amp; Embedded</h3>
+          <ul class="tags">
+            <li class="tag">FPGA</li><li class="tag">Zynq</li><li class="tag">Vivado</li><li class="tag">ARM</li>
+            <li class="tag">AVR</li><li class="tag">Digital logic design</li><li class="tag">Processor design</li>
+          </ul>
+        </div>
+        <div class="card skill-group reveal">
+          <h3><span class="dot"></span>Signal Processing &amp; ML</h3>
+          <ul class="tags">
+            <li class="tag">EEG / ECG processing</li><li class="tag">Spectral entropy analysis</li>
+            <li class="tag">Cardiac device signals</li><li class="tag">ML model development</li>
+            <li class="tag">Estimation theory</li><li class="tag">scikit-learn</li><li class="tag">NLP</li>
+          </ul>
+        </div>
+        <div class="card skill-group reveal">
+          <h3><span class="dot"></span>Software &amp; Tools</h3>
+          <ul class="tags">
+            <li class="tag">Django</li><li class="tag">PySide6 / Qt</li><li class="tag">React</li><li class="tag">Tauri</li>
+            <li class="tag">Electron</li><li class="tag">Linux</li><li class="tag">Git</li><li class="tag">LaTeX</li>
+            <li class="tag">VS Code</li><li class="tag">IntelliJ IDEA</li>
+          </ul>
+        </div>
+        <div class="card skill-group reveal">
+          <h3><span class="dot"></span>Languages &amp; Soft Skills</h3>
+          <ul class="tags">
+            <li class="tag">Persian (native)</li><li class="tag">English</li><li class="tag">Teaching</li>
+            <li class="tag">Teamwork</li><li class="tag">Problem solving</li><li class="tag">Communication</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Coursework ========== -->
+  <section class="block" id="coursework">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">05 — coursework</span>
+        <h2>Coursework</h2>
+      </div>
+      <a class="card feature reveal" href="sdr-lab/" style="color: inherit; text-decoration: none; margin-bottom: 22px;">
+        <div>
+          <span class="eyebrow">SDR LAB</span>
+          <h3>Software-Defined Radio Laboratory</h3>
+          <p>Pre-reports, lab reports, code and measurement data for every session of the SDR lab.</p>
+        </div>
+        <span class="btn primary">Open the lab page →</span>
+      </a>
+      <div class="card reveal">
+        <div class="col-title">Relevant courses</div>
+        <ul class="tags">
+          <li class="tag">Communication Systems</li><li class="tag">Digital Communications</li>
+          <li class="tag">Digital Signal Processing</li><li class="tag">Stochastic Processes</li>
+          <li class="tag">Estimation Theory</li><li class="tag">Fields and Waves</li>
+          <li class="tag">Electromagnetic Simulation Lab</li><li class="tag">Electronics</li>
+          <li class="tag">Computer Architecture</li><li class="tag">Quantum Electronics</li>
+          <li class="tag">Quantum Programming (Qiskit)</li><li class="tag">Machine Learning</li>
+          <li class="tag">Deep Learning</li><li class="tag">Convex Optimization</li>
+          <li class="tag">Power Systems Analysis</li><li class="tag">Electrical Energy Conversion</li>
+          <li class="tag">Cryptography and Network Security</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Contact ========== -->
+  <section class="block" id="contact">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">06 — contact</span>
+        <h2>Get in touch</h2>
+        <p>Interested in collaborating, or have a question about one of my projects? Reach out.</p>
+      </div>
+      <div class="contact-list">
+        <a class="card contact-item reveal" href="mailto:mamin_khoshkam@ee.sharif.edu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <div><small>University email</small><span>mamin_khoshkam@ee.sharif.edu</span></div>
+        </a>
+        <a class="card contact-item reveal" href="mailto:mohammadamin.khoshkam2004@gmail.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <div><small>Personal email</small><span>mohammadamin.khoshkam2004@gmail.com</span></div>
+        </a>
+        <a class="card contact-item reveal" href="https://github.com/mohammadaminkhoshkam" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>
+          <div><small>GitHub</small><span>mohammadaminkhoshkam</span></div>
+        </a>
+        <div class="card contact-item reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <div><small>Location</small><span>Tehran / Isfahan, Iran</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Mohammad Amin Khoshkam</span>
+    <span>Hosted on GitHub Pages</span>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

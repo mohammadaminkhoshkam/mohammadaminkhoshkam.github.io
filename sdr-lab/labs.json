@@ -1,0 +1,29 @@
+{
+  "repo": "mohammadaminkhoshkam/mohammadaminkhoshkam.github.io",
+  "branch": "main",
+  "course": {
+    "title": "Software-Defined Radio Laboratory",
+    "code": "",
+    "university": "Sharif University of Technology",
+    "semester": "",
+    "instructor": "",
+    "team": []
+  },
+  "labs": [
+    {
+      "id": "lab-01",
+      "number": 1,
+      "title": "Spectrum Monitoring",
+      "date": "2026-11-01",
+      "status": "done",
+      "page": "lab-01/",
+      "summary": "ADALM-Pluto + GNU Radio 3.10: frequency axis and complex baseband, a loopback test with a known tone (accurate to 0.5 Hz), band scans with Max Hold and waterfall, and identification of GSM900 and UMTS900 carriers. All results on the report page are computed in the browser from our raw I/Q recordings.",
+      "tasks": [
+        "Run the Pluto from GNU Radio and read the real settings back from the device",
+        "Loopback tone: positive/negative baseband frequencies and the LO test (peak slopes s = 0, 1, ±4)",
+        "Band scans at 20 MS/s: GSM900 downlink, FM, 1.1 GHz; Welch PSD, 99 % OBW and x-dB bandwidth",
+        "Reference-frequency error of the Pluto from the GSM 200 kHz grid"
+      ]
+    }
+  ]
+}
