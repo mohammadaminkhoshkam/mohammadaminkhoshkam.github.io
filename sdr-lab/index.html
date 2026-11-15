@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SDR Lab Reports</title>
   <meta name="description" content="Pre-reports, lab reports, code and data for the Software-Defined Radio Laboratory — Mohammad Amin Khoshkam.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f7bdc'/%3E%3Cpath d='M4 17c3-8 5-8 8 0s5 8 8 0 5-8 8 0' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050a12'/%3E%3Cpath d='M3 24h4l2-3 2 2 2-14 2 14 2-9 2 9 2-4 2 5h4' stroke='%235ee6ff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/sdr-theme.css">
 </head>
-<body>
+<body class="sdr">
 
 <header class="nav">
   <div class="container">
@@ -32,20 +33,19 @@
 </header>
 
 <main>
-  <section class="page-head">
-    <canvas data-waves aria-hidden="true"></canvas>
+  <section class="page-head scope">
+    <canvas data-scope data-fc="434" data-span="8.192" aria-hidden="true"></canvas>
     <div class="container">
-      <span class="eyebrow">// coursework · lab reports</span>
+      <span class="eyebrow">RX ▸ 434.000 MHz · 8.192 MS/s · coursework &amp; lab reports</span>
       <h1 id="course-title">Software-Defined Radio Laboratory</h1>
       <div class="course-meta" id="course-meta"></div>
 
-      <div class="stats">
-        <div class="card stat"><div class="n" id="stat-labs">–</div><div class="l">Lab sessions</div></div>
-        <div class="card stat"><div class="n" id="stat-done">–</div><div class="l">Completed</div></div>
-        <div class="card stat"><div class="n" id="stat-files">–</div><div class="l">Files uploaded</div></div>
-        <div class="card stat">
-          <div class="n" id="stat-pct">–</div><div class="l">Course progress</div>
-          <div class="progress"><i id="progress-bar"></i></div>
+      <div class="readouts" aria-label="Course progress">
+        <div class="ro"><small>Lab sessions</small><b id="stat-labs">–</b></div>
+        <div class="ro"><small>Completed</small><b class="g" id="stat-done">–</b></div>
+        <div class="ro"><small>Files uploaded</small><b id="stat-files">–</b></div>
+        <div class="ro wide"><small>Course progress</small><b class="a" id="stat-pct">–</b>
+          <div class="smeter"><i id="progress-bar"></i></div>
         </div>
       </div>
     </div>
@@ -57,7 +57,8 @@
     </div>
     <p class="notice" style="margin-bottom: 80px;">
       Each session includes the pre-report submitted before the lab, the final lab report, and the
-      GNU Radio flowgraphs, scripts and captured data used during the session.
+      GNU Radio flowgraphs, scripts and captured data used during the session. The spectrum at the top is a
+      simulation — move the pointer over it to tune.
       <a data-repo-link href="https://github.com/mohammadaminkhoshkam/mohammadaminkhoshkam.github.io" target="_blank" rel="noopener">View all files on GitHub →</a>
     </p>
   </div>
@@ -71,6 +72,7 @@
 </footer>
 
 <script src="../assets/js/main.js"></script>
+<script src="../assets/js/sdr-scope.js"></script>
 <script src="../assets/js/sdr.js"></script>
 </body>
 </html>

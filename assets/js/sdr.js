@@ -147,7 +147,7 @@
     sub.appendChild(countSpan);
 
     const head = el("button", { class: "lab-head", "aria-expanded": "false" }, [
-      el("div", { class: "lab-num", text: num }),
+      el("div", { class: "lab-num" }, [el("small", { text: "LAB" }), document.createTextNode(num)]),
       el("div", { class: "lab-title" }, [el("h2", { text: lab.title }), sub]),
       el("div", { class: "lab-right" }, [
         el("span", { class: "status " + st.cls, text: st.label }),
@@ -168,12 +168,30 @@
       lab.tasks.forEach(function (t) { ul.appendChild(el("li", { text: t })); });
       desc.appendChild(ul);
     }
-    if (lab.page) desc.appendChild(el("a", { class: "btn primary lab-open", href: lab.page, text: lab.pageLabel || "Open the full lab report →" }));
+    // Optional key results, shown as instrument-style chips: "highlights": [{ "k": "NF", "v": "2.7 dB" }]
+    if (lab.highlights && lab.highlights.length) {
+      const hl = el("div", { class: "hl" });
+      lab.highlights.forEach(function (x) {
+        hl.appendChild(el("span", { class: "chip-ro" }, [el("small", { text: x.k }), el("b", { text: x.v })]));
+      });
+      desc.appendChild(hl);
+    }
+    // One page ("page" + "pageLabel") or several ("pages": [{ "href": "...", "label": "..." }])
+    const pages = (lab.pages || []).slice();
+    if (lab.page) pages.unshift({ href: lab.page, label: lab.pageLabel || "Open the full lab report →" });
+    if (pages.length) {
+      const links = el("div", { class: "lab-links" });
+      pages.forEach(function (p, i) {
+        links.appendChild(el("a", { class: "btn lab-open" + (i === 0 ? " primary" : ""), href: p.href, text: p.label }));
+      });
+      desc.appendChild(links);
+    }
     const filesBox = el("div", { class: "file-groups" }, [el("p", { class: "notice", text: "Loading files…" })]);
     const body = el("div", { class: "lab-body", id: "body-" + lab.id }, [desc, filesBox]);
     head.setAttribute("aria-controls", body.id);
 
-    const card = el("article", { class: "card lab reveal in", id: lab.id }, [head, body]);
+    const stateCls = lab.status === "done" ? " is-done" : lab.status === "in-progress" ? " is-progress" : "";
+    const card = el("article", { class: "card lab reveal in" + stateCls, id: lab.id }, [head, body]);
     head.addEventListener("click", function () {
       const open = card.classList.toggle("open");
       head.setAttribute("aria-expanded", String(open));

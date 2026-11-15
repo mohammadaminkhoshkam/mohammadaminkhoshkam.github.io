@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 2 Report — Noise Figure, P1dB, IIP3</title>
+  <meta name="description" content="SDR Lab, Lab 2 report (Team SDR): noise figure of the ADALM-Pluto by the direct and Y-factor methods, single-tone compression, two-tone test and an antenna sweep — computed from our data sheets and 26 raw I/Q captures.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050a12'/%3E%3Cpath d='M3 24h4l2-3 2 2 2-14 2 14 2-9 2 9 2-4 2 5h4' stroke='%235ee6ff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/sdr-theme.css">
+</head>
+<body class="sdr">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a class="pill" href="../">SDR Lab</a>
+      <a href="prelab.html">Pre-lab</a>
+      <a href="#questions">Questions</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="page-head scope strip">
+    <canvas data-scope data-fc="434" data-span="8.192" aria-hidden="true"></canvas>
+    <div class="container">
+      <a class="eyebrow" href="../">← SDR Lab · Lab 02 · Lab report</a>
+      <h1>Noise Figure, P1dB and IIP3 of the ADALM-Pluto</h1>
+      <div class="course-meta">
+        <span><b>Team SDR:</b> Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+        <span><b>Course:</b> Software-Defined Radio Laboratory, Sharif University of Technology</span>
+        <span><b>Session:</b> 15 Nov 2026 · ADALM-Pluto as source and receiver · GNU Radio 3.10 · <span class="mono">lab02_combined.grc</span></span>
+        <span class="no-print"><a class="btn" href="../labs/lab-02/report/report.pdf">Download PDF</a></span>
+      </div>
+      <nav class="toc" aria-label="Sections">
+        <a href="#summary">Summary</a><a href="#setup">Setup</a><a href="#burst">Source bursts</a><a href="#p1">1 · Noise floor</a>
+        <a href="#p2">2 · Y-factor</a><a href="#p3">3 · P1dB</a><a href="#p4">4 · Two-tone</a><a href="#p5">5 · Antenna</a>
+        <a href="#analysis">Analyses</a><a href="#questions">Questions 1–5</a><a href="#pred">Prediction vs measurement</a><a href="#files">Files</a>
+      </nav>
+    </div>
+  </section>
+
+  <div class="container lab-page rep">
+
+  <!-- ================================================================ summary -->
+  <section class="task" id="summary">
+    <span class="kicker">Summary</span>
+    <h2>What we measured</h2>
+    <div class="kpi">
+      <div class="card stat"><div class="n">2.7<i>dB</i></div><div class="l">Noise figure at rf_gain 40.2 (2.4 dB at 49.6, 9.4 dB at 29.7)</div></div>
+      <div class="card stat"><div class="n">−48.2<i>dBm</i></div><div class="l">Input that reaches ADC full scale at rf_gain 40.2</div></div>
+      <div class="card stat"><div class="n">≈ −46<i>dBm</i></div><div class="l">Input P1dB at rf_gain 40.2 — set by ADC clipping</div></div>
+      <div class="card stat"><div class="n">≥ −28.6<i>dBm</i></div><div class="l">IIP3 of the analog front end (lower bound only)</div></div>
+      <div class="card stat"><div class="n">66.4<i>%</i></div><div class="l">Share of the time our Pluto transmitter was actually on</div></div>
+      <div class="card stat"><div class="n">125<i>MHz</i></div><div class="l">3 dB bandwidth of the antenna link (1624–1749 MHz)</div></div>
+    </div>
+    <ul class="bul">
+      <li><b>Noise figure.</b> With the Y-factor method the Pluto receiver shows NF ≈ 2.4 dB at <span class="mono">rf_gain</span> 49.6, 2.7 dB at 40.2 and 9.4 dB at 29.7
+        (434 and 414 MHz, two different ENR values agree within 0.15 dB). The direct method gives the same values (2.4 / 2.7 / 9.2 dB) once the conversion factor
+        G<sub>FS</sub> is measured instead of assumed.</li>
+      <li><b>The transmitter was on only two thirds of the time.</b> The raw I/Q captures show that the Pluto transmitter ran out of samples at 8.192 MS/s: bursts of about
+        1.8 ms separated by 1.5 ms gaps, duty cycle 0.664. Every meter of the flowgraph is a time average, so every tone and every N<sub>on</sub> reading is 1.78 dB too low.
+        All final numbers on this page are taken inside the bursts.</li>
+      <li><b>The 30 dB pad cannot have been in the path.</b> With A<sub>pad</sub> = 30 dB in the level formulas the noise figure comes out at −27 dB and the receiver noise
+        27 dB below kT<sub>0</sub>. With A<sub>pad</sub> = 0 every result is physical and self-consistent, so all dBm values here use A<sub>pad</sub> = 0. Their absolute
+        accuracy is that of the nominal P<sub>max</sub> = 6.5 dBm (a few dB).</li>
+      <li><b>Compression is ADC clipping.</b> The gain stays within 0.06 dB of linear up to −0.4 dBFS; harmonics appear only when samples hit ±full scale. A slope-3 region was
+        never observed in the two-tone test, so only a lower bound for IIP3 can be given and the rule IIP3 ≈ P1dB + 9.6 dB does not apply at this gain.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================ setup -->
+  <section class="task" id="setup">
+    <span class="kicker">Setup</span>
+    <h2>Setup and the data we used</h2>
+    <p>One ADALM-Pluto was both the signal source (TX port) and the receiver under test (RX port), connected by a coaxial loop-back cable and driven by the course flowgraph
+      <span class="mono">lab02_combined.grc</span>. The flowgraph generates Gaussian noise, one tone (f<sub>c</sub> + 300 kHz) or two tones (+300 and +400 kHz) and measures the
+      received signal with five meters: a 400 kHz noise meter centred at f<sub>c</sub> − 500 kHz and four 10 kHz tone meters at f<sub>1</sub>, f<sub>2</sub>, 2f<sub>1</sub> − f<sub>2</sub>
+      and 2f<sub>2</sub> − f<sub>1</sub>.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Setting</th><th>Value</th><th>Note</th></tr></thead><tbody>
+      <tr><td>Sample rate (TX and RX)</td><td class="mono">8.192 MS/s</td><td>ENR coefficient 67.39 dB with the pad, 97.39 dB without it</td></tr>
+      <tr><td>Receiver gain settings</td><td class="mono">49.6 · 40.2 · 29.7 dB</td><td>manual gain, AGC off</td></tr>
+      <tr><td>Centre frequencies</td><td class="mono">434 · 414 · 404 MHz</td><td>single-tone and two-tone tests at 434 MHz</td></tr>
+      <tr><td>Source amplitudes</td><td class="mono">a_tone 0.25 · a_noise 0.2</td><td>P<sub>max</sub> = 6.5 dBm nominal (not calibrated)</td></tr>
+      <tr><td>Level model used here</td><td class="mono">P_tone = −5.54 dBm − A_tx<br>ENR = 97.39 dB − A_tx</td><td>equation (2) of the manual with A<sub>pad</sub> = 0 (see <a href="#burst">below</a>)</td></tr>
+      <tr><td>Noise meter</td><td class="mono">ENBW 365.95 kHz</td><td>computed from the 197 filter taps; the manual uses 400 kHz (0.39 dB)</td></tr>
+      <tr><td>Tone meters</td><td class="mono">ENBW 8.35 kHz</td><td>3947 taps, Hamming window</td></tr>
+    </tbody></table></div>
+    <p>Three kinds of records were available and all three were checked against each other:</p>
+    <ul class="bul">
+      <li><b>Data sheets.</b> A typed sheet (final pass) and a handwritten sheet (first pass). The typed values agree with the screenshots and captures to within
+        0.1 dB. The first pass shows levels 4–9 dB lower and non-monotonic, so it is reported separately and not used for the results.</li>
+      <li><b>37 screenshots</b> of the flowgraph and of the antenna sweep; a selection is at the <a href="#shots">end of the page</a>.</li>
+      <li><b>26 raw I/Q captures</b> (complex float, 0.8–4.1 s each, 3.4 GB in total): 5 with the source off, 8 with noise, 9 single-tone and 4 two-tone.
+        They were re-analysed offline with <span class="mono">capture_analysis.py</span>, which reproduces the five meters with the exact filter taps of the flowgraph.
+        The reproduced readings match the sheet (for example N<sub>on</sub> = −34.60 dBFS computed, −34.64 dBFS written).</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================ burst -->
+  <section class="task" id="burst">
+    <span class="kicker">Finding</span>
+    <h2>Two things the captures revealed</h2>
+
+    <h3 class="sub-h">The transmitter worked in bursts</h3>
+    <p>In every capture with the source on, the received envelope switches between the full level and the receiver noise floor. The transmitter and the receiver of the Pluto
+      shared one USB 2 link at 8.192 MS/s in each direction, and the transmit buffer underflowed: the source is on for a median of 1.8 ms and silent for 1.5 ms.
+      The duty cycle is very stable: 0.664 on average, between 0.654 and 0.674 in all 21 source-on captures.</p>
+    <figure class="figx"><img class="l" src="img/report/burst.png" alt="Received envelope showing bursts, and duty cycle of all captures"><img class="d" src="img/report/burst_dark.png" alt="" aria-hidden="true">
+      <figcaption>Left: 40 ms of the received tone at tx_atten 45 dB. Right: fraction of 31 µs blocks in which the source is on, for the 21 captures with the source on.</figcaption></figure>
+    <p>Consequences, all of them visible in the data:</p>
+    <ul class="bul">
+      <li>The meters average over bursts and gaps, so a tone reads 10·log<sub>10</sub>(0.664) = <b>−1.78 dB</b> low and N<sub>on</sub> is a mixture of N<sub>on</sub> and N<sub>off</sub>.
+        Uncorrected, the Y-factor is 1.8 dB too small and the noise figure 1.8–2.0 dB too large.</li>
+      <li>The on/off switching spreads the tone: in the single-tone test the neighbouring meters (100 kHz away) read −48.7 dBc although nothing is transmitted there.
+        The third-order meters therefore sit on a floor of about −47.7 dBc in the two-tone test.</li>
+      <li>The gaps are useful: each noise-on capture contains N<sub>off</sub> (gaps) and N<sub>on</sub> (bursts) taken within milliseconds of each other at exactly the same gain.</li>
+    </ul>
+    <p>The analysis script classifies every 256-sample block as on or off and computes separate spectra from 4096-sample frames that lie completely inside a burst or
+      completely inside a gap. “Inside the bursts” below always refers to these values.</p>
+
+    <h3 class="sub-h">The level model needs A<sub>pad</sub> = 0</h3>
+    <p>The manual computes the tone power and the ENR at the receiver with a 30 dB external attenuator. Our data contradict that value in two independent ways:</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Check (rf_gain 40.2)</th><th class="num">A<sub>pad</sub> = 30 dB</th><th class="num">A<sub>pad</sub> = 0 dB</th></tr></thead><tbody>
+      <tr><td>Noise figure from the Y-factor (414 MHz, tx_atten 80, Y = 14.79 dB)</td><td class="num bad">−27.3 dB</td><td class="num ok">2.7 dB</td></tr>
+      <tr><td>Receiver noise density referred to the input (−123.1 dBFS/Hz and the measured tone level)</td><td class="num bad">−201.3 dBm/Hz</td><td class="num ok">−171.3 dBm/Hz</td></tr>
+      <tr><td>Thermal limit kT<sub>0</sub></td><td class="num" colspan="2" style="text-align:center !important">−174.0 dBm/Hz</td></tr>
+    </tbody></table></div>
+    <p>A noise density 27 dB below kT<sub>0</sub> is impossible, and the transmitter cannot deliver the +36 dBm that would be needed to explain it. The effective loss between
+      the TX and RX ports was therefore close to 0 dB — a plain loop-back cable — and this page uses A<sub>pad</sub> = 0 everywhere. The largest input level of the session was then
+      −45.5 dBm, far below the −10 dBm limit of the receiver.</p>
+    <div class="callout warn"><b>Validity</b>All dBm values, ENR and therefore the absolute noise figure depend 1 : 1 on the nominal P<sub>max</sub> = 6.5 dBm and on the cable loss,
+      neither of which was calibrated. Ratios (Y, gain steps, compression, dBc values) do not depend on them.</div>
+  </section>
+
+  <!-- ================================================================ part 1 -->
+  <section class="task" id="p1">
+    <span class="kicker">Part 1</span>
+    <h2>Receiver noise floor and the direct method</h2>
+    <p>The noise meter was read with the source off. The sheet was filled at 434 MHz with the RX port open; the captures also give N<sub>off</sub> with the transmitter
+      connected (gaps and source-off captures).</p>
+    <div class="tbl-wrap"><table class="tbl"><caption>Table 3 of the manual — level calibration, 434 MHz</caption><thead><tr><th>Quantity</th><th class="num">rf_gain 49.6</th><th class="num">rf_gain 40.2</th><th class="num">rf_gain 29.7</th></tr></thead><tbody>
+      <tr><td>Noise power, RX port open (dBFS)</td><td class="num">−65.90</td><td class="num">−73.43</td><td class="num">−73.04</td></tr>
+      <tr><td>NF, direct method as in the manual: N<sub>off</sub> + 97.98 (dB)</td><td class="num">32.08</td><td class="num">24.55</td><td class="num">24.94</td></tr>
+      <tr><td>Noise power, transmitter connected, source off (dBFS)</td><td class="num">−58.94</td><td class="num">−67.43</td><td class="num">−72.02</td></tr>
+      <tr><td>Measured conversion factor G<sub>FS</sub> (dBFS − dBm)</td><td class="num">57.0</td><td class="num">48.2</td><td class="num">37.1</td></tr>
+      <tr class="best"><td>NF, direct method with measured G<sub>FS</sub> and ENBW 366 kHz (dB)</td><td class="num">2.4</td><td class="num">2.7</td><td class="num">9.2</td></tr>
+    </tbody></table></div>
+    <p><b>Why the manual’s formula gives 24.5 dB.</b> It assumes G<sub>FS</sub> = 20 dB, i.e. 0 dBFS = −20 dBm. We measured G<sub>FS</sub> with the tone of Part 3:
+      inside the bursts the tone reads −17.39, −12.25, −7.30 and −2.34 dBFS for −65.54, −60.54, −55.54 and −50.54 dBm, so</p>
+    <p><span class="eq">G_FS(40.2) = 48.2 dB  →  0 dBFS = −48.2 dBm   (spread of the four points 0.14 dB)</span></p>
+    <p>The 28 dB between the assumed and the measured G<sub>FS</sub> is the whole difference between 24.5 dB and the real noise figure. G<sub>FS</sub> at the other two gains follows
+      from the measured gain steps (source noise inside the bursts): +8.82 dB from 40.2 to 49.6 (nominal 9.4 dB) and −11.13 dB from 40.2 to 29.7 (nominal 10.5 dB).</p>
+    <p><b>Which N<sub>off</sub>?</b> With the port open the noise is 6–7 dB lower than with the transmitter connected at the two higher gains (1 dB at 29.7). An open input is not a
+      290 K matched source, so the open-port reading is not a valid reference: with it the direct method would give −3.3 dB at 40.2. The corrected row above uses the reading with the
+      transmitter connected. The spectra with the port open contain only a small DC line; no interference was visible in the noise band.</p>
+  </section>
+
+  <!-- ================================================================ part 2 -->
+  <section class="task" id="p2">
+    <span class="kicker">Part 2</span>
+    <h2>Noise figure with the Y-factor method</h2>
+    <p><span class="eq">NF = ENR − 10·log10(10^(Y/10) − 1),   Y = N_on − N_off,   ENR = 97.39 dB − A_tx</span></p>
+    <p>Two source levels were used: tx_atten 60 dB (ENR 37.4 dB) at three frequencies and, to bring Y into the recommended 3–15 dB range, tx_atten 80 dB (ENR 17.4 dB) at 414 MHz.</p>
+
+    <h3 class="sub-h">2.1 The recommended range: tx_atten 80 dB, 414 MHz</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>rf_gain</th><th class="num">N<sub>off</sub> sheet</th><th class="num">N<sub>on</sub> sheet</th><th class="num">Y as read</th><th class="num">NF as read</th>
+      <th class="num">N<sub>off</sub> in gaps</th><th class="num">N<sub>on</sub> in bursts</th><th class="num">Y</th><th class="num">NF (dB)</th></tr></thead><tbody>
+      <tr><td>49.6</td><td class="num">−58.86</td><td class="num">−45.58</td><td class="num">13.28</td><td class="num dim">4.32</td><td class="num">−58.93</td><td class="num">−43.82</td><td class="num">15.11</td><td class="num"><b>2.41</b></td></tr>
+      <tr><td>40.2</td><td class="num">−67.30</td><td class="num">−54.40</td><td class="num">12.90</td><td class="num dim">4.72</td><td class="num">−67.44</td><td class="num">−52.65</td><td class="num">14.79</td><td class="num"><b>2.74</b></td></tr>
+      <tr><td>29.7</td><td class="num">−71.98</td><td class="num">−64.77</td><td class="num">7.21</td><td class="num dim">11.09</td><td class="num">−71.98</td><td class="num">−63.28 <span class="flag">calc</span></td><td class="num">8.70</td><td class="num"><b>9.32</b></td></tr>
+    </tbody></table></div>
+    <p class="small dim">Levels in dBFS. “As read” uses the time-averaged meters; the right-hand columns are measured inside the bursts and gaps of the captures. For 29.7 dB there is no noise-on capture,
+      so N<sub>on</sub> was corrected with the duty cycle: N<sub>on</sub> = (N<sub>avg</sub> − 0.336·N<sub>off</sub>)/0.664 in linear units.</p>
+    <figure class="figx"><img class="l" src="img/report/noise_spectra.png" alt="Noise spectra with the source on and off"><img class="d" src="img/report/noise_spectra_dark.png" alt="" aria-hidden="true">
+      <figcaption>Noise density inside the bursts (source on) and inside the gaps (source off) of one capture each. The shaded band is the 400 kHz noise meter. The transmitted noise is flat over ±2.5 MHz.</figcaption></figure>
+
+    <h3 class="sub-h">2.2 Table 4 of the manual: three frequencies, tx_atten 60 dB</h3>
+    <p>The sheet lists N<sub>on</sub> for three frequencies. Each cell below gives ENR / Y / NF in dB, with N<sub>on</sub> inside the bursts and N<sub>off</sub> from the gaps of the same capture.</p>
+    <div class="tbl-wrap"><table class="tbl"><caption>Table 4 of the manual — each cell: N<sub>on</sub> written on the sheet (dBFS) · ENR / Y / NF (dB)</caption><thead><tr><th>Frequency</th><th class="num">rf_gain 49.6</th><th class="num">rf_gain 40.2</th><th class="num">rf_gain 29.7</th></tr></thead><tbody>
+      <tr><td>434 MHz</td><td class="num">−25.78 · 37.4 / 35.19 / <b>2.20</b></td><td class="num">−34.64 · 37.4 / 34.97 / <b>2.41</b></td><td class="num">−45.76 · 37.4 / 28.26 / <b>9.13</b></td></tr>
+      <tr><td>414 MHz</td><td class="num">−25.93 · 37.4 / 34.83 / <b>2.56</b></td><td class="num">−34.65 · 37.4 / 34.42 / <b>2.96</b> <span class="flag">calc</span></td><td class="num">−46.03 · 37.4 / 27.72 / <b>9.67</b> <span class="flag">calc</span></td></tr>
+      <tr><td>404 MHz</td><td class="num">−26.98 · 37.4 / 33.73 / <b>3.66</b> <span class="flag">calc</span></td><td class="num">−35.93 · 37.4 / 33.20 / <b>4.19</b></td><td class="num">−47.18 · 37.4 / 26.57 / <b>10.83</b></td></tr>
+      <tr class="best"><td>Result (mean of 434 and 414 MHz, both ENR)</td><td class="num">2.4 dB (2.20–2.56)</td><td class="num">2.7 dB (2.41–2.96)</td><td class="num">9.4 dB (9.13–9.67)</td></tr>
+    </tbody></table></div>
+    <p class="small dim"><span class="flag">calc</span> no capture: burst level computed from the sheet value with the duty cycle 0.664 and N<sub>off</sub> of the same gain.</p>
+    <figure class="figx" style="max-width:720px"><img class="l" src="img/report/nf_vs_gain.png" alt="Noise figure versus gain setting"><img class="d" src="img/report/nf_vs_gain_dark.png" alt="" aria-hidden="true">
+      <figcaption>All noise-figure results. The dotted line is what the averaged meters give without the burst correction.</figcaption></figure>
+    <ul class="bul">
+      <li><b>ENR choice.</b> With tx_atten 60 dB, Y is 27–35 dB: far above the recommended range, so NF ≈ ENR − Y and a reading error of 0.1 dB still costs only 0.10 dB, but the result relies
+        completely on the ENR value and on the linearity of the receiver. With tx_atten 80 dB, Y is 8.7–15.1 dB, inside the range. Both give the same NF (2.56 and 2.41 dB at 414 MHz, gain 49.6).</li>
+      <li><b>Linearity.</b> Between tx_atten 80 and 60 dB the source part of N<sub>on</sub> (N<sub>on</sub> − N<sub>off</sub> in linear units) rises by 19.96 dB for a 20 dB step at gain 49.6, so the receiver
+        is not compressed by the noise. The highest “on” level was −11.7 dBFS in total; 1 sample in 10<sup>7</sup> reached full scale.</li>
+      <li><b>The sheet’s Y = 38.79 dB.</b> It compares N<sub>on</sub> (transmitter connected, −34.64 dBFS) with the open-port N<sub>off</sub> of Part 1 (−73.43 dBFS). With the N<sub>off</sub> measured
+        in the same configuration (−67.74 dBFS in the gaps) and the burst level, Y = 34.97 dB.</li>
+      <li><b>404 MHz</b> reads 1.5–1.8 dB higher than 434 MHz at all three gains. A gain-independent offset points to the source (output power of the transmitter 1.5 dB lower at 404 MHz) rather than
+        to the receiver; the method cannot separate the two because ENR is computed from one nominal P<sub>max</sub>.</li>
+      <li><b>Trend.</b> From 49.6 to 40.2 the noise figure rises by only 0.3 dB, from 40.2 to 29.7 by 6.7 dB for an 11.1 dB gain reduction: the noise added after the variable gain takes over,
+        as predicted in the pre-lab.</li>
+    </ul>
+
+    <details class="card" style="margin-top:14px">
+      <summary><b>First-pass sheet (handwritten) — kept for the record</b></summary>
+      <p class="small" style="margin-top:12px">The first pass was taken before the source level was stable. N<sub>off</sub> agrees with the final values, but N<sub>on</sub> is 3–8 dB lower than in the final pass and scatters
+        by up to 7 dB between neighbouring frequencies, and the 3 dB linearity steps come out between 3.6 and 5.1 dB. We could not determine the cause afterwards (a transmit underflow that was stronger
+        at that time would explain it); the values are listed, not used.</p>
+      <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>tx_atten 60 dB: N<sub>off</sub> / N<sub>on</sub> (dBFS)</th><th class="num">424 MHz</th><th class="num">444 MHz</th><th class="num">434 MHz</th></tr></thead><tbody>
+        <tr><td>rf_gain 40.2</td><td class="num">−68.25 / −41.5</td><td class="num">−68.22 / −38.27</td><td class="num">−68.28 / −38.19</td></tr>
+        <tr><td>rf_gain 49.6</td><td class="num">−59.7 / −32.81</td><td class="num">−59.67 / −32.27</td><td class="num">−59.67 / −33.56</td></tr>
+        <tr><td>rf_gain 29.7</td><td class="num">−72.7 / −52.23</td><td class="num">−72.5 / −54.65</td><td class="num">−72.48 / −47.58</td></tr>
+      </tbody></table></div>
+      <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>Low ENR</th><th class="num">tx_atten</th><th class="num">N<sub>off</sub></th><th class="num">N<sub>on</sub></th><th class="num">Y (dB)</th><th class="num">N<sub>on</sub> after −3 dB</th><th class="num">Rise of the source part</th></tr></thead><tbody>
+        <tr><td>rf_gain 40.2</td><td class="num">80.75</td><td class="num">−68.31</td><td class="num">−61.96</td><td class="num">6.35</td><td class="num">−57.65</td><td class="num">5.06 dB</td></tr>
+        <tr><td>rf_gain 49.6</td><td class="num">80.75</td><td class="num">−59.53</td><td class="num">−51.42</td><td class="num">8.11</td><td class="num">−48.17</td><td class="num">3.65 dB</td></tr>
+        <tr><td>rf_gain 29.7</td><td class="num">70.0</td><td class="num">−72.5</td><td class="num">−62.45</td><td class="num">10.05</td><td class="num">−59.12</td><td class="num">3.58 dB</td></tr>
+      </tbody></table></div>
+      <p class="small" style="margin-bottom:0">Open-port noise in the first pass: −65.79 (49.6), −73.6 (40.2), −73.30 dBFS (29.7) — within 0.3 dB of the final pass.</p>
+    </details>
+  </section>
+
+  <!-- ================================================================ part 3 -->
+  <section class="task" id="p3">
+    <span class="kicker">Part 3</span>
+    <h2>Single-tone sweep and input P1dB</h2>
+    <p>434 MHz, <span class="mono">rf_gain</span> 40.2, one tone at f<sub>c</sub> + 300 kHz. Each level was read three times; the standard deviation of the three readings is at most 0.08 dB.</p>
+    <div class="tbl-wrap"><table class="tbl small"><caption>Table 5 of the manual — single-tone sweep (rf_gain 40.2, 434 MHz)</caption><thead><tr><th>tx_atten (dB)</th><th class="num">60</th><th class="num">55</th><th class="num">50</th><th class="num">45</th><th class="num">44</th><th class="num">43</th><th class="num">42</th><th class="num">41</th><th class="num">40</th></tr></thead><tbody>
+      <tr><td>Input power (dBm), A<sub>pad</sub> = 0</td><td class="num">−65.54</td><td class="num">−60.54</td><td class="num">−55.54</td><td class="num">−50.54</td><td class="num">−49.54</td><td class="num">−48.54</td><td class="num">−47.54</td><td class="num">−46.54</td><td class="num">−45.54</td></tr>
+      <tr><td>Output, f<sub>1</sub> meter (dBFS), mean of 3</td><td class="num">−19.25</td><td class="num">−14.08</td><td class="num">−9.11</td><td class="num">−4.21</td><td class="num">−3.20</td><td class="num">−3.19</td><td class="num">−2.11</td><td class="num">−1.80</td><td class="num">−0.84</td></tr>
+      <tr><td>Output − input (dBFS − dBm)</td><td class="num">46.29</td><td class="num">46.46</td><td class="num">46.43</td><td class="num">46.33</td><td class="num">46.34</td><td class="num">45.35</td><td class="num">45.43</td><td class="num">44.74</td><td class="num">44.70</td></tr>
+      <tr><td>Total level (dBFS), mean of 3</td><td class="num">−19.24</td><td class="num">−14.02</td><td class="num">−9.04</td><td class="num">−4.17</td><td class="num">−3.18</td><td class="num">−3.11</td><td class="num">−2.17</td><td class="num">−1.62</td><td class="num">−0.62</td></tr>
+      <tr><td>f<sub>1</sub> inside the bursts (dBFS), captures</td><td class="num">−17.39</td><td class="num">−12.25</td><td class="num">−7.30</td><td class="num">−2.34</td><td class="num">−1.35</td><td class="num">−1.37</td><td class="num">−0.37</td><td class="num">0.00</td><td class="num">+0.97</td></tr>
+      <tr><td>Clipped samples inside the bursts</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">8·10<sup>−7</sup></td><td class="num">9.0 %</td><td class="num">23 %</td></tr>
+      <tr><td>Third harmonic at −3f<sub>1</sub> (dBFS)</td><td class="num">−85.8</td><td class="num">−82.8</td><td class="num">−81.3</td><td class="num">−74.7</td><td class="num">−72.9</td><td class="num">−67.6</td><td class="num">−63.2</td><td class="num">−25.9</td><td class="num">−18.0</td></tr>
+      <tr><td>Deviation from the linear fit (dB)</td><td class="num">0.07</td><td class="num">−0.07</td><td class="num">−0.02</td><td class="num">0.02</td><td class="num">0.03</td><td class="num">1.06</td><td class="num">1.06</td><td class="num">1.69</td><td class="num">1.71</td></tr>
+    </tbody></table></div>
+    <figure class="figx"><img class="l" src="img/report/single_tone.png" alt="Output versus input and gain compression"><img class="d" src="img/report/single_tone_dark.png" alt="" aria-hidden="true">
+      <figcaption>Left: output against input. The averaged meter runs 1.78 dB below the level inside the bursts. Right: compression of the fundamental, with the tx_atten values as written and with the
+        “43 dB” entry counted as 44 dB.</figcaption></figure>
+    <p><b>Reading the table.</b> From 60 to 44 dB the output follows the input within ±0.07 dB. The 43 dB and 44 dB columns are identical to 0.01 dB in the sheet, in the screenshots and in the captures
+      (−1.37 and −1.35 dBFS inside the bursts). A real compression cannot remove exactly one step and then follow the input again for the next step, so the 43 dB entry evidently did not take effect and
+      the last four columns are most likely 44, 43, 42 and 41 dB. With that reading the compression is 0.06, 0.06, 0.69 and 0.71 dB.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Quantity</th><th class="num">Value</th><th>How it was obtained</th></tr></thead><tbody>
+      <tr><td>Small-signal conversion (output − input)</td><td class="num">46.4 dB (meter) · 48.2 dB (bursts)</td><td>mean of the four points from 60 to 45 dB</td></tr>
+      <tr><td>Tone reaches ADC full scale at</td><td class="num">tx_atten 42.7 dB = −48.2 dBm</td><td>linear fit of the levels inside the bursts</td></tr>
+      <tr class="best"><td>Input P1dB</td><td class="num">≈ −46.2 dBm (tx_atten ≈ 40.7 dB)</td><td>full scale + 2.0 dB: hard limiter fitted to the measured points (0.7 dB compression at the highest level)</td></tr>
+      <tr><td>Output level at that point</td><td class="num">≈ +1.0 dBFS in the bursts (−0.8 dBFS on the meter)</td><td>fundamental of the clipped tone</td></tr>
+      <tr><td>P1dB with the tx_atten values as written</td><td class="num">43.0 dB = −48.6 dBm</td><td>literal reading of the sheet; rejected, see above</td></tr>
+      <tr><td>Value noted on the sheet during the session</td><td class="num">tx_atten 40 dB = −45.5 dBm</td><td>agrees with the estimate within 0.7 dB</td></tr>
+    </tbody></table></div>
+    <p>A 1 dB compression of the fundamental was therefore not quite reached in the sweep; the 1 dB point is an extrapolation with the clipping model (an ideal limiter acting on I and Q loses 1 dB of
+      fundamental when the tone is 2.0 dB above full scale). Taking the model error into account we quote P1dB = −46 ± 1.5 dBm at <span class="mono">rf_gain</span> 40.2.</p>
+    <figure class="figx"><img class="l" src="img/report/single_tone_spectra.png" alt="Spectra of the tone below and above ADC full scale"><img class="d" src="img/report/single_tone_spectra_dark.png" alt="" aria-hidden="true">
+      <figcaption>Spectra inside the bursts. Below full scale the largest harmonic is 65 dB below the tone; with clipping, odd harmonics and their aliases fill the whole band.</figcaption></figure>
+    <p><b>When do unwanted products appear?</b> Up to −0.4 dBFS the second and third harmonics stay below −63 dBFS. One step later, with 9 % of the samples clipped, the third harmonic jumps by 37 dB to
+      −25.9 dBFS and the noise meter rises from −52 to −29 dBFS. The products appear at ADC full scale and not before.</p>
+    <details class="card" style="margin-top:14px">
+      <summary><b>First-pass sheet (handwritten)</b></summary>
+      <div class="tbl-wrap" style="margin-top:12px"><table class="tbl small"><thead><tr><th>tx_atten (dB)</th><th class="num">60</th><th class="num">55</th><th class="num">50</th><th class="num">45</th><th class="num">44</th><th class="num">43</th><th class="num">42</th><th class="num">41</th><th class="num">40</th><th class="num">39</th></tr></thead><tbody>
+        <tr><td>f<sub>1</sub> meter (dBFS)</td><td class="num">−24.94</td><td class="num">−19.8</td><td class="num">−16.2</td><td class="num">−12.8</td><td class="num">−8.3</td><td class="num">−7.01</td><td class="num">−6.6</td><td class="num">−5.9</td><td class="num">−6.14</td><td class="num">−4.6</td></tr>
+        <tr><td>Total level (dBFS)</td><td class="num">−21.24</td><td class="num">−17</td><td class="num">−20.5</td><td class="num">−17</td><td class="num">−7</td><td class="num">−5.38</td><td class="num">−5.17</td><td class="num">−5.04</td><td class="num">−26.9</td><td class="num">−5.2</td></tr>
+      </tbody></table></div>
+      <p class="small" style="margin-bottom:0">Levels 4–9 dB below the final pass and not monotonic (crosses in the figure above); repeated and replaced by the final sweep.</p>
+    </details>
+  </section>
+
+  <!-- ================================================================ part 4 -->
+  <section class="task" id="p4">
+    <span class="kicker">Part 4</span>
+    <h2>Two-tone test and IIP3</h2>
+    <p>Two equal tones at f<sub>c</sub> + 300 kHz and f<sub>c</sub> + 400 kHz, 434 MHz, <span class="mono">rf_gain</span> 40.2. The two tone meters always agreed within 0.11 dB (limit 0.5 dB).</p>
+
+    <h3 class="sub-h">4.1 Table 6 of the manual (first-pass sheet)</h3>
+    <div class="tbl-wrap"><table class="tbl small"><caption>Table 6 of the manual — two-tone test (rf_gain 40.2, spacing 100 kHz), time-averaged meters</caption><thead><tr><th>tx_atten (dB)</th><th class="num">47.5</th><th class="num">47</th><th class="num">46.5</th><th class="num">46</th><th class="num">45.5</th><th class="num">45</th><th class="num">44.5</th><th class="num">44</th></tr></thead><tbody>
+      <tr><td>Power of each tone at the input (dBm)</td><td class="num">−53.04</td><td class="num">−52.54</td><td class="num">−52.04</td><td class="num">−51.54</td><td class="num">−51.04</td><td class="num">−50.54</td><td class="num">−50.04</td><td class="num">−49.54</td></tr>
+      <tr><td>f<sub>1</sub> / f<sub>2</sub> meters (dBFS)</td><td class="num">−11.72 / −11.72</td><td class="num">−10.79 / −10.80</td><td class="num">−11.92 / −11.93</td><td class="num">−10.99 / −11.10</td><td class="num">−10.96 / −10.98</td><td class="num">−10.19 / −10.21</td><td class="num">−11.24 / −11.25</td><td class="num">−9.86 / −9.88</td></tr>
+      <tr><td>2f<sub>1</sub> − f<sub>2</sub> meter (dBFS)</td><td class="num">−57.51</td><td class="num">−50.46</td><td class="num">−49.94</td><td class="num">−44.53</td><td class="num">−40.57</td><td class="num">−36.88</td><td class="num">−35.16</td><td class="num">−32.57</td></tr>
+      <tr><td>2f<sub>2</sub> − f<sub>1</sub> meter (dBFS)</td><td class="num">−57.39</td><td class="num">−49.68</td><td class="num">−47.94</td><td class="num">−42.50</td><td class="num">−39.02</td><td class="num">−35.87</td><td class="num">−34.63</td><td class="num">−31.93</td></tr>
+      <tr><td>Δ (dB)</td><td class="num">45.7</td><td class="num">39.3</td><td class="num">36.9</td><td class="num">32.4</td><td class="num">28.8</td><td class="num">26.2</td><td class="num">23.6</td><td class="num">22.4</td></tr>
+      <tr class="warn"><td>P<sub>in</sub> + Δ/2 (dBm) — not a valid IIP3</td><td class="num">−30.2</td><td class="num">−32.9</td><td class="num">−33.6</td><td class="num">−35.4</td><td class="num">−36.7</td><td class="num">−37.5</td><td class="num">−38.2</td><td class="num">−38.4</td></tr>
+    </tbody></table></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Line under Table 6</th><th class="num">Value</th></tr></thead><tbody>
+      <tr><td>Slope of the third-order products</td><td class="num">7.0 dB/dB (14 dB per 2 dB step)</td></tr>
+      <tr><td>Slope of the tones</td><td class="num">0.38 dB/dB</td></tr>
+      <tr><td>IIP3</td><td class="num">not defined by this table; lower bound ≥ −28.6 dBm (4.2)</td></tr>
+      <tr><td>IIP3 − P1dB</td><td class="num">≥ 17.7 dB</td></tr>
+    </tbody></table></div>
+    <p>P<sub>in</sub> + Δ/2 falls by 8 dB across the table instead of staying constant, and the products rise 7 dB per dB instead of 3. This is not a weak third-order nonlinearity. With the calibration of
+      Part 3, two tones at tx_atten 47.5 dB are −4.8 dBFS each inside the bursts: their sum peaks at 1.15 × full scale, so <b>every column of this table is already in ADC clipping</b>. Notes on the sheet from the
+      same pass: the third-order meters read −84 dBFS with no signal, and reducing the receiver gain by 10 dB changed a product from −72 to −81 dBFS, i.e. by the gain step — at low level the “products”
+      came with the signal and were not made by the receiver.</p>
+
+    <h3 class="sub-h">4.2 Captures and screenshots of the final pass</h3>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>Record</th><th class="num">Tones, meter</th><th class="num">Products, meter</th><th class="num">Δ meter</th><th class="num">Tones in bursts</th><th class="num">Products in bursts</th><th class="num">Δ in bursts</th><th class="num">Two-tone peak</th><th>Regime</th></tr></thead><tbody>
+      <tr><td>Capture 12:06:51</td><td class="num">−20.20</td><td class="num">−65.15</td><td class="num">45.0</td><td class="num">−18.32</td><td class="num">−71.69</td><td class="num">53.4</td><td class="num">0.24 FS</td><td>source skirt</td></tr>
+      <tr><td>Capture 12:07:23</td><td class="num">−18.09</td><td class="num">−63.15</td><td class="num">45.1</td><td class="num">−16.15</td><td class="num">−70.10</td><td class="num">54.0</td><td class="num">0.31 FS</td><td>source skirt</td></tr>
+      <tr class="best"><td>Capture 12:09:54</td><td class="num">−10.19</td><td class="num">−55.47</td><td class="num">45.3</td><td class="num">−8.43</td><td class="num">−64.64</td><td class="num">56.2</td><td class="num">0.76 FS</td><td>source skirt</td></tr>
+      <tr><td>Screenshot, tx_atten 50</td><td class="num">−9.22</td><td class="num">−43.93</td><td class="num">34.7</td><td class="num">≈ −7.4</td><td class="num">—</td><td class="num">—</td><td class="num">≈ 0.85 FS</td><td>onset of clipping</td></tr>
+      <tr><td>Screenshot, tx_atten 47</td><td class="num">−5.65</td><td class="num">−20.31</td><td class="num">14.7</td><td class="num">≈ −3.9</td><td class="num">—</td><td class="num">—</td><td class="num">≈ 1.28 FS</td><td>ADC clipping</td></tr>
+      <tr><td>Capture 12:08:39 (tx_atten 40)</td><td class="num">−4.52</td><td class="num">−17.52</td><td class="num">13.0</td><td class="num">−2.70</td><td class="num">−15.70</td><td class="num">13.0</td><td class="num">1.47 FS</td><td>ADC clipping, 26 % of samples</td></tr>
+    </tbody></table></div>
+    <p class="small dim">Levels in dBFS, Δ in dB, capture times in UTC. “In bursts”: line power in spectra taken inside the bursts (4 kHz noise bandwidth). Screenshots give only the averaged meters; their burst level is estimated with the duty cycle.</p>
+    <figure class="figx"><img class="l" src="img/report/two_tone.png" alt="Two-tone spectra and third-order products versus tone level"><img class="d" src="img/report/two_tone_dark.png" alt="" aria-hidden="true">
+      <figcaption>Left: spectra inside the bursts below and above clipping. Right: level at the third-order frequencies against the level of each tone, with the floor set by the source (dotted) and a slope-3 line through the cleanest point.</figcaption></figure>
+    <ul class="bul">
+      <li><b>Below clipping, Δ is constant.</b> Over 10 dB of input the level at 2f<sub>1</sub> − f<sub>2</sub> and 2f<sub>2</sub> − f<sub>1</sub> follows the tones dB for dB (Δ = 45 dB on the meters, 53–56 dB inside the bursts). A third-order product would move 3 dB per dB.
+        The single-tone captures explain the floor: with one tone only, the same meters read −48.7 dBc at 100 kHz and −54.6 dBc at 200 kHz from the tone; summed for two tones this predicts −47.7 dBc on the meters and
+        −54.5 dBc inside the bursts. What the meters show below clipping is the skirt of our bursty source, not intermodulation.</li>
+      <li><b>Lower bound for IIP3.</b> At −8.43 dBFS per tone (−56.7 dBm) any receiver-made product is below the skirt, Δ ≥ 56.2 dB, hence <span class="eq">IIP3 ≥ −56.7 + 56.2/2 = −28.6 dBm</span>
+        That is at least 19.7 dB above the level that drives the ADC to full scale, so at this gain the analog front end never limits.</li>
+      <li><b>Then the ADC clips.</b> Products appear between a two-tone peak of 0.76 and 0.85 of full scale and reach −13 dBc once the peak exceeds full scale. The spectrum fills with a comb at multiples of the 100 kHz spacing.</li>
+      <li><b>Source test.</b> The first-pass note (−72 → −81 dBFS for −10 dB of receiver gain) and the constant Δ both say the low-level products are not generated in the receiver.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================ part 5 -->
+  <section class="task" id="p5">
+    <span class="kicker">Part 5</span>
+    <h2>Frequency response of the antennas</h2>
+    <p>Antennas on the TX and RX ports, sweep from 400 to 3000 MHz in 20 MHz steps (131 points) with <span class="mono">lab02_antenna_response_gui.py</span>. The curve was digitised from the screenshot
+      of the GUI (the last point reads −63.81 dB against −63.90 dB displayed, so the digitising error is about 0.1–0.2 dB).</p>
+    <figure class="figx"><img class="l" src="img/report/antenna.png" alt="Antenna link response from 400 to 3000 MHz"><img class="d" src="img/report/antenna_dark.png" alt="" aria-hidden="true">
+      <figcaption>Received tone power against frequency. This is the uncalibrated response of the whole link: two antennas, the propagation path, the transmitter and the receiver.</figcaption></figure>
+    <div class="tbl-wrap"><table class="tbl"><caption>Table 7 of the manual — cut-off frequencies and 3 dB bandwidth</caption><thead><tr><th>Quantity</th><th class="num">Link, peak − 3 dB (MHz)</th><th class="num">One antenna = link, peak − 6 dB (MHz)</th></tr></thead><tbody>
+      <tr><td>Lower cut-off frequency f<sub>L</sub></td><td class="num">1624</td><td class="num">1551</td></tr>
+      <tr><td>Upper cut-off frequency f<sub>H</sub></td><td class="num">1749</td><td class="num">1786</td></tr>
+      <tr class="best"><td>Bandwidth BW = f<sub>H</sub> − f<sub>L</sub></td><td class="num">125</td><td class="num">235</td></tr>
+    </tbody></table></div>
+    <p>The maximum is −28.6 dB at 1680–1700 MHz. The signal passes two antennas, so if both are identical and everything else is flat, the 3 dB bandwidth of one antenna corresponds to the 6 dB bandwidth of the link:
+      1551–1786 MHz, 235 MHz. Secondary maxima appear near 1000, 2040, 2220 and 2400 MHz, with deep notches at 620, 1900 and 2360 MHz. At 434 MHz, where the rest of the lab was done, the link is 33 dB below
+      its maximum. The notches are too narrow to come from the antennas alone; multipath in the room and the frequency response of the Pluto output are included in this curve, so the numbers describe the link, not the antenna gain.</p>
+  </section>
+
+  <!-- ================================================================ analyses -->
+  <section class="task" id="analysis">
+    <span class="kicker">Required analyses</span>
+    <h2>Noise figure, compression and dynamic range against gain</h2>
+
+    <h3 class="sub-h">A. Noise figure and P1dB against receiver gain; the best operating point</h3>
+    <p>P1dB was measured at one gain. Because compression is ADC clipping, P1dB moves with the full-scale input level, and that follows from the measured gain steps. The noise floor is taken in a 10 kHz channel.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>rf_gain</th><th class="num">Gain rel. to 40.2 (measured)</th><th class="num">NF (dB)</th><th class="num">Noise floor, 10 kHz (dBm)</th><th class="num">Full scale (dBm)</th><th class="num">P1dB (dBm)</th><th class="num">P1dB − floor (dB)</th><th class="num">Two-tone clip − floor (dB)</th></tr></thead><tbody>
+      <tr><td>49.6</td><td class="num">+8.82 dB</td><td class="num">2.4</td><td class="num">−131.6</td><td class="num">−57.0</td><td class="num">−55.0</td><td class="num">76.6</td><td class="num">68.5</td></tr>
+      <tr class="best"><td>40.2</td><td class="num">0</td><td class="num">2.7</td><td class="num">−131.3</td><td class="num">−48.2</td><td class="num">−46.2</td><td class="num">85.1</td><td class="num">77.0</td></tr>
+      <tr><td>29.7</td><td class="num">−11.13 dB</td><td class="num">9.4</td><td class="num">−124.6</td><td class="num">−37.1</td><td class="num">−35.1</td><td class="num">89.5</td><td class="num">81.5</td></tr>
+    </tbody></table></div>
+    <figure class="figx"><img class="l" src="img/report/tradeoff.png" alt="Noise figure and dynamic range versus gain"><img class="d" src="img/report/tradeoff_dark.png" alt="" aria-hidden="true">
+      <figcaption>Left: measured noise figure and a two-term model (front-end noise that scales with the gain plus a fixed noise added after it). Right: dynamic range in 10 kHz for one tone (P1dB) and for two tones
+        (each 6 dB below full scale).</figcaption></figure>
+    <p>The three N<sub>off</sub> values fit N<sub>off</sub> = a·G + b within 0.4 dB, with a fixed part b = −73.0 dBFS in the noise meter (−128.7 dBFS/Hz) and a front-end part of −68.3 dBFS at
+      <span class="mono">rf_gain</span> 40.2. The two are equal 4.7 dB below the 40.2 setting, at about <span class="mono">rf_gain</span> 36.</p>
+    <ul class="bul">
+      <li><b>49.6 → 40.2:</b> the noise figure worsens by 0.3 dB and the headroom grows by 8.8 dB. The highest gain buys almost no sensitivity and costs dynamic range.</li>
+      <li><b>40.2 → 29.7:</b> the noise figure worsens by 6.7 dB for 11.1 dB more headroom; the dynamic range still grows, by 4.5 dB, but the receiver is 6.7 dB less sensitive.</li>
+      <li><b>Below about 30:</b> the fixed noise dominates, the noise figure rises dB for dB and the dynamic range stops growing (model: saturation near 90 dB in 10 kHz).</li>
+    </ul>
+    <p><b>Operating point.</b> SFDR = ⅔(IIP3 − N<sub>floor</sub>) assumes a slope-3 intercept. With our lower bound IIP3 ≥ −28.6 dBm it gives SFDR ≥ 68 dB in 10 kHz at 40.2, but the usable range is set by clipping,
+      not by the intercept, so the clip-limited columns above are the relevant figures. For weak signals without strong neighbours any setting from 36 to 40 keeps the noise figure within 3 dB of its best value;
+      among the three settings we measured, <b>40.2 is the best compromise</b>. When strong signals are present, a setting near 30–36 trades up to 6.7 dB of sensitivity for 11 dB of headroom. We have no data from other teams to add to the plot.</p>
+
+    <h3 class="sub-h">B. Output against input</h3>
+    <p>The single-tone curve is in <a href="#p3">Part 3</a> and the two-tone lines in <a href="#p4">Part 4</a>. P1dB (−46.2 dBm, +1.0 dBFS) is marked by the limiter curve. An intercept point cannot be drawn:
+      the product line has slope 1 below clipping (source skirt) and slope 7 above it, never 3. A slope-3 line through the cleanest point is shown only as the lower bound it represents.</p>
+
+    <h3 class="sub-h">C. Direct method against Y-factor</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Method</th><th class="num">49.6</th><th class="num">40.2</th><th class="num">29.7</th><th>Needs</th></tr></thead><tbody>
+      <tr><td>Direct, manual’s formula (G<sub>FS</sub> = 20 dB, 400 kHz, port open)</td><td class="num">32.1</td><td class="num">24.5</td><td class="num">24.9</td><td>assumed calibration</td></tr>
+      <tr><td>Direct, measured G<sub>FS</sub>, ENBW 366 kHz, transmitter connected</td><td class="num">2.4</td><td class="num">2.7</td><td class="num">9.2</td><td>tone of known power, filter ENBW, matched source</td></tr>
+      <tr><td>Y-factor, averaged meters (414 MHz, ENR 17.4 dB)</td><td class="num">4.3</td><td class="num">4.7</td><td class="num">11.1</td><td>ENR, two readings</td></tr>
+      <tr class="best"><td>Y-factor, inside the bursts (mean of 434 and 414 MHz)</td><td class="num">2.4</td><td class="num">2.7</td><td class="num">9.4</td><td>ENR, two readings</td></tr>
+    </tbody></table></div>
+    <ul class="bul">
+      <li>The 22–30 dB between the manual’s direct formula and everything else is the assumed G<sub>FS</sub> (20 dB against 37–57 dB measured), plus 6–7 dB from using the open-port noise and 0.39 dB from the bandwidth.</li>
+      <li>Once G<sub>FS</sub> is measured, both methods agree within 0.2 dB. This agreement tests the receiver and the meters, not the absolute scale: both use the same P<sub>max</sub>. It shows that the tone amplitude,
+        the noise amplitude and the two filter bandwidths are consistent with each other.</li>
+      <li>The 1.8–2.0 dB between the averaged and the burst values is the duty cycle of the source. The Y-factor method is immune to the unknown gain and bandwidth, but not to a source that is on for only part of the averaging time.</li>
+      <li>The Y-factor assumes the “off” source is a 290 K load. Our “off” state is the output of an idle transmitter; if it delivers more than thermal noise, the true receiver noise figure is lower than quoted.
+        The 6–7 dB difference to the open-port reading does not settle this, because an open port is not a 290 K source either.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================ questions -->
+  <section class="task qa" id="questions">
+    <span class="kicker">Questions 1–5</span>
+    <h2>Answers to the questions of the manual</h2>
+
+    <h3>Question 1 — What does the direct method need that the Y-factor method does not?</h3>
+    <p>The direct method turns one absolute reading into a noise figure, NF = N<sub>off</sub> − G<sub>FS</sub> − 10·log<sub>10</sub>B<sub>n</sub> + 174, so it needs three things that cancel in the Y-factor ratio:</p>
+    <ul class="bul">
+      <li>the <b>absolute conversion G<sub>FS</sub></b> between dBFS and dBm at exactly the gain setting in use, i.e. the receiver gain. For us this was the dominant error: 20 dB assumed, 48.2 dB measured at 40.2;</li>
+      <li>the <b>equivalent noise bandwidth B<sub>n</sub></b> of the measuring filter: 366 kHz from the taps, not the nominal 400 kHz (0.39 dB);</li>
+      <li>a <b>known source temperature</b>: a matched load at T<sub>0</sub> = 290 K on the input, not an open port (6–7 dB difference in our readings).</li>
+    </ul>
+    <p>The Y-factor method needs only the ratio of two readings in the same uncalibrated scale and the ENR of the source; the gain and the bandwidth cancel as long as they are the same for both readings.</p>
+
+    <h3>Question 2 — Why must Y be neither very small nor very large? Effect of a 0.1 dB error for our smallest Y</h3>
+    <p>NF = ENR − 10·log<sub>10</sub>(Y − 1) with Y linear, so an error δ in Y<sub>dB</sub> changes NF by −δ·Y/(Y − 1). When Y approaches 1 (0 dB) the factor Y/(Y − 1) grows without limit: 0.1 dB costs 0.47 dB at Y = 1 dB and
+      0.20 dB at Y = 3 dB, and drift between the two readings matters as much as the reading error. When Y is very large the factor tends to 1 (0.103 dB at 15 dB, 0.100 dB at 35 dB), but the “on” level
+      approaches compression, where Y is read too small and NF too large, and NF ≈ ENR − Y becomes the small difference of two large numbers that depends entirely on the ENR calibration.</p>
+    <p>Our smallest Y is <b>7.21 dB</b> (414 MHz, <span class="mono">rf_gain</span> 29.7, tx_atten 80, as read from the meters), a ratio of 5.26:</p>
+    <p><span class="eq">δNF = −0.1 dB × 5.26 / 4.26 = ∓0.12 dB   (+0.1 dB → −0.123 dB, −0.1 dB → +0.124 dB)</span></p>
+    <p>so NF = 11.09 ± 0.12 dB for that cell as read; with the burst value Y = 8.70 dB the sensitivity is 0.115 dB per 0.1 dB.</p>
+
+    <h3>Question 3 — Output level at compression and the limiting element</h3>
+    <p>At the compression point the tone is at <b>about 0 to +1 dBFS inside the bursts</b> (−1.8 to −0.8 dBFS on the averaged f<sub>1</sub> meter), i.e. at ADC full scale. The limiting element is the <b>converter</b>,
+      not the analog stages:</p>
+    <ul class="bul">
+      <li>up to −0.37 dBFS the gain deviates from linear by only 0.06 dB and no sample is clipped;</li>
+      <li>compression starts in the same step in which samples reach ±full scale (9 % of the samples, then 23 %), and the I and Q waveforms are flat-topped at exactly ±1.0;</li>
+      <li>the harmonics jump by 37 dB in that one step instead of growing 3 dB per dB;</li>
+      <li>the measured compression (0.7 dB with the tone 1.7 dB above full scale) matches an ideal limiter (0.8 dB).</li>
+    </ul>
+    <p>An analog stage that limited first would compress the tone while it is still well below full scale. Since P1dB is tied to the full scale, it shifts dB for dB with the gain setting.</p>
+
+    <h3>Question 4 — Measured slope, the nonlinear mechanism and the validity of IIP3</h3>
+    <p>The products never rose with slope 3. Below clipping the slope is <b>1.0</b> (Δ constant within 0.3 dB over 10 dB of input): this is the skirt of the bursty source. In the clipping region of Table 6 the slope is
+      <b>7.0 dB/dB</b> (14 dB per 2 dB step) while the tones rise only 0.38 dB/dB. A slope well above 3 with saturating tones is the signature of a hard limiter: the nonlinearity is not a small cubic term a<sub>3</sub>x³ but
+      an abrupt clipping of the ADC, which creates products of every odd order at once.</p>
+    <p>The numbers P<sub>in</sub> + Δ/2 of Table 6 (−30 to −38 dBm, falling with level) are therefore <b>not a valid IIP3</b>: the intercept is only defined where the products follow slope 3. What the data support is the lower
+      bound IIP3 ≥ −28.6 dBm for the analog front end, limited by our source and not by the receiver.</p>
+
+    <h3>Question 5 — IIP3 − P1dB compared with 9.6 dB, and why two tones compress earlier</h3>
+    <p>IIP3 − P1dB ≥ −28.6 − (−46.2) = <b>17.7 dB</b>, well above 9.6 dB. The 9.6 dB rule belongs to a memoryless third-order nonlinearity; here P1dB is set by the ADC full scale, far below the level at which the
+      analog front end would compress, so the two quantities belong to different mechanisms and the rule does not apply at this gain.</p>
+    <p>Two tones of amplitude A add to a peak of 2A when they are in phase, which happens every 10 µs for 100 kHz spacing: the peak envelope power is 6 dB above one tone although the average power is only 3 dB higher.
+      The ADC therefore clips when each tone is 6 dB below full scale. We saw exactly this: one tone was clean up to −0.4 dBFS, while two tones produced strong products at −3.9 dBFS each (peak 1.28 × full scale) and
+      the first products between −8.4 and −7.4 dBFS each (peak 0.76 to 0.85). In dBm: one tone clips at −48.2 dBm, two tones at about −54 dBm each.</p>
+  </section>
+
+  <!-- ================================================================ prediction -->
+  <section class="task" id="pred">
+    <span class="kicker">Prediction vs measurement</span>
+    <h2>Pre-lab predictions against the measurement</h2>
+    <p>The pre-lab predictions came from the course’s receiver model (an RTL-SDR-like front end with an 8-bit ADC), not from a Pluto, so differences in the absolute values are expected; the mechanisms are what we compare.</p>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>#</th><th>Quantity</th><th class="num">Prediction</th><th class="num">Measured</th><th class="num">Relative error</th><th>Main source of the difference (size)</th></tr></thead><tbody>
+      <tr><td>1</td><td>NF at the highest gain</td><td class="num">6.08 dB</td><td class="num">2.4 dB</td><td class="num">−61 % (−3.7 dB)</td><td>Model front end (6 dB) is not the Pluto LNA. Uncertainty of our value: P<sub>max</sub> and cable loss, 1 dB per dB, estimated ±2–3 dB; duty cycle ±0.07 dB</td></tr>
+      <tr><td>2</td><td>Change of NF for 20 dB less gain</td><td class="num">+3.4 dB</td><td class="num">+7.0 dB (49.6 → 29.7, 19.95 dB)</td><td class="num">+105 %</td><td>Fixed noise equals front-end noise near rf_gain 36 in the Pluto, about 10 dB higher than in the model</td></tr>
+      <tr><td>3</td><td>Shift of P1dB for 10 dB less gain</td><td class="num">+10.0 dB</td><td class="num">+11.1 dB for the nominal 10.5 dB step (full scale)</td><td class="num">+11 % (step labels ±6 %)</td><td>Real gain steps differ from the labels: 8.82 for 9.4 dB and 11.13 for 10.5 dB. P1dB itself measured at one gain only</td></tr>
+      <tr><td>4</td><td>Y for ENR 15 dB and NF 7 dB</td><td class="num">8.64 dB</td><td class="num">14.79 dB for ENR 17.4 dB and NF 2.74 dB</td><td class="num">—</td><td>Different operating point, same relation: 10·log<sub>10</sub>(1 + 10<sup>1.739</sup>/10<sup>0.274</sup>) = 14.79 dB. As read from the averaged meters: 12.90 dB (duty cycle, −1.9 dB)</td></tr>
+      <tr><td>5</td><td>NF increase with a 10 dB pad</td><td class="num">+10 dB</td><td class="num">not measured</td><td class="num">—</td><td>No attenuator was in the path</td></tr>
+      <tr><td>6</td><td>Rise of the products for +2 dB per tone</td><td class="num">+6 dB, far more if the ADC clips</td><td class="num">+2 dB below clipping, +14 dB in clipping</td><td class="num">−67 % / +133 %</td><td>No slope-3 region exists at this gain: source skirt (−47.7 dBc) below, ADC clipping above</td></tr>
+      <tr><td>7</td><td>IIP3 − P1dB ≈ 9.6 dB?</td><td class="num">only at low gain</td><td class="num">≥ 17.7 dB at rf_gain 40.2</td><td class="num">—</td><td>As predicted: the ADC limits first, the rule does not apply</td></tr>
+      <tr><td>8</td><td>3 dB band of the antenna link</td><td class="num">808–1792 MHz (983 MHz)</td><td class="num">1624–1749 MHz (125 MHz)</td><td class="num">−87 %</td><td>The model was a generic band-pass; the real link includes two antennas and room multipath (notches of 10–15 dB)</td></tr>
+    </tbody></table></div>
+
+    <h3 class="sub-h">Error budget of the final numbers</h3>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>Source</th><th class="num">Size</th><th>Affects</th><th>Treatment</th></tr></thead><tbody>
+      <tr><td>Nominal P<sub>max</sub> and cable loss</td><td class="num">±2–3 dB (estimate)</td><td>NF, G<sub>FS</sub>, every dBm value, 1 : 1</td><td>Not calibrated; dominant uncertainty of all absolute values</td></tr>
+      <tr><td>A<sub>pad</sub> in the level formula</td><td class="num">30 dB</td><td>same</td><td>Set to 0 dB on physical grounds (noise below kT<sub>0</sub> otherwise)</td></tr>
+      <tr><td>Transmitter duty cycle 0.664 (0.654–0.674)</td><td class="num">1.78 ± 0.07 dB</td><td>every averaged tone and N<sub>on</sub> reading; NF +1.8 to +2.0 dB</td><td>Removed by measuring inside the bursts</td></tr>
+      <tr><td>Reference for N<sub>off</sub> (open port or connected)</td><td class="num">6–7 dB at 49.6 and 40.2</td><td>direct method, Y</td><td>N<sub>off</sub> taken with the transmitter connected, in the gaps</td></tr>
+      <tr><td>Noise bandwidth 366 kHz against 400 kHz</td><td class="num">0.39 dB</td><td>direct method</td><td>ENBW computed from the taps</td></tr>
+      <tr><td>tx_atten entry “43 dB” not applied</td><td class="num">1 dB</td><td>last four points of the sweep, P1dB</td><td>Columns re-labelled; P1dB quoted ±1.5 dB</td></tr>
+      <tr><td>Frequency response of the source (404 against 434 MHz)</td><td class="num">1.5–1.8 dB</td><td>NF at 404 MHz</td><td>434 and 414 MHz used for the result</td></tr>
+      <tr><td>Statistical error of the noise meter (366 kHz, ≥ 0.5 s)</td><td class="num">&lt; 0.02 dB</td><td>Y</td><td>Negligible</td></tr>
+      <tr><td>Digitising of the antenna curve, 20 MHz steps</td><td class="num">0.2 dB, ±5 MHz</td><td>f<sub>L</sub>, f<sub>H</sub></td><td>Linear interpolation between points</td></tr>
+    </tbody></table></div>
+    <div class="callout"><b>Next time</b>Run the source at a lower sample rate (or with a cyclic buffer) so that the transmitter cannot underflow, check the received envelope before reading any meter, put a real attenuator of
+      known value in the path and calibrate P<sub>max</sub> once against a power meter. For the two-tone test a cleaner source is needed to see products below −55 dBc.</div>
+  </section>
+
+  <!-- ================================================================ screenshots -->
+  <section class="task no-print" id="shots">
+    <span class="kicker">Records</span>
+    <h2>Screenshots from the session</h2>
+    <div class="shots">
+      <figure><a href="img/shots/noff-open-434-g40.png"><img loading="lazy" src="img/shots/noff-open-434-g40.png" alt="Noise spectrum with the RX port open"></a><figcaption>Source off, RX port open, 434 MHz, gain 40.2: −73.73 dBFS</figcaption></figure>
+      <figure><a href="img/shots/non-434-g40-tx60.png"><img loading="lazy" src="img/shots/non-434-g40-tx60.png" alt="Noise spectrum with the source on"></a><figcaption>Noise on, tx_atten 60, 434 MHz, gain 40.2: −34.64 dBFS</figcaption></figure>
+      <figure><a href="img/shots/noff-414-g49-tx80.png"><img loading="lazy" src="img/shots/noff-414-g49-tx80.png" alt="Meters with the source off"></a><figcaption>Source off, transmitter connected, 414 MHz, gain 49.6: −58.87 dBFS</figcaption></figure>
+      <figure><a href="img/shots/non-414-g49-tx80.png"><img loading="lazy" src="img/shots/non-414-g49-tx80.png" alt="Meters with the noise source on"></a><figcaption>Noise on, tx_atten 80, 414 MHz, gain 49.6: −45.59 dBFS</figcaption></figure>
+      <figure><a href="img/shots/one-tone-tx45.png"><img loading="lazy" src="img/shots/one-tone-tx45.png" alt="One tone at tx_atten 45"></a><figcaption>One tone, tx_atten 45: f<sub>1</sub> = −4.22 dBFS; neighbouring meters at −50.8 dBFS</figcaption></figure>
+      <figure><a href="img/shots/one-tone-tx40.png"><img loading="lazy" src="img/shots/one-tone-tx40.png" alt="One tone at tx_atten 40"></a><figcaption>One tone, tx_atten 40: f<sub>1</sub> = −0.85 dBFS, total −1.01 dBFS</figcaption></figure>
+      <figure><a href="img/shots/two-tone-tx50.png"><img loading="lazy" src="img/shots/two-tone-tx50.png" alt="Two tones at tx_atten 50"></a><figcaption>Two tones, tx_atten 50: −9.22 dBFS each, products −44.0 dBFS</figcaption></figure>
+      <figure><a href="img/shots/two-tone-tx40.png"><img loading="lazy" src="img/shots/two-tone-tx40.png" alt="Two tones with ADC clipping"></a><figcaption>Two tones, tx_atten 40: ADC clipping, products −17.6 dBFS and a comb every 100 kHz</figcaption></figure>
+      <figure><a href="img/shots/antenna-sweep.png"><img loading="lazy" src="img/shots/antenna-sweep.png" alt="Antenna sweep GUI"></a><figcaption>Antenna sweep 400–3000 MHz, 131 points</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ files -->
+  <section class="task no-print" id="files">
+    <span class="kicker">Files</span>
+    <h2>Data and scripts</h2>
+    <ul class="bul small">
+      <li>Readings of both data sheets: <a href="../labs/lab-02/files/measurements.json">measurements.json</a> · antenna curve: <a href="../labs/lab-02/files/antenna_sweep.json">antenna_sweep.json</a></li>
+      <li>Analysis of the I/Q captures (meters, burst detection, spectra): <a href="../labs/lab-02/files/capture_analysis.py">capture_analysis.py</a> → <a href="../labs/lab-02/files/capture_results.json">capture_results.json</a></li>
+      <li>Tables and figures of this page: <a href="../labs/lab-02/files/report_analysis.py">report_analysis.py</a> → <a href="report-data.json">report-data.json</a></li>
+      <li>Flowgraph used in the session: <a href="../labs/lab-02/files/lab02_combined.grc">lab02_combined.grc</a> · pre-lab report: <a href="prelab.html">prelab.html</a> · this report as PDF: <a href="../labs/lab-02/report/report.pdf">report.pdf</a></li>
+      <li>The 26 raw captures (3.4 GB) are too large for this repository; their per-capture results are in <span class="mono">capture_results.json</span>.</li>
+    </ul>
+  </section>
+
+  <section class="task" id="refs">
+    <span class="kicker">References</span>
+    <ol class="bul small">
+      <li>D. M. Pozar, <i>Microwave Engineering</i>, 4th ed., Wiley, 2012 — noise and nonlinear distortion.</li>
+      <li>Keysight Technologies, “Noise figure measurement accuracy: the Y-factor method,” Application Note.</li>
+      <li>B. Razavi, <i>RF Microelectronics</i>, 2nd ed., Prentice Hall, 2012.</li>
+      <li>GNU Radio project, GNU Radio Wiki: block documentation, https://wiki.gnuradio.org</li>
+      <li>SDR Laboratory, Experiment 2 lab manual, “Noise figure, P1dB and IIP3,” Sharif University of Technology, 2026.</li>
+    </ol>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Team SDR — Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+    <a href="../">← Back to SDR Lab</a>
+  </div>
+</footer>
+<script src="../../assets/js/main.js"></script>
+<script src="../../assets/js/sdr-scope.js"></script>
+<script>
+  // Print the collapsed first-pass tables too.
+  (function () {
+    function openAll() { document.querySelectorAll("details").forEach(function (d) { d.open = true; }); }
+    window.addEventListener("beforeprint", openAll);
+    if (/[?&]print=1/.test(location.search)) openAll();
+  })();
+</script>
+</body>
+</html>

@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/sdr-theme.css">
   <style>
     .eq { font-family: var(--mono); font-size: .9rem; background: var(--bg-soft); padding: 8px 12px; border-radius: 8px; display: inline-block; margin: 4px 0; }
     .fig { margin: 10px 0 18px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px; }
@@ -32,7 +33,7 @@
     @page { size: A4; margin: 16mm 14mm; }
   </style>
 </head>
-<body>
+<body class="sdr">
 
 <header class="nav">
   <div class="container">
@@ -43,6 +44,7 @@
     <nav class="nav-links">
       <a href="../../">Home</a>
       <a class="pill" href="../">SDR Lab</a>
+      <a href="./">Lab report</a>
       <a href="#t4">Simulation</a>
       <a href="prelab.pdf">PDF</a>
       <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
@@ -53,8 +55,8 @@
 </header>
 
 <main>
-  <section class="page-head">
-    <canvas data-waves aria-hidden="true"></canvas>
+  <section class="page-head scope strip">
+    <canvas data-scope data-fc="434" data-span="8.192" aria-hidden="true"></canvas>
     <div class="container">
       <a class="eyebrow" href="../">← SDR Lab · Lab 02 · Pre-lab report</a>
       <h1>Noise Figure, P1dB and IIP3</h1>
@@ -323,5 +325,6 @@
   </div>
 </footer>
 <script src="../../assets/js/main.js"></script>
+<script src="../../assets/js/sdr-scope.js"></script>
 </body>
 </html>

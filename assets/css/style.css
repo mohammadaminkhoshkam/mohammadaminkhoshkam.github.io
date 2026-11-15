@@ -376,6 +376,58 @@ select, input[type="number"], input[type="file"] {
 .gallery figcaption { padding: 8px 12px; font-size: .82rem; color: var(--text-dim); }
 .lab-open { margin-top: 14px; }
 
+/* ---------- Polish ---------- */
+::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.card, .btn, .chip, .tag, .icon-btn { transition: border-color .15s ease, background-color .15s ease, transform .15s ease, filter .15s ease; }
+.btn:active { transform: translateY(1px); }
+.contact-item:hover { transform: translateY(-2px); }
+.hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 70% at 78% 40%, var(--accent-soft), transparent 70%),
+    linear-gradient(color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px) 0 0 / 100% 44px,
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px) 0 0 / 44px 100%;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 92%); mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+  opacity: .55;
+}
+.section-head .kicker { display: block; }
+.section-head h2 { position: relative; display: inline-block; }
+.section-head h2::after {
+  content: ""; position: absolute; left: 0; bottom: -8px; width: 44px; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.section-head p { margin-top: 18px; }
+.timeline > li::before { transition: background-color .15s ease; }
+.timeline > li:hover::before { background: var(--accent); }
+
+/* SDR Lab card on the home page: a small live "scope" */
+.sdr-card {
+  position: relative; display: block; overflow: hidden; padding: 0; margin-bottom: 22px; min-height: 250px;
+  background: #050a12; border-color: #14222f; color: #d9ecf5; isolation: isolate;
+}
+.sdr-card:hover { text-decoration: none; border-color: #5ee6ff; }
+.sdr-card canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.sdr-card::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(5, 10, 18, .94) 0%, rgba(5, 10, 18, .82) 42%, rgba(5, 10, 18, .25) 78%, rgba(5, 10, 18, .05) 100%);
+}
+.sdr-card-body { position: relative; z-index: 2; padding: 26px 26px 46px; max-width: 640px; }
+.sdr-card .eyebrow { color: #46f0b0; margin-bottom: 8px; }
+.sdr-card h3 { font-size: 1.45rem; color: #f3fbff; }
+.sdr-card p { color: #9db3c4; margin-bottom: 14px; }
+.sdr-card-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.sdr-card-chips span {
+  font-family: var(--mono); font-size: .78rem; padding: 5px 10px; border-radius: 8px; color: #d9ecf5;
+  border: 1px solid rgba(120, 220, 255, .22); background: rgba(8, 16, 26, .74);
+}
+.sdr-card-chips small { color: #5ee6ff; font-weight: 700; margin-right: 6px; letter-spacing: .06em; }
+.sdr-card .btn.primary { background: #0e8fae; border-color: #0e8fae; }
+@media (max-width: 680px) {
+  .sdr-card::after { background: linear-gradient(180deg, rgba(5, 10, 18, .93) 0%, rgba(5, 10, 18, .84) 60%, rgba(5, 10, 18, .3) 100%); }
+  .sdr-card-body { padding: 20px 18px 56px; }
+}
+
 /* Reveal animation */
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
 .reveal.in { opacity: 1; transform: none; }

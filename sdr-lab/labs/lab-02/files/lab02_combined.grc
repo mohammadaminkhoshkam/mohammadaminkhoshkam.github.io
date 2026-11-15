@@ -1,0 +1,1292 @@
+options:
+  parameters:
+    author: Ali
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: lab02_combined
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: lab02_combined
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: a_noise
+  id: variable
+  parameters:
+    comment: ''
+    value: '0.2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 1384.0]
+    rotation: 0
+    state: enabled
+- name: a_pad
+  id: variable
+  parameters:
+    comment: ''
+    value: '30.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 440]
+    rotation: 0
+    state: enabled
+- name: a_tone
+  id: variable
+  parameters:
+    comment: ''
+    value: '0.25'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 1288.0]
+    rotation: 0
+    state: enabled
+- name: bw_noise
+  id: variable
+  parameters:
+    comment: ''
+    value: 400e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 32.0]
+    rotation: 0
+    state: enabled
+- name: bw_tone
+  id: variable
+  parameters:
+    comment: ''
+    value: 10e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 40.0]
+    rotation: 0
+    state: enabled
+- name: enr_eff_est
+  id: variable
+  parameters:
+    comment: ''
+    value: p_max - tx_atten + 20*math.log10(a_noise) - 10*math.log10(samp_rate) -
+      a_pad + 174
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2568, 992.0]
+    rotation: 0
+    state: enabled
+- name: f1
+  id: variable
+  parameters:
+    comment: ''
+    value: 300e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1272, 360.0]
+    rotation: 0
+    state: enabled
+- name: f2
+  id: variable
+  parameters:
+    comment: ''
+    value: 400e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1408, 368.0]
+    rotation: 0
+    state: enabled
+- name: f_c
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: Centre frequency (Hz)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: 325e6
+    step: 1e6
+    stop: 3800e6
+    value: 434.0e6
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 208.0]
+    rotation: 0
+    state: enabled
+- name: f_corr
+  id: variable
+  parameters:
+    comment: ''
+    value: '0.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2016, 264.0]
+    rotation: 0
+    state: enabled
+- name: f_noise
+  id: variable
+  parameters:
+    comment: ''
+    value: -500e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1544, 368.0]
+    rotation: 0
+    state: enabled
+- name: mode
+  id: variable_qtgui_chooser
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: Output
+    label0: Off (zeros)
+    label1: Gaussian noise
+    label2: One tone
+    label3: Two tones
+    label4: ''
+    labels: '[]'
+    num_opts: '4'
+    option0: '0'
+    option1: '1'
+    option2: '2'
+    option3: '3'
+    option4: '4'
+    options: '[0, 1, 2]'
+    orient: Qt.QVBoxLayout
+    type: int
+    value: '0'
+    widget: combo_box
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [104, 1292.0]
+    rotation: 0
+    state: enabled
+- name: p_max
+  id: variable
+  parameters:
+    comment: ''
+    value: '6.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 320]
+    rotation: 0
+    state: enabled
+- name: p_tone_est
+  id: variable
+  parameters:
+    comment: ''
+    value: p_max - tx_atten + 20*math.log10(a_tone) - a_pad
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1824, 328.0]
+    rotation: 0
+    state: enabled
+- name: rec
+  id: variable_qtgui_check_box
+  parameters:
+    comment: ''
+    'false': 'False'
+    gui_hint: ''
+    label: Record I/Q
+    'true': 'True'
+    type: bool
+    value: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1208, 20.0]
+    rotation: 0
+    state: enabled
+- name: rf_gain
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: RF gain of the device under test (dB)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '0.1'
+    stop: '49.6'
+    value: '40.2'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [984, 16.0]
+    rotation: 0
+    state: enabled
+- name: rx_uri
+  id: variable
+  parameters:
+    comment: ''
+    value: '''usb:2.4.5'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 200]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '8192000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [240, 72.0]
+    rotation: 0
+    state: enabled
+- name: team
+  id: variable
+  parameters:
+    comment: ''
+    value: '"Team-00"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 16.0]
+    rotation: 0
+    state: enabled
+- name: tx_atten
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: TX attenuation (dB)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '40'
+    step: '0.25'
+    stop: '89.75'
+    value: '60'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 1304.0]
+    rotation: 0
+    state: enabled
+- name: tx_uri
+  id: variable
+  parameters:
+    comment: ''
+    value: '''usb:2.4.5'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 80]
+    rotation: 0
+    state: enabled
+- name: frequency_correction
+  id: blocks_rotator_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Positive f_corr shifts RX spectrum down
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_inc: -2*math.pi*f_corr/samp_rate
+    tag_inc_update: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 696.0]
+    rotation: 0
+    state: enabled
+- name: iio_pluto_source_0
+  id: iio_pluto_source
+  parameters:
+    affinity: ''
+    alias: ''
+    bandwidth: '20000000'
+    bbdc: 'True'
+    buffer_size: '32768'
+    comment: ''
+    filter: ''
+    filter_source: '''Off'''
+    fpass: '0'
+    frequency: int(f_c)
+    fstop: '0'
+    gain1: '''manual'''
+    len_tag_key: packet_len
+    manual_gain1: rf_gain
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quadrature: 'True'
+    rfdc: 'True'
+    samplerate: samp_rate
+    type: fc32
+    uri: rx_uri
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 588.0]
+    rotation: 0
+    state: true
+- name: im_hi_band
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 2*f2 - f1
+    comment: ''
+    decim: '64'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.low_pass(1, samp_rate, bw_tone/2, bw_tone/2)
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1384, 884.0]
+    rotation: 0
+    state: enabled
+- name: im_hi_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1880, 784.0]
+    rotation: 0
+    state: enabled
+- name: im_hi_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-6
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1656, 792.0]
+    rotation: 0
+    state: enabled
+- name: im_lo_band
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 2*f1 - f2
+    comment: ''
+    decim: '64'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.low_pass(1, samp_rate, bw_tone/2, bw_tone/2)
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 740.0]
+    rotation: 0
+    state: enabled
+- name: im_lo_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1896, 696.0]
+    rotation: 0
+    state: enabled
+- name: im_lo_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-6
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1656, 712.0]
+    rotation: 0
+    state: enabled
+- name: import_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import math
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56, 172.0]
+    rotation: 0
+    state: enabled
+- name: noise
+  id: analog_noise_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: (mode == 1)*a_noise
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    noise_type: analog.GR_GAUSSIAN
+    seed: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 1788.0]
+    rotation: 0
+    state: enabled
+- name: noise_band
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: f_noise
+    comment: ''
+    decim: '4'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.low_pass(1, samp_rate, bw_noise/2, bw_noise/4)
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2128, 940.0]
+    rotation: 0
+    state: enabled
+- name: noise_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2648, 1000.0]
+    rotation: 0
+    state: enabled
+- name: noise_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '0'
+    min: '-120'
+    name: '"Noise power in the 400 kHz band (dBFS)"'
+    nconnections: '1'
+    type: float
+    unit1: dBFS
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2840, 972.0]
+    rotation: 0
+    state: enabled
+- name: noise_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-6
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2456, 1000.0]
+    rotation: 0
+    state: enabled
+- name: pluto_tx
+  id: iio_pluto_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    attenuation1: tx_atten
+    bandwidth: int(samp_rate)
+    buffer_size: '32768'
+    comment: ''
+    cyclic: 'False'
+    filter: ''
+    filter_source: '''Off'''
+    fpass: '0'
+    frequency: int(f_c)
+    fstop: '0'
+    len_tag_key: ''
+    samplerate: int(samp_rate)
+    type: fc32
+    uri: tx_uri
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1512, 1548.0]
+    rotation: 0
+    state: enabled
+- name: plutocfg
+  id: epy_module
+  parameters:
+    alias: ''
+    comment: ''
+    source_code: "# Which ADALM-PLUTO to talk to: $PLUTO_URI, else pluto_uri.txt written\
+      \ by\r\n# preflight_check.py (0_check_setup.bat), else the lab default address.\r\
+      \nimport os\r\n\r\n\r\ndef pluto_uri(default=\"ip:192.168.1.10\"):\r\n    uri\
+      \ = os.environ.get(\"PLUTO_URI\")\r\n    # GRC evaluates this module without\
+      \ __file__; the generated .py has it\r\n    here = os.path.dirname(os.path.abspath(__file__))\
+      \ if \"__file__\" in globals() else os.getcwd()\r\n    path = os.path.join(here,\
+      \ \"pluto_uri.txt\")\r\n    if not uri and os.path.exists(path):\r\n       \
+      \ with open(path) as f:\r\n            uri = f.read().strip()\r\n    return\
+      \ uri or default\r\n\r\n"
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 248.0]
+    rotation: 0
+    state: enabled
+- name: recorder
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"GNU Radio Python Block: bounded cf32 recorder with JSON sidecar.\n\
+      Runtime setters are explicit. A take cannot mix fc/fs/gain settings.\nTimestamp\
+      \ is UTC; no file is overwritten. Data are little-endian complex64.\n\"\"\"\n\
+      import os\nimport re\nimport json\nfrom datetime import datetime, timezone\n\
+      import numpy as np\nfrom gnuradio import gr\n\nclass blk(gr.sync_block):\n \
+      \   def __init__(self, team='Team-00', lab=2, fc=434e6, fs=8192000., gain=40.2,\n\
+      \                 record=False, max_seconds=5.0, folder='.', f_corr=0.0):\n\
+      \        gr.sync_block.__init__(self, name='SDR Lab IQ Recorder', in_sig=[np.complex64],\
+      \ out_sig=None)\n        self.team,self.lab,self.fc,self.fs,self.gain=team,lab,fc,fs,gain\n\
+      \        self.record,self.max_seconds,self.folder=record,max_seconds,folder\n\
+      \        self.f_corr=f_corr\n        self._fh=None;self._armed=True;self._n=0;self._key=None\n\
+      \    def set_team(self,v): self.team=v\n    def set_lab(self,v): self.lab=v\n\
+      \    def set_fc(self,v): self.fc=v\n    def set_fs(self,v): self.fs=v\n    def\
+      \ set_gain(self,v): self.gain=v\n    def set_record(self,v): self.record=v\n\
+      \    def set_max_seconds(self,v): self.max_seconds=v\n    def set_folder(self,v):\
+      \ self.folder=v\n    def set_f_corr(self,v): self.f_corr=v\n    def _settings(self):\
+      \ return (self.fc,self.fs,self.gain,self.team,self.lab,self.folder,self.max_seconds,self.f_corr)\n\
+      \    def _open(self):\n        if self.fs<=0 or self.max_seconds<=0: raise ValueError('fs\
+      \ and max_seconds must be positive')\n        team=re.sub(r'[^A-Za-z0-9_-]','_',str(self.team))\n\
+      \        stamp=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')\n   \
+      \     os.makedirs(self.folder,exist_ok=True)\n        self._path=os.path.join(self.folder,f'{team}_lab{int(self.lab):02d}_{round(self.fc)}_{round(self.fs)}_{self.gain:.1f}_{stamp}.cf32')\n\
+      \        self._fh=open(self._path,'xb');self._n=0;self._key=self._settings()\n\
+      \        self._meta=dict(origin='HARDWARE_CAPTURE',team=self.team,lab=int(self.lab),fc_hz=self.fc,fs_hz=self.fs,gain_db=self.gain,f_corr_hz=self.f_corr,dtype='little-endian\
+      \ complex64',started_utc=stamp)\n    def _close(self,reason):\n        self._fh.close();self._fh=None;self._armed=False\n\
+      \        self._meta.update(samples=self._n,duration_seconds=self._n/self._key[1],stop_reason=reason)\n\
+      \        with open(self._path[:-5]+'.json','w',encoding='utf-8') as f: json.dump(self._meta,f,indent=2)\n\
+      \    def work(self,input_items,output_items):\n        x=input_items[0]\n  \
+      \      if not self.record:\n            if self._fh is not None: self._close('record\
+      \ off')\n            self._armed=True\n        elif self._fh is None and self._armed:\
+      \ self._open()\n        if self._fh is not None:\n            if self._settings()!=self._key:\
+      \ self._close('settings changed; release record before next take')\n       \
+      \     else:\n                left=max(0,int(self._key[6]*self._key[1])-self._n);n=min(len(x),left)\n\
+      \                x[:n].astype('<c8',copy=False).tofile(self._fh);self._n+=n\n\
+      \                if n==left: self._close('max_seconds reached')\n        return\
+      \ len(x)\n    def stop(self):\n        if self._fh is not None: self._close('flowgraph\
+      \ stopped')\n        return True\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    f_corr: f_corr
+    fc: f_c
+    folder: '''captures'''
+    fs: samp_rate
+    gain: rf_gain
+    lab: '2'
+    max_seconds: '5.0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    record: rec
+    team: team
+  states:
+    _io_cache: ('SDR Lab IQ Recorder', 'blk', [('team', "'Team-00'"), ('lab', '2'),
+      ('fc', '434000000.0'), ('fs', '8192000.0'), ('gain', '40.2'), ('record', 'False'),
+      ('max_seconds', '5.0'), ('folder', "'.'"), ('f_corr', '0.0')], [('0', 'complex',
+      1)], [], '', ['f_corr', 'fc', 'folder', 'fs', 'gain', 'lab', 'max_seconds',
+      'record', 'team'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1432, 1008.0]
+    rotation: 0
+    state: enabled
+- name: spec
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.05'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'True'
+    fc: '0'
+    fftsize: '4096'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: ''
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Spectrum at the receiver output"'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1384, 1268.0]
+    rotation: 0
+    state: enabled
+- name: src_sum
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '3'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1320, 1548.0]
+    rotation: 0
+    state: enabled
+- name: t1_band
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: f1
+    comment: ''
+    decim: '64'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.low_pass(1, samp_rate, bw_tone/2, bw_tone/2)
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 500.0]
+    rotation: 0
+    state: enabled
+- name: t1_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1872, 536.0]
+    rotation: 0
+    state: enabled
+- name: t1_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-6
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1640, 536.0]
+    rotation: 0
+    state: enabled
+- name: t2_band
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: f2
+    comment: ''
+    decim: '64'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.low_pass(1, samp_rate, bw_tone/2, bw_tone/2)
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 620.0]
+    rotation: 0
+    state: enabled
+- name: t2_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1888, 624.0]
+    rotation: 0
+    state: enabled
+- name: t2_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-6
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1640, 640.0]
+    rotation: 0
+    state: enabled
+- name: tone1
+  id: analog_sig_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: (mode >= 2)*a_tone
+    comment: ''
+    freq: f1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate
+    showports: 'False'
+    type: complex
+    waveform: analog.GR_COS_WAVE
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 1340.0]
+    rotation: 0
+    state: enabled
+- name: tone2
+  id: analog_sig_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: (mode == 3)*a_tone
+    comment: ''
+    freq: f2
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate
+    showports: 'False'
+    type: complex
+    waveform: analog.GR_COS_WAVE
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [920, 1532.0]
+    rotation: 0
+    state: enabled
+- name: tone_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_NONE
+    gui_hint: ''
+    label1: '"f1 (dBFS)"'
+    label10: ''
+    label2: '"f2 (dBFS)"'
+    label3: '"2 f1 - f2 (dBFS)"'
+    label4: '"2 f2 - f1 (dBFS)"'
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '0'
+    min: '-140'
+    name: '"Tone meters (10 kHz each)"'
+    nconnections: '4'
+    type: float
+    unit1: ''
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2328, 552.0]
+    rotation: 0
+    state: enabled
+- name: total_log
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2256, 1080.0]
+    rotation: 0
+    state: enabled
+- name: total_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '0'
+    min: '-100'
+    name: '"Total level (dBFS)"'
+    nconnections: '1'
+    type: float
+    unit1: dB
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2504, 1084.0]
+    rotation: 0
+    state: enabled
+- name: total_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-6
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2048, 1080.0]
+    rotation: 0
+    state: enabled
+- name: tx_spec
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.1'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'True'
+    fc: '0'
+    fftsize: '2048'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: ''
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Baseband spectrum sent to the Pluto"'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1528, 1832.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [frequency_correction, '0', im_hi_band, '0']
+- [frequency_correction, '0', im_lo_band, '0']
+- [frequency_correction, '0', noise_band, '0']
+- [frequency_correction, '0', recorder, '0']
+- [frequency_correction, '0', spec, '0']
+- [frequency_correction, '0', t1_band, '0']
+- [frequency_correction, '0', t2_band, '0']
+- [frequency_correction, '0', total_rms, '0']
+- [iio_pluto_source_0, '0', frequency_correction, '0']
+- [im_hi_band, '0', im_hi_rms, '0']
+- [im_hi_db, '0', tone_num, '3']
+- [im_hi_rms, '0', im_hi_db, '0']
+- [im_lo_band, '0', im_lo_rms, '0']
+- [im_lo_db, '0', tone_num, '2']
+- [im_lo_rms, '0', im_lo_db, '0']
+- [noise, '0', src_sum, '2']
+- [noise_band, '0', noise_rms, '0']
+- [noise_db, '0', noise_num, '0']
+- [noise_rms, '0', noise_db, '0']
+- [src_sum, '0', pluto_tx, '0']
+- [src_sum, '0', tx_spec, '0']
+- [t1_band, '0', t1_rms, '0']
+- [t1_db, '0', tone_num, '0']
+- [t1_rms, '0', t1_db, '0']
+- [t2_band, '0', t2_rms, '0']
+- [t2_db, '0', tone_num, '1']
+- [t2_rms, '0', t2_db, '0']
+- [tone1, '0', src_sum, '0']
+- [tone2, '0', src_sum, '1']
+- [total_log, '0', total_num, '0']
+- [total_rms, '0', total_log, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0

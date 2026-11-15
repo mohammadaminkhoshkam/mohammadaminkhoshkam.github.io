@@ -409,13 +409,19 @@
         <span class="kicker">05 — coursework</span>
         <h2>Coursework</h2>
       </div>
-      <a class="card feature reveal" href="sdr-lab/" style="color: inherit; text-decoration: none; margin-bottom: 22px;">
-        <div>
-          <span class="eyebrow">SDR LAB</span>
+      <a class="card sdr-card reveal" href="sdr-lab/">
+        <canvas data-scope data-fc="434" data-span="8.192" aria-hidden="true"></canvas>
+        <div class="sdr-card-body">
+          <span class="eyebrow">RX ▸ 434.000 MHz · SDR LAB</span>
           <h3>Software-Defined Radio Laboratory</h3>
-          <p>Pre-reports, lab reports, code and measurement data for every session of the SDR lab.</p>
+          <p>Pre-reports, lab reports, code and measurement data for every session, with an ADALM-Pluto and GNU Radio.
+            The reports are computed from our own raw I/Q recordings.</p>
+          <div class="sdr-card-chips">
+            <span><small>LAB 01</small> Spectrum monitoring</span>
+            <span><small>LAB 02</small> Noise figure 2.7 dB · P1dB · IIP3</span>
+          </div>
+          <span class="btn primary">Open the lab page →</span>
         </div>
-        <span class="btn primary">Open the lab page →</span>
       </a>
       <div class="card reveal">
         <div class="col-title">Relevant courses</div>
@@ -472,5 +478,6 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script src="assets/js/sdr-scope.js"></script>
 </body>
 </html>

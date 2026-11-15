@@ -8,7 +8,11 @@ index.html            ← home page (about, skills, projects, contact)
 assets/css/style.css  ← all styles (light + dark theme)
 assets/js/main.js     ← theme toggle, menu, animations
 assets/js/sdr.js      ← builds the SDR Lab page
+assets/css/sdr-theme.css ← "instrument" theme of every page under sdr-lab/ (body class "sdr")
+assets/js/sdr-scope.js   ← animated spectrum + waterfall behind the page headers
 sdr-lab/index.html    ← SDR Lab page
+sdr-lab/lab-01/       ← Lab 1 report page (computed in the browser from raw I/Q)
+sdr-lab/lab-02/       ← Lab 2 report (index.html) and pre-lab report (prelab.html)
 sdr-lab/labs.json     ← list of lab sessions (titles, dates, status)
 sdr-lab/labs/lab-01/  ← files for each session
     pre-report/       ← pre-report (PDF)
@@ -43,6 +47,8 @@ sdr-lab/labs/lab-01/  ← files for each session
    ```
 
    - `status` is one of `done`, `in-progress`, `upcoming`
+   - optional: `"page": "lab-02/"` (report page), `"pages": [{ "href": "...", "label": "..." }]` (extra buttons)
+     and `"highlights": [{ "k": "NF", "v": "2.7 dB" }]` (key results shown as chips)
    - `date` uses the format `YYYY-MM-DD`
    - remember the comma between entries
 2. Upload the files to `sdr-lab/labs/lab-02/pre-report/`, `.../report/` and `.../files/`.
