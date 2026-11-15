@@ -73,9 +73,9 @@
       <li><b>The transmitter was on only two thirds of the time.</b> The raw I/Q captures show that the Pluto transmitter ran out of samples at 8.192 MS/s: bursts of about
         1.8 ms separated by 1.5 ms gaps, duty cycle 0.664. Every meter of the flowgraph is a time average, so every tone and every N<sub>on</sub> reading is 1.78 dB too low.
         All final numbers on this page are taken inside the bursts.</li>
-      <li><b>The 30 dB pad cannot have been in the path.</b> With A<sub>pad</sub> = 30 dB in the level formulas the noise figure comes out at −27 dB and the receiver noise
-        27 dB below kT<sub>0</sub>. With A<sub>pad</sub> = 0 every result is physical and self-consistent, so all dBm values here use A<sub>pad</sub> = 0. Their absolute
-        accuracy is that of the nominal P<sub>max</sub> = 6.5 dBm (a few dB).</li>
+      <li><b>No 30 dB pad was in the path.</b> The transmitter was connected to the receiver through the loop-back cable alone, so the level formulas of the manual are used
+        with A<sub>pad</sub> = 0. The data confirm it: with A<sub>pad</sub> = 30 dB the noise figure would come out at −27 dB and the receiver noise 27 dB below kT<sub>0</sub>.
+        The absolute accuracy of all dBm values is that of the nominal P<sub>max</sub> = 6.5 dBm (a few dB).</li>
       <li><b>Compression is ADC clipping.</b> The gain stays within 0.06 dB of linear up to −0.4 dBFS; harmonics appear only when samples hit ±full scale. A slope-3 region was
         never observed in the two-tone test, so only a lower bound for IIP3 can be given and the rule IIP3 ≈ P1dB + 9.6 dB does not apply at this gain.</li>
     </ul>
@@ -132,15 +132,15 @@
       completely inside a gap. “Inside the bursts” below always refers to these values.</p>
 
     <h3 class="sub-h">The level model needs A<sub>pad</sub> = 0</h3>
-    <p>The manual computes the tone power and the ENR at the receiver with a 30 dB external attenuator. Our data contradict that value in two independent ways:</p>
+    <p>The manual computes the tone power and the ENR at the receiver with a 30 dB external attenuator. In our session the attenuator was not connected: the TX port went to the
+      RX port through the loop-back cable alone. The data show this in two independent ways:</p>
     <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Check (rf_gain 40.2)</th><th class="num">A<sub>pad</sub> = 30 dB</th><th class="num">A<sub>pad</sub> = 0 dB</th></tr></thead><tbody>
       <tr><td>Noise figure from the Y-factor (414 MHz, tx_atten 80, Y = 14.79 dB)</td><td class="num bad">−27.3 dB</td><td class="num ok">2.7 dB</td></tr>
       <tr><td>Receiver noise density referred to the input (−123.1 dBFS/Hz and the measured tone level)</td><td class="num bad">−201.3 dBm/Hz</td><td class="num ok">−171.3 dBm/Hz</td></tr>
       <tr><td>Thermal limit kT<sub>0</sub></td><td class="num" colspan="2" style="text-align:center !important">−174.0 dBm/Hz</td></tr>
     </tbody></table></div>
-    <p>A noise density 27 dB below kT<sub>0</sub> is impossible, and the transmitter cannot deliver the +36 dBm that would be needed to explain it. The effective loss between
-      the TX and RX ports was therefore close to 0 dB — a plain loop-back cable — and this page uses A<sub>pad</sub> = 0 everywhere. The largest input level of the session was then
-      −45.5 dBm, far below the −10 dBm limit of the receiver.</p>
+    <p>A noise density 27 dB below kT<sub>0</sub> is impossible, so the formulas have to be used with A<sub>pad</sub> = 0, as everywhere on this page. Without the pad the largest
+      input level of the session was −45.5 dBm, still far below the −10 dBm limit of the receiver.</p>
     <div class="callout warn"><b>Validity</b>All dBm values, ENR and therefore the absolute noise figure depend 1 : 1 on the nominal P<sub>max</sub> = 6.5 dBm and on the cable loss,
       neither of which was calibrated. Ratios (Y, gain steps, compression, dBc values) do not depend on them.</div>
   </section>
@@ -456,7 +456,7 @@
     <h3 class="sub-h">Error budget of the final numbers</h3>
     <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>Source</th><th class="num">Size</th><th>Affects</th><th>Treatment</th></tr></thead><tbody>
       <tr><td>Nominal P<sub>max</sub> and cable loss</td><td class="num">±2–3 dB (estimate)</td><td>NF, G<sub>FS</sub>, every dBm value, 1 : 1</td><td>Not calibrated; dominant uncertainty of all absolute values</td></tr>
-      <tr><td>A<sub>pad</sub> in the level formula</td><td class="num">30 dB</td><td>same</td><td>Set to 0 dB on physical grounds (noise below kT<sub>0</sub> otherwise)</td></tr>
+      <tr><td>A<sub>pad</sub> in the level formula</td><td class="num">30 dB</td><td>same</td><td>The pad was not connected; formulas used with 0 dB (the noise level confirms it)</td></tr>
       <tr><td>Transmitter duty cycle 0.664 (0.654–0.674)</td><td class="num">1.78 ± 0.07 dB</td><td>every averaged tone and N<sub>on</sub> reading; NF +1.8 to +2.0 dB</td><td>Removed by measuring inside the bursts</td></tr>
       <tr><td>Reference for N<sub>off</sub> (open port or connected)</td><td class="num">6–7 dB at 49.6 and 40.2</td><td>direct method, Y</td><td>N<sub>off</sub> taken with the transmitter connected, in the gaps</td></tr>
       <tr><td>Noise bandwidth 366 kHz against 400 kHz</td><td class="num">0.39 dB</td><td>direct method</td><td>ENBW computed from the taps</td></tr>
