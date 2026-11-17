@@ -160,7 +160,8 @@
     }
 
     function loop(ts) {
-      if (visible && !document.hidden && ts - last > 55) { last = ts; step(false); }
+      if (!rowImg) resize();                      // canvas had no size yet when the page loaded
+      else if (visible && !document.hidden && ts - last > 55) { last = ts; step(false); }
       requestAnimationFrame(loop);
     }
 

@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8.5 GHz Microstrip Phased Array — M. A. Khoshkam</title>
+  <meta name="description" content="A 3-element beam-steering microstrip patch array at 8.5 GHz: 1-to-3 Wilkinson divider, aperture-coupled patch, delay-line feed network, integrated array and a Dolph-Chebyshev side-lobe taper, designed in Keysight ADS and Ansys HFSS.">
+  <meta property="og:title" content="8.5 GHz Microstrip Phased Array with Wilkinson Feed">
+  <meta property="og:image" content="https://mohammadaminkhoshkam.github.io/projects/x-band-phased-array/img/system-gain3d.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307140f'/%3E%3Cpath d='M16 27V15M16 15c-5 0-9-3-9-8M16 15c5 0 9-3 9-8M16 15V6' stroke='%23e6a064' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="xband.css">
+</head>
+<body class="xband">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a href="../../#projects">Projects</a>
+      <a href="#lab">Beam lab</a>
+      <a href="#results">Results</a>
+      <a class="pill" href="https://github.com/mohammadaminkhoshkam/X-Band-Patch-Antenna-Array" target="_blank" rel="noopener">GitHub</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ================================================================ hero -->
+  <section class="xb-hero">
+    <div class="container">
+      <div>
+        <a class="eyebrow" href="../../#projects">← Projects · RF &amp; antennas · X-band</a>
+        <h1>8.5&nbsp;GHz Microstrip <em>Phased Array</em> with Wilkinson Feed</h1>
+        <p class="lead">A <b>3-element beam-steering patch array</b> built up from its parts: a 1-to-3 Wilkinson power divider, an aperture-coupled patch,
+          a delay-line feed network, the integrated array and a side-lobe taper. Designed in <b>Keysight ADS</b> and verified full-wave in <b>Ansys HFSS</b>.</p>
+        <div class="xb-meta">
+          <span><b>Authors:</b> Sajad Ghafouri, Mohammad Amin Khoshkam</span>
+          <span><b>Substrate:</b> Rogers RT/duroid 5880, 15 mil</span>
+          <span><b>Type:</b> design and simulation</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#phases">Walk through the design</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam/X-Band-Patch-Antenna-Array" target="_blank" rel="noopener">Repository</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam/X-Band-Patch-Antenna-Array/blob/main/report/Final_Project.pdf" target="_blank" rel="noopener">Full report (PDF)</a>
+        </div>
+      </div>
+      <figure class="xb-scope" style="margin:0">
+        <canvas data-xb-hero aria-label="Array pattern steering from broadside to the design angle"></canvas>
+        <figcaption>array-factor model · 3 elements · d = λ₀/2 · steering to the design angle</figcaption>
+      </figure>
+    </div>
+
+    <!-- the feed network as copper traces -->
+    <div class="xb-trace container" aria-hidden="true">
+      <svg viewBox="0 0 1080 150" role="img">
+        <rect class="pad" x="14" y="68" width="14" height="14" rx="2"/>
+        <text x="12" y="100">IN · 50 Ω</text>
+        <path class="cu" d="M28 75H120"/>
+        <path class="cu thin" d="M120 75L158 50H220M120 75L158 100H220"/>
+        <rect class="res" x="216" y="67" width="8" height="16" rx="1.5"/>
+        <text x="134" y="130">Wilkinson 1 : 2</text>
+        <path class="cu" d="M220 50H300L330 30H940"/>
+        <path class="cu" d="M220 100H330"/>
+        <path class="cu thin" d="M330 100L368 80H430M330 100L368 120H430"/>
+        <rect class="res" x="426" y="92" width="8" height="16" rx="1.5"/>
+        <text x="344" y="146">Wilkinson 1 : 1</text>
+        <path class="cu" d="M430 80H520V62H545V92H570V62H595V75H940"/>
+        <path class="cu" d="M430 120H520V104H545V136H570V104H595V136H620V104H645V136H670V120H940"/>
+        <text class="cu-t" x="608" y="64">ΔL</text>
+        <text class="cu-t" x="684" y="140">2·ΔL</text>
+        <rect class="patch" x="940" y="15" width="78" height="30" rx="2"/>
+        <rect class="patch" x="940" y="60" width="78" height="30" rx="2"/>
+        <rect class="patch" x="940" y="105" width="78" height="30" rx="2"/>
+        <text class="hl" x="1026" y="34">0°</text>
+        <text class="hl" x="1026" y="79">−155.9°</text>
+        <text class="hl" x="1026" y="124">−311.8°</text>
+        <path class="flow" d="M28 75H120L158 50H220H300L330 30H940"/>
+        <path class="flow" d="M120 75L158 100H220H330L368 80H430H520V62H545V92H570V62H595V75H940"/>
+        <path class="flow" d="M330 100L368 120H430H520V104H545V136H570V104H595V136H620V104H645V136H670V120H940"/>
+      </svg>
+    </div>
+    <div class="fieldbar"></div>
+  </section>
+
+  <div class="container">
+
+  <!-- ================================================================ overview -->
+  <section class="xb-sec" id="overview" style="padding-top:26px">
+    <div class="xb-kpi">
+      <div class="k"><b>8.5<i>GHz</i></b><span>centre frequency, X-band</span></div>
+      <div class="k"><b>3<i>× patch</i></b><span>elements at d = λ₀/2 = 17.6 mm</span></div>
+      <div class="k"><b>−155.9<i>°</i></b><span>progressive phase per element</span></div>
+      <div class="k"><b>8.31<i>dBi</i></b><span>peak realized gain, integrated array</span></div>
+      <div class="k"><b>−20.7<i>dB</i></b><span>S<sub>11</sub> of the feed network at 8.5 GHz</span></div>
+      <div class="k"><b>6.63<i>dBi</i></b><span>realized gain of one patch</span></div>
+    </div>
+
+    <div class="chain" aria-label="Design phases">
+      <a href="#p1"><span class="via">I</span><b>Power divider</b><small>1-to-3 Wilkinson</small></a>
+      <a href="#p2"><span class="via">II</span><b>Patch antenna</b><small>aperture-coupled</small></a>
+      <a href="#p3"><span class="via">III</span><b>Feed network</b><small>delay lines</small></a>
+      <a href="#p4a"><span class="via">IV-A</span><b>Ideal array</b><small>baseline</small></a>
+      <a href="#p4b"><span class="via">IV-B</span><b>Integrated array</b><small>full system</small></a>
+      <a href="#p5"><span class="via">V</span><b>Side lobes</b><small>Chebyshev taper</small></a>
+    </div>
+
+    <div class="xb-cols" style="margin-top:28px">
+      <div>
+        <p>A single patch has a fixed, broad beam. Feeding several patches with equal amplitude and a constant phase step between neighbours tilts the beam without moving anything:
+          this project designs that feed for three elements at 8.5&nbsp;GHz and checks every block on its own before the whole structure is simulated as one piece.</p>
+        <p>The work goes from component to system. The divider is designed and laid out in ADS, verified with Momentum and re-tuned in HFSS. The patch is sized from Balanis’ formulas and
+          tuned by parametric sweeps. Delay lines add the phase step. The array is first simulated with ideal port excitations to get a reference, then with the real feed network
+          connected. A final stage tapers the amplitudes to lower the side lobes.</p>
+        <figure class="plate" style="max-width:520px">
+          <a href="img/system-model.png"><img loading="lazy" src="img/system-model.png" alt="HFSS model of the integrated array with its feed network"></a>
+          <figcaption><b>The complete structure in HFSS:</b> feed network on the lower layer, three patches above the slotted ground plane.</figcaption>
+        </figure>
+      </div>
+      <div class="spec">
+        <h4>Design values</h4>
+        <dl>
+          <div><dt>Centre frequency f₀</dt><dd>8.5 GHz</dd></div>
+          <div><dt>Free-space wavelength λ₀</dt><dd>35.27 mm</dd></div>
+          <div><dt>Substrate</dt><dd>RT/duroid 5880, ε<sub>r</sub> 2.2</dd></div>
+          <div><dt>Thickness, loss tangent</dt><dd>0.381 mm, 0.0009</dd></div>
+          <div><dt>Copper</dt><dd>18 µm</dd></div>
+          <div><dt>Reference impedance</dt><dd>50 Ω</dd></div>
+          <div><dt>Element spacing d</dt><dd>λ₀/2 = 17.63 mm</dd></div>
+          <div><dt>Steering angle θ₀</dt><dd>30° from the array axis</dd></div>
+          <div><dt>Phase step α</dt><dd>−155.9°</dd></div>
+          <div><dt>Guided wavelength λ<sub>g</sub></dt><dd>24.22 mm</dd></div>
+          <div><dt>Delay-line step ΔL</dt><dd>0.433 λ<sub>g</sub> ≈ 10.5 mm</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ lab -->
+  <section class="xb-sec" id="lab">
+    <div class="xb-head">
+      <div class="xb-badge"><small>TRY</small>θ₀</div>
+      <div><span class="kicker">Beam-steering lab</span><h2>How the phase step moves the beam</h2></div>
+    </div>
+    <p>For a uniform linear array along the x-axis the array factor is largest where the phase added by the feed cancels the path difference between neighbours:</p>
+    <div class="eqn">AF(θ) = Σ aₙ · exp[ j·n·(k·d·cos θ + α) ]  →  α = −k·d·cos θ₀ = −π·cos 30° = −155.9°  →  ΔL = (|α| / 360°)·λg = 0.433 λg</div>
+    <p class="dim">θ is measured from the array axis, as in Balanis. A beam 30° from the axis is 60° away from broadside, which is a large scan for a three-element array: the grating lobe then sits
+      just outside the visible range and its shoulder shows up as a strong lobe on the opposite side. Move the slider to see it grow, then switch the taper: the taper removes the small lobe in the middle,
+      not that shoulder.</p>
+
+    <div class="lab-panel" data-xb-lab>
+      <div class="view"><canvas aria-label="Normalised array pattern"></canvas></div>
+      <div class="ctl">
+        <label>Steering angle from broadside <output id="xb-steer-out">+60°</output>
+          <input type="range" id="xb-steer" min="-80" max="80" step="1" value="60">
+        </label>
+        <div>
+          <label>Amplitude taper</label>
+          <div class="seg">
+            <button type="button" data-taper="uniform" aria-pressed="true">Uniform 1 : 1 : 1</button>
+            <button type="button" data-taper="cheb" aria-pressed="false">Chebyshev target</button>
+            <button type="button" data-taper="built" aria-pressed="false">As built</button>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="xb-element" checked> multiply by a cos ψ patch pattern</label>
+        <div class="reads">
+          <div><small>Angle from array axis</small><b id="xb-axis">30°</b></div>
+          <div><small>Phase step α</small><b class="cu" id="xb-alpha">−155.9°</b></div>
+          <div><small>Delay-line step ΔL</small><b class="cu" id="xb-dl">10.49 mm</b></div>
+          <div><small>Main beam found at</small><b id="xb-beam">—</b></div>
+          <div><small>Highest side lobe</small><b id="xb-sll">—</b></div>
+          <div><small>Half-power width</small><b id="xb-hpbw">—</b></div>
+          <div><small>Peak vs uniform</small><b id="xb-rel">0.00 dB</b></div>
+          <div style="display:grid;place-items:center;border-style:dashed"><button type="button" class="seg-reset" id="xb-reset" style="all:unset;cursor:pointer;font-family:var(--mono);font-size:.78rem;color:var(--copper)">↺ project design</button></div>
+        </div>
+      </div>
+    </div>
+    <p class="small dim">This is the textbook array factor of three isotropic or cos ψ elements with equal total input power, drawn on a 30 dB scale. It ignores mutual coupling, the real element pattern, the ground plane size
+      and feed radiation, so it explains the HFSS patterns below but does not replace them. Dashed white: the uniform taper for comparison.</p>
+  </section>
+
+  <div id="phases"></div>
+
+  <!-- ================================================================ phase I -->
+  <section class="xb-sec" id="p1">
+    <div class="xb-head">
+      <div class="xb-badge"><small>PHASE</small>I</div>
+      <div><span class="kicker">Keysight ADS · Momentum · Ansys HFSS</span><h2>1-to-3 Wilkinson power divider</h2></div>
+    </div>
+    <div class="xb-cols">
+      <div>
+        <p>Three equal outputs are obtained by cascading two two-way dividers instead of building a three-way junction: an <b>unequal Wilkinson (1&nbsp;:&nbsp;2)</b> sends one third of the power to the first output and
+          two thirds onward, and an <b>equal Wilkinson (1&nbsp;:&nbsp;1)</b> splits that remainder in two. Each output then carries one third, ideally −10·log₁₀3 = −4.77&nbsp;dB.</p>
+        <p>The unequal stage uses curved quarter-wave arms to stay compact, and short matching sections at its outputs keep the interface to the second stage at 50&nbsp;Ω.
+          The connecting lines are meandered so that the three outputs end on one straight line, at least λ₀/2 apart, as the array needs. The layout was simulated in Momentum and placed back in the
+          schematic as an EM block with the lumped isolation resistors.</p>
+        <p>In HFSS the same layout came out slightly off frequency and unbalanced, as expected when coupling and bend parasitics are solved in full. One parameter, the length of the curved section
+          <span class="mono">L_curve2</span>, was swept and set to <b>2.075&nbsp;mm</b>, which centres the match at 8.5&nbsp;GHz and gives the best power balance.</p>
+      </div>
+      <div class="spec">
+        <h4>At 8.5 GHz</h4>
+        <dl>
+          <div><dt>Ideal split per output</dt><dd>−4.77 dB</dd></div>
+          <div><dt>Momentum: S<sub>21</sub> / S<sub>31</sub> / S<sub>41</sub></dt><dd>−5.10 / −4.96 / −5.05 dB</dd></div>
+          <div><dt>Momentum: S<sub>11</sub></dt><dd>−16.5 dB</dd></div>
+          <div><dt>Momentum: isolation S<sub>32</sub>, S<sub>43</sub></dt><dd>−29.1, −17.6 dB</dd></div>
+          <div><dt>HFSS: S<sub>11</sub></dt><dd class="ok">−37.0 dB</dd></div>
+          <div><dt>HFSS: S<sub>22</sub> / S<sub>33</sub> / S<sub>44</sub></dt><dd>−17.2 / −16.1 / −16.1 dB</dd></div>
+          <div><dt>HFSS: output isolation</dt><dd>≈ −25 dB</dd></div>
+          <div><dt>Tuned parameter</dt><dd>L_curve2 = 2.075 mm</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="plates">
+      <figure class="plate dark"><a href="img/p1-ads-layout.png"><img loading="lazy" src="img/p1-ads-layout.png" alt="ADS layout of the divider"></a><figcaption><b>ADS layout</b> with the curved unequal stage and meandered lines.</figcaption></figure>
+      <figure class="plate"><a href="img/p1-momentum-sparams.png"><img loading="lazy" src="img/p1-momentum-sparams.png" alt="Momentum S-parameters"></a><figcaption><b>Momentum co-simulation:</b> split, input match and port impedances.</figcaption></figure>
+      <figure class="plate"><a href="img/p1-hfss-model.png"><img loading="lazy" src="img/p1-hfss-model.png" alt="HFSS model of the divider"></a><figcaption><b>HFSS model</b> of the same layout.</figcaption></figure>
+      <figure class="plate"><a href="img/p1-hfss-split.png"><img loading="lazy" src="img/p1-hfss-split.png" alt="HFSS transmission to the three outputs"></a><figcaption><b>HFSS:</b> the three transmissions meet near 8.5 GHz.</figcaption></figure>
+      <figure class="plate"><a href="img/p1-hfss-match.png"><img loading="lazy" src="img/p1-hfss-match.png" alt="HFSS return loss of all ports"></a><figcaption><b>HFSS:</b> return loss of all four ports.</figcaption></figure>
+      <figure class="plate"><a href="img/p1-hfss-efield.png"><img loading="lazy" src="img/p1-hfss-efield.png" alt="Electric field on the divider"></a><figcaption><b>E-field:</b> power flowing from the input into three branches.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ phase II -->
+  <section class="xb-sec" id="p2">
+    <div class="xb-head">
+      <div class="xb-badge"><small>PHASE</small>II</div>
+      <div><span class="kicker">Ansys HFSS</span><h2>Aperture-coupled patch antenna</h2></div>
+    </div>
+    <div class="xb-cols">
+      <div>
+        <p>The radiator is a rectangular patch fed through a slot. The microstrip feed line is on one substrate, the patch on a second one, and the ground plane between them carries a
+          rectangular aperture that couples the two. This keeps the feed network behind the ground plane, away from the radiating side, and gives three tuning handles: the slot, the stub that extends
+          the feed line past the slot, and the patch itself.</p>
+        <p>Balanis’ equations for a directly fed patch give the starting size. With those values the first simulation resonated far from 8.5&nbsp;GHz and did not reach −10&nbsp;dB, because the slot and the
+          second layer load the patch. Parametric sweeps then showed what each dimension does:</p>
+        <ul class="bul">
+          <li><b>Patch length L<sub>p</sub></b> sets the resonance: longer means lower frequency.</li>
+          <li><b>Slot length and width</b> set the coupling, and with it the depth of the match and the bandwidth.</li>
+          <li><b>Stub length L<sub>stub</sub></b> cancels the remaining reactance and deepens the S<sub>11</sub> minimum.</li>
+          <li><b>Patch width W<sub>p</sub></b> has only a small effect on the resonance.</li>
+        </ul>
+        <p>The requirement was |S<sub>11</sub>| &lt; −10&nbsp;dB over a 2&nbsp;% band around 8.5&nbsp;GHz. The final design reaches −31.4&nbsp;dB at 8.502&nbsp;GHz; the markers on the final plot put the −10&nbsp;dB band at
+          8.427–8.574&nbsp;GHz, i.e. 147&nbsp;MHz or 1.7&nbsp;%. The pattern is broadside with 6.63&nbsp;dBi peak realized gain.</p>
+      </div>
+      <div class="spec">
+        <h4>Final dimensions (HFSS project)</h4>
+        <dl>
+          <div><dt>Patch W<sub>p</sub> × L<sub>p</sub></dt><dd>13.95 × 11.05 mm</dd></div>
+          <div><dt>Slot (W<sub>s</sub>, L<sub>s</sub>)</dt><dd>5 mm, 2 mm</dd></div>
+          <div><dt>Feed stub L<sub>stub</sub></dt><dd>5 mm</dd></div>
+          <div><dt>Feed line width</dt><dd>1.18 mm</dd></div>
+          <div><dt>Balanis start: L<sub>p</sub></dt><dd>11.4 mm</dd></div>
+        </dl>
+        <h4>Result</h4>
+        <dl>
+          <div><dt>S<sub>11</sub> minimum</dt><dd class="ok">−31.4 dB at 8.502 GHz</dd></div>
+          <div><dt>−10 dB band</dt><dd>8.427–8.574 GHz</dd></div>
+          <div><dt>Bandwidth</dt><dd>147 MHz (1.7 %)</dd></div>
+          <div><dt>Peak realized gain</dt><dd>6.63 dBi, broadside</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="plates">
+      <figure class="plate"><a href="img/p2-patch-top.png"><img loading="lazy" src="img/p2-patch-top.png" alt="Top view of the patch"></a><figcaption><b>Top view</b> of the patch on its substrate.</figcaption></figure>
+      <figure class="plate"><a href="img/p2-s11-initial.png"><img loading="lazy" src="img/p2-s11-initial.png" alt="Initial S11"></a><figcaption><b>Before tuning:</b> S<sub>11</sub> with the textbook dimensions.</figcaption></figure>
+      <figure class="plate"><a href="img/p2-s11-final.png"><img loading="lazy" src="img/p2-s11-final.png" alt="Final S11"></a><figcaption><b>After tuning:</b> −31.4 dB at 8.502 GHz.</figcaption></figure>
+      <figure class="plate"><a href="img/p2-cuts.png"><img loading="lazy" src="img/p2-cuts.png" alt="Pattern cuts of the patch"></a><figcaption><b>Realized gain</b> in the φ = 0° and 90° planes.</figcaption></figure>
+      <figure class="plate"><a href="img/p2-gain3d.png"><img loading="lazy" src="img/p2-gain3d.png" alt="3D pattern of the patch"></a><figcaption><b>3D pattern:</b> broadside, 6.63 dBi.</figcaption></figure>
+      <figure class="plate"><a href="img/p2-efield-slot.png"><img loading="lazy" src="img/p2-efield-slot.png" alt="Field on the patch"></a><figcaption><b>Field at 8.5 GHz:</b> the slot under the patch couples the feed to the two radiating edges.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ phase III -->
+  <section class="xb-sec" id="p3">
+    <div class="xb-head">
+      <div class="xb-badge"><small>PHASE</small>III</div>
+      <div><span class="kicker">Ansys HFSS</span><h2>Feed network: divider plus delay lines</h2></div>
+    </div>
+    <div class="xb-cols">
+      <div>
+        <p>The divider already provides equal amplitudes. The phase step comes from extra line length: each output is one ΔL longer than the previous one, so the three paths are L₀, L₀&nbsp;+&nbsp;ΔL and
+          L₀&nbsp;+&nbsp;2ΔL with ΔL = 0.433&nbsp;λ<sub>g</sub> ≈ 10.5&nbsp;mm. The extra length is folded into meanders, so the three ports still end λ₀/2 apart.</p>
+        <p>The line width is kept constant through the meanders, long closely spaced parallel runs are avoided to limit coupling, and all bends use the same corner style.</p>
+        <p>At 8.5&nbsp;GHz the three outputs carry −5.12 to −5.20&nbsp;dB, about 0.4&nbsp;dB below the ideal −4.77&nbsp;dB because of conductor and dielectric loss in the longer lines. Their phases are
+          −155.5°, +48.6° and −108.9°: taken in array order, the steps are <b>−155.9°</b> and <b>−157.5°</b> against the −155.9° that was asked for.</p>
+      </div>
+      <div class="spec">
+        <h4>At 8.5 GHz (HFSS)</h4>
+        <dl>
+          <div><dt>Input match S<sub>11</sub></dt><dd class="ok">−20.7 dB</dd></div>
+          <div><dt>Output magnitudes</dt><dd>−5.18 / −5.20 / −5.12 dB</dd></div>
+          <div><dt>Output phases</dt><dd>+48.6° / −108.9° / −155.5°</dd></div>
+          <div><dt>Phase steps in array order</dt><dd class="ok">−155.9°, −157.5°</dd></div>
+          <div><dt>Target step</dt><dd>−155.9°</dd></div>
+          <div><dt>Largest phase error</dt><dd>1.6°</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="plates">
+      <figure class="plate"><a href="img/p3-feed-model.png"><img loading="lazy" src="img/p3-feed-model.png" alt="HFSS model of the feed network"></a><figcaption><b>Feed network:</b> divider and three meandered delay lines.</figcaption></figure>
+      <figure class="plate"><a href="img/p3-s11.png"><img loading="lazy" src="img/p3-s11.png" alt="S11 of the feed network"></a><figcaption><b>Input match:</b> −20.7 dB at 8.5 GHz.</figcaption></figure>
+      <figure class="plate"><a href="img/p3-magnitudes.png"><img loading="lazy" src="img/p3-magnitudes.png" alt="Transmission magnitudes"></a><figcaption><b>Magnitudes</b> of the three outputs.</figcaption></figure>
+      <figure class="plate"><a href="img/p3-phases.png"><img loading="lazy" src="img/p3-phases.png" alt="Transmission phases"></a><figcaption><b>Phases</b> of the three outputs, with markers at 8.5 GHz.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ phase IV-A -->
+  <section class="xb-sec" id="p4a">
+    <div class="xb-head">
+      <div class="xb-badge"><small>PHASE</small>IV-A</div>
+      <div><span class="kicker">Ansys HFSS</span><h2>Ideal array: the reference</h2></div>
+    </div>
+    <div class="xb-cols">
+      <div>
+        <p>Before the feed network is attached, three copies of the patch are placed λ₀/2 apart and their ports are excited directly with equal amplitudes and the phases 0°, −155.9° and −311.8°.
+          This shows what the array can do without feed losses and gives the pattern that the complete system should reproduce.</p>
+        <p>Mutual coupling between the neighbouring patches does not detune them: the active ports stay matched, with a −25.6&nbsp;dB minimum at 8.513&nbsp;GHz. The beam tilts to the design direction with
+          8.11&nbsp;dBi peak realized gain. With the display limited to −10…+10&nbsp;dB a second lobe on the other side is clearly visible, as the array factor predicts for a uniform taper at this scan angle.</p>
+      </div>
+      <div class="spec">
+        <h4>Ideal excitation (HFSS)</h4>
+        <dl>
+          <div><dt>Port phases</dt><dd>0° / −155.9° / −311.8°</dd></div>
+          <div><dt>S<sub>11</sub> minimum</dt><dd class="ok">−25.6 dB at 8.513 GHz</dd></div>
+          <div><dt>−10 dB band</dt><dd>8.437–8.585 GHz</dd></div>
+          <div><dt>Peak realized gain</dt><dd class="ok">8.11 dBi</dd></div>
+          <div><dt>Gain over one patch</dt><dd>+1.5 dB</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="plates">
+      <figure class="plate"><a href="img/p4a-array-model.png"><img loading="lazy" src="img/p4a-array-model.png" alt="Three-element array model"></a><figcaption><b>Three patches</b> with their own ports.</figcaption></figure>
+      <figure class="plate"><a href="img/p4a-s11.png"><img loading="lazy" src="img/p4a-s11.png" alt="S11 of the array ports"></a><figcaption><b>Match under coupling:</b> −25.6 dB at 8.513 GHz.</figcaption></figure>
+      <figure class="plate"><a href="img/p4a-gain3d.png"><img loading="lazy" src="img/p4a-gain3d.png" alt="3D realized gain of the ideal array"></a><figcaption><b>Steered beam,</b> 8.11 dBi, shown on a −10…+10 dB scale.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ phase IV-B -->
+  <section class="xb-sec" id="p4b">
+    <div class="xb-head">
+      <div class="xb-badge"><small>PHASE</small>IV-B</div>
+      <div><span class="kicker">Ansys HFSS</span><h2>Integrated array with the real feed</h2></div>
+    </div>
+    <div class="xb-cols">
+      <div>
+        <p>The first attempt simply joined the three feed outputs to the three patch feeds. It did not work: the input match was poor, the gain dropped and the field plot showed the wave being reflected
+          where the feed region met the antenna region.</p>
+        <div class="note cu"><b>Cause</b>The ground plane and the substrate of the feed network and of the antennas were separate pieces. A microstrip line needs its return current directly underneath;
+          a gap in the ground is a hard discontinuity, even if the trace on top is continuous.</div>
+        <p>Two changes fixed it. The antenna substrate and ground plane were extended under the whole feed network so that both are continuous, and the radiation box was rebuilt with at least λ/4 of
+          clearance on every side, after it turned out that its distance changed the computed realized gain.</p>
+        <p>The corrected structure steers the beam to the same direction as the ideal case, with 8.31&nbsp;dBi peak realized gain. The input match at 8.5&nbsp;GHz is about −11.5&nbsp;dB, good enough but
+          narrower than that of the feed network or the patches alone. A little radiation from the feed lines shows up in the pattern.</p>
+      </div>
+      <div class="spec">
+        <h4>Complete system (HFSS)</h4>
+        <dl>
+          <div><dt>Peak realized gain</dt><dd class="ok">8.31 dBi</dd></div>
+          <div><dt>Ideal reference</dt><dd>8.11 dBi</dd></div>
+          <div><dt>S<sub>11</sub> at 8.5 GHz</dt><dd>≈ −11.5 dB</dd></div>
+          <div><dt>Ground and substrate</dt><dd>continuous</dd></div>
+          <div><dt>Radiation box clearance</dt><dd>≥ λ/4</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="plates">
+      <figure class="plate"><a href="img/p4b-first-attempt.png"><img loading="lazy" src="img/p4b-first-attempt.png" alt="First integration attempt"></a><figcaption><b>First attempt:</b> feed and antennas on separate ground pieces.</figcaption></figure>
+      <figure class="plate"><a href="img/p4b-continuous-ground.png"><img loading="lazy" src="img/p4b-continuous-ground.png" alt="Corrected model"></a><figcaption><b>Corrected:</b> one substrate and one ground plane under everything.</figcaption></figure>
+      <figure class="plate"><a href="img/p4b-s11.png"><img loading="lazy" src="img/p4b-s11.png" alt="S11 of the integrated system"></a><figcaption><b>Input match</b> of the complete system.</figcaption></figure>
+      <figure class="plate"><a href="img/system-gain3d.png"><img loading="lazy" src="img/system-gain3d.png" alt="3D realized gain of the integrated array"></a><figcaption><b>Realized gain,</b> 8.31 dBi peak.</figcaption></figure>
+      <figure class="plate"><a href="img/p4b-gain3d.png"><img loading="lazy" src="img/p4b-gain3d.png" alt="3D realized gain on a limited scale"></a><figcaption><b>Same pattern</b> on a −10…+10 dB scale: main beam, second lobe and a small feed-line lobe.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ phase V -->
+  <section class="xb-sec" id="p5">
+    <div class="xb-head">
+      <div class="xb-badge"><small>BONUS</small>V</div>
+      <div><span class="kicker">Ansys HFSS</span><h2>Side-lobe reduction with a Chebyshev taper</h2></div>
+    </div>
+    <div class="xb-cols">
+      <div>
+        <p>Equal amplitudes give the narrowest beam but the highest side lobes. A Dolph–Chebyshev taper puts more power into the centre element: the normalised power weights for this array are
+          <b>0.5310</b> for the centre and <b>0.2345</b> for each side element, i.e. −2.75&nbsp;dB and −6.30&nbsp;dB.</p>
+        <p>With ideal port excitations the weights cost 0.3&nbsp;dB of peak realized gain: 8.11 becomes 7.79&nbsp;dBi.</p>
+        <p>To build it, the equal divider was turned into an asymmetric one by changing branch impedances and lengths, while keeping 50&nbsp;Ω ports and the delay lines. The result is an
+          approximation: the centre branch reaches −3.94&nbsp;dB instead of −2.75&nbsp;dB, the side branches −6.30 and −6.32&nbsp;dB, and the input match is −14.3&nbsp;dB at 8.5&nbsp;GHz.</p>
+        <div class="note"><b>Trade-off</b>In the complete structure the narrow lobe between the two large lobes disappears and the pattern is cleaner, but the peak realized gain falls from 8.31 to 4.97&nbsp;dBi.
+          The large lobe on the opposite side stays, as in the array-factor model above: it comes from the wide scan angle, not from the amplitude distribution. The built taper also costs more gain
+          than the ideal one, so this stage shows the mechanism rather than a finished design.</div>
+      </div>
+      <div class="spec">
+        <h4>Power split at 8.5 GHz</h4>
+        <dl>
+          <div><dt>Target, centre / side</dt><dd>−2.75 / −6.30 dB</dd></div>
+          <div><dt>Built, centre</dt><dd>−3.94 dB</dd></div>
+          <div><dt>Built, sides</dt><dd>−6.30 / −6.32 dB</dd></div>
+          <div><dt>Input match S<sub>11</sub></dt><dd>−14.3 dB</dd></div>
+        </dl>
+        <h4>Peak realized gain</h4>
+        <dl>
+          <div><dt>Ideal ports, uniform → taper</dt><dd>8.11 → 7.79 dBi</dd></div>
+          <div><dt>Built, uniform → taper</dt><dd>8.31 → 4.97 dBi</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="plates">
+      <figure class="plate"><a href="img/p5-ideal-uniform.png"><img loading="lazy" src="img/p5-ideal-uniform.png" alt="Ideal uniform pattern"></a><figcaption><b>Ideal ports, uniform:</b> 8.11 dBi, strong second lobe.</figcaption></figure>
+      <figure class="plate"><a href="img/p5-ideal-chebyshev.png"><img loading="lazy" src="img/p5-ideal-chebyshev.png" alt="Ideal Chebyshev pattern"></a><figcaption><b>Ideal ports, Chebyshev weights:</b> 7.79 dBi.</figcaption></figure>
+      <figure class="plate"><a href="img/p5-built-uniform.png"><img loading="lazy" src="img/p5-built-uniform.png" alt="Built structure, uniform divider"></a><figcaption><b>Built, equal divider:</b> 8.31 dBi.</figcaption></figure>
+      <figure class="plate"><a href="img/p5-built-taper.png"><img loading="lazy" src="img/p5-built-taper.png" alt="Built structure, tapered divider"></a><figcaption><b>Built, asymmetric divider:</b> 4.97 dBi, the narrow middle lobe is gone.</figcaption></figure>
+      <figure class="plate"><a href="img/p5-magnitudes.jpg"><img loading="lazy" src="img/p5-magnitudes.jpg" alt="Output magnitudes of the asymmetric divider"></a><figcaption><b>Asymmetric divider:</b> centre branch above the two side branches.</figcaption></figure>
+      <figure class="plate"><a href="img/p5-s11.jpg"><img loading="lazy" src="img/p5-s11.jpg" alt="S11 of the asymmetric divider"></a><figcaption><b>Input match</b> after the change: −14.3 dB at 8.5 GHz.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ results -->
+  <section class="xb-sec" id="results">
+    <div class="xb-head">
+      <div class="xb-badge"><small>ALL</small>Σ</div>
+      <div><span class="kicker">Summary</span><h2>Results at 8.5 GHz</h2></div>
+    </div>
+    <div class="fieldbar thin"></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Block</th><th>Quantity</th><th class="num">Target</th><th class="num">Simulated</th><th>Solver</th></tr></thead><tbody>
+      <tr><td rowspan="3">Power divider</td><td>Split to each output</td><td class="num">−4.77 dB</td><td class="num">−4.96 … −5.10 dB</td><td>ADS Momentum</td></tr>
+      <tr><td>Input match S<sub>11</sub></td><td class="num">&lt; −15 dB</td><td class="num">−16.5 dB · −37.0 dB</td><td>Momentum · HFSS</td></tr>
+      <tr><td>Output port match</td><td class="num">low</td><td class="num">−16.1 … −17.2 dB</td><td>HFSS</td></tr>
+      <tr><td rowspan="3">Patch antenna</td><td>S<sub>11</sub> minimum</td><td class="num">&lt; −10 dB</td><td class="num">−31.4 dB at 8.502 GHz</td><td>HFSS</td></tr>
+      <tr><td>−10 dB bandwidth</td><td class="num">2 %</td><td class="num">147 MHz (1.7 %)</td><td>HFSS</td></tr>
+      <tr><td>Peak realized gain</td><td class="num">—</td><td class="num">6.63 dBi</td><td>HFSS</td></tr>
+      <tr><td rowspan="3">Feed network</td><td>Input match S<sub>11</sub></td><td class="num">&lt; −15 dB</td><td class="num">−20.7 dB</td><td>HFSS</td></tr>
+      <tr><td>Output magnitudes</td><td class="num">−4.77 dB</td><td class="num">−5.12 … −5.20 dB</td><td>HFSS</td></tr>
+      <tr class="hl"><td>Phase steps</td><td class="num">−155.9°</td><td class="num">−155.9°, −157.5°</td><td>HFSS</td></tr>
+      <tr><td rowspan="2">Ideal array</td><td>S<sub>11</sub> minimum</td><td class="num">&lt; −10 dB</td><td class="num">−25.6 dB at 8.513 GHz</td><td>HFSS</td></tr>
+      <tr><td>Peak realized gain</td><td class="num">—</td><td class="num">8.11 dBi</td><td>HFSS</td></tr>
+      <tr><td rowspan="2">Integrated array</td><td>S<sub>11</sub> at 8.5 GHz</td><td class="num">&lt; −10 dB</td><td class="num">≈ −11.5 dB</td><td>HFSS</td></tr>
+      <tr class="hl"><td>Peak realized gain</td><td class="num">≈ ideal</td><td class="num">8.31 dBi</td><td>HFSS</td></tr>
+      <tr><td rowspan="2">Tapered array</td><td>Centre / side power</td><td class="num">−2.75 / −6.30 dB</td><td class="num">−3.94 / −6.30, −6.32 dB</td><td>HFSS</td></tr>
+      <tr><td>Peak realized gain</td><td class="num">—</td><td class="num">4.97 dBi (8.31 dBi before)</td><td>HFSS</td></tr>
+    </tbody></table></div>
+    <p class="small dim">Values are read from the markers and scales of the simulation plots in the repository; values marked ≈ are read from an unmarked curve. All results are simulations; the array was not fabricated.</p>
+
+    <h3 class="sub-h">What the project showed</h3>
+    <ul class="bul">
+      <li><b>Circuit models are a starting point.</b> The divider that was correct in the ADS schematic had to be re-centred in HFSS with one length; the patch sized from closed-form equations missed the band completely until the slot and stub were tuned.</li>
+      <li><b>The ground plane is part of every microstrip line.</b> The integrated structure failed until the ground and substrate were continuous under the feed and the antennas.</li>
+      <li><b>Simulation settings change the answer.</b> The radiation-box distance altered the realized gain until it was set to at least λ/4.</li>
+      <li><b>A taper is a trade.</b> It removed the inner side lobe but cost gain, more so when built from real line widths than with ideal weights, and it cannot remove the lobe caused by the wide scan angle.</li>
+    </ul>
+
+    <div class="xb-foot-links">
+      <a class="btn primary" href="https://github.com/mohammadaminkhoshkam/X-Band-Patch-Antenna-Array" target="_blank" rel="noopener">Repository: ADS and HFSS projects →</a>
+      <a class="btn" href="https://github.com/mohammadaminkhoshkam/X-Band-Patch-Antenna-Array/blob/main/report/Final_Project.pdf" target="_blank" rel="noopener">Full report (PDF, 45 pages)</a>
+      <a class="btn" href="../../#projects">← All projects</a>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Sajad Ghafouri, Mohammad Amin Khoshkam · MIT licence</span>
+    <a href="../../">← Back to home</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script src="xband.js"></script>
+</body>
+</html>
