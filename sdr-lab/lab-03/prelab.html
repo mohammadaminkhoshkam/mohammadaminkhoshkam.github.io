@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 3 Pre-lab — FM Radio, Stereo and RDS</title>
+  <meta name="description" content="SDR Lab, Lab 3 pre-lab report (Team SDR): FM, Carson bandwidth, discriminator vs PLL detector, FM threshold, the 2.4 MS/s → 240 kHz → 48 kHz rate plan, stereo and RDS, with GNU Radio 3.10 simulations.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f7bdc'/%3E%3Cpath d='M4 17c3-8 5-8 8 0s5 8 8 0 5-8 8 0' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/sdr-theme.css">
+  <style>
+    .eq { font-family: var(--mono); font-size: .9rem; background: var(--bg-soft); padding: 8px 12px; border-radius: 8px; display: inline-block; margin: 4px 0; }
+    .fig { margin: 10px 0 18px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px; }
+    .fig img { width: 100%; height: auto; }
+    .fig figcaption { color: #5a6476; font-size: .84rem; padding: 6px 4px 0; }
+    .task { border-top: 1px solid var(--border); padding-top: 40px; margin-top: 40px; }
+    .task h2 { margin-bottom: 14px; }
+    .pdf-link { margin-left: 8px; }
+    @media print {
+      :root { --bg: #fff; --bg-elev: #fff; --bg-soft: #f2f4f7; --text: #111; --text-dim: #444; --border: #ccc; }
+      .nav, footer, .page-head canvas, .no-print { display: none !important; }
+      body { font-size: 10.5pt; }
+      .page-head { padding: 0 0 12px; }
+      .task { page-break-before: auto; margin-top: 18px; padding-top: 14px; }
+      .fig, table, .eq { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+      .container { max-width: none; padding: 0; }
+    }
+    @page { size: A4; margin: 16mm 14mm; }
+  </style>
+</head>
+<body class="sdr">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a class="pill" href="../">SDR Lab</a>
+      <a href="#t2">Theory</a>
+      <a href="#t3">Design</a>
+      <a href="#sim">Simulation</a>
+      <a href="prelab.pdf">PDF</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="page-head scope strip">
+    <canvas data-scope data-fc="98" data-span="2.4" aria-hidden="true"></canvas>
+    <div class="container">
+      <a class="eyebrow" href="../">← SDR Lab · Lab 03 · Pre-lab report</a>
+      <h1>FM Radio, Stereo and RDS</h1>
+      <div class="course-meta">
+        <span><b>Team SDR:</b> Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+        <span><b>Course:</b> Software-Defined Radio Laboratory, Sharif University of Technology (handout: Experiment 2, pre-lab for session 1 — coherent and non-coherent demodulation)</span>
+        <span><b>Simulations:</b> run on our laptop with GNU Radio 3.10.12.0 (radioconda), using the same blocks as the session</span>
+        <span class="no-print"><a class="btn pdf-link" href="prelab.pdf">Download PDF</a></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="container lab-page">
+
+  <!-- ================================================================ task 1 -->
+  <section class="task" id="t1">
+    <span class="kicker">Task 1</span>
+    <h2>One-page summary: why FM resists noise, what it costs, and why it fails suddenly</h2>
+    <p><b>Why FM is more robust than AM.</b> In AM the message is the envelope, so any noise that adds to the envelope goes straight to the output: with coherent detection the
+      output SNR is at best equal to the baseband SNR, P<sub>R</sub>/(N<sub>0</sub>W). In FM the amplitude carries nothing — a limiter (or, in an SDR, taking only the angle of the samples)
+      removes amplitude noise entirely — and the message is the <i>rate of change of phase</i>. A noise component much weaker than the carrier only tilts the phasor by a small angle
+      ≈ n<sub>q</sub>(t)/A; the discriminator differentiates this phase, so the output noise has a spectrum that grows as f² (parabolic) and its power falls as the carrier power rises,
+      while the message is scaled up by the deviation Δf. Above threshold, for a full-deviation tone, <span class="eq">SNR<sub>o</sub> = 3/2·(Δf/W)²·(B<sub>T</sub>/W)·CNR</span>. With β = 5
+      (broadcast FM) the gain over the baseband SNR is 3/2·25 = 37.5 → 15.7 dB (26.5 dB over the CNR in B<sub>T</sub>), and pre-/de-emphasis adds roughly another 10–13 dB because the
+      de-emphasis filter removes precisely the strong high-frequency part of the parabolic noise.</p>
+    <p><b>The price.</b> The improvement is bought with bandwidth: by Carson’s rule B<sub>T</sub> ≈ 2(Δf + W) = 2(β + 1)W, so every doubling of the deviation buys ≈ 6 dB of SNR but almost doubles
+      the channel width (broadcast mono: 180 kHz for 15 kHz of audio, six times the 30 kHz of DSB AM). A wider channel collects more noise, so more power is needed to stay above threshold
+      (Task 2.5), and the channel filter and the sample rate must be larger. FM also needs a stable carrier frequency: an offset becomes a DC term and can push the signal out of a narrow
+      channel filter (Task 2.6).</p>
+    <p><b>Why it breaks down below a certain level.</b> The small-angle argument holds only while the carrier is much larger than the noise. When the CNR in B<sub>T</sub> approaches about
+      10 dB, the noise phasor occasionally becomes larger than the carrier and the resultant phasor encircles the origin: the phase jumps by 2π in a very short time. The discriminator turns
+      each jump into an impulse of area 2π (a “click”) whose energy covers the whole audio band. The click rate grows exponentially as the CNR falls, and the message itself is suppressed
+      at the same time, so below threshold the output SNR collapses much faster than the input CNR — the FM advantage disappears within a few dB. A PLL detector only sees the noise
+      inside its loop bandwidth, which for large β can be narrower than B<sub>T</sub>; it slips cycles at a lower CNR and extends the threshold by a few dB (our simulation: about 4 dB for
+      β = 5, nothing for the narrow-band link). In short, FM trades a slowly degrading quality for high quality followed by a sharp cliff.</p>
+  </section>
+
+  <!-- ================================================================ task 2 -->
+  <section class="task" id="t2">
+    <span class="kicker">Task 2</span>
+    <h2>Theory questions</h2>
+
+    <h3 class="sub-h">2.1 FM spectrum of a single tone and Carson’s rule</h3>
+    <p>With m(t) = cos(2πf<sub>m</sub>t) in eq. (1): φ(t) = 2πΔf ∫<sub>0</sub><sup>t</sup> cos(2πf<sub>m</sub>τ) dτ = (Δf/f<sub>m</sub>) sin(2πf<sub>m</sub>t) = β sin(2πf<sub>m</sub>t). The complex envelope
+      x(t) = A e<sup>jβ sin(2πf<sub>m</sub>t)</sup> is periodic with period 1/f<sub>m</sub>, so it has a Fourier series with coefficients</p>
+    <p><span class="eq">c<sub>n</sub> = (1/2π) ∫<sub>−π</sub><sup>π</sup> e<sup>j(β sin θ − nθ)</sup> dθ = J<sub>n</sub>(β)</span> &nbsp;(Bessel’s integral), &nbsp;i.e. &nbsp;<span class="eq">e<sup>jβ sin θ</sup> = Σ<sub>n</sub> J<sub>n</sub>(β) e<sup>jnθ</sup></span> (Jacobi–Anger).</p>
+    <p>Then s(t) = Re{x(t) e<sup>j2πf<sub>c</sub>t</sup>} = <span class="eq">A Σ<sub>n=−∞</sub><sup>∞</sup> J<sub>n</sub>(β) cos(2π(f<sub>c</sub> + n f<sub>m</sub>)t)</span>, which is eq. (2). Since Σ J<sub>n</sub>²(β) = 1,
+      the total power A²/2 is constant and is only redistributed among the lines; J<sub>−n</sub> = (−1)<sup>n</sup>J<sub>n</sub>, so the magnitude spectrum is symmetric.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Case (Δf = 75 kHz)</th><th class="num">f<sub>max</sub></th><th class="num">B<sub>T</sub> = 2(Δf + f<sub>max</sub>)</th></tr></thead><tbody>
+      <tr><td>Mono audio only</td><td class="num">15 kHz</td><td class="num"><b>180 kHz</b></td></tr>
+      <tr><td>Full stereo baseband</td><td class="num">53 kHz</td><td class="num"><b>256 kHz</b></td></tr></tbody></table></div>
+    <p>FM broadcast stations are planned on a 200 kHz spacing (in ITU Region 1 the tuning raster is 100 kHz, but stations serving the same area are kept at least 200 kHz apart).
+      <b>The mono value, 180 kHz, is the one close to the channel spacing</b>; the stereo value of 256 kHz is larger than the spacing. This works in practice because Carson’s rule assumes
+      full deviation at the highest modulating frequency, while real programme material has its energy at low frequencies and the L−R subcarrier is usually at a low level. Our
+      simulated stereo multiplex (programme-like noise audio, peak deviation exactly 75 kHz, RMS deviation 16.4 kHz) has a 98 % occupied bandwidth of only <b>81 kHz</b> (Fig. 2).
+      For tones the rule is confirmed: β = 5 (15 kHz tone) gives a measured 98 % bandwidth of 180.0 kHz, equal to Carson.</p>
+    <figure class="fig"><img src="img/fig2_bandwidth.png" alt="Spectra of NBFM, WFM and stereo FM with Carson and 98 % bandwidth"><figcaption><b>Fig. 2.</b> Welch PSD of the GNU Radio
+      Frequency Mod output (1.2 MS/s). Red: Carson bandwidth; green: 98 % occupied bandwidth. Left: β = 1.67 — lines at ±3 and ±6 kHz already hold 98.0 % of the power (12 kHz);
+      99 % needs ±9 kHz (18 kHz). Middle: β = 5, 98 % bandwidth = 180 kHz. Right: stereo MPX + pilot + RDS, peak-normalised to 75 kHz.</figcaption></figure>
+
+    <h3 class="sub-h">2.2 Carrier nulls and calibration of the deviation</h3>
+    <p>The carrier line has amplitude J<sub>0</sub>(β); it vanishes at β = 2.4048, 5.5201, 8.6537 … With f<sub>m</sub> = 1 kHz the first two nulls are at
+      <span class="eq">Δf = 2.405 kHz and 5.520 kHz</span>. Simulation with the GNU Radio Frequency Mod block (carrier = DC bin of the complex baseband, Δf swept in 10 Hz and then 0.5 Hz steps):
+      <b>2405.0 Hz and 5520.0 Hz</b>, and the measured line amplitudes match |J<sub>n</sub>(β)| (Fig. 1).</p>
+    <figure class="fig"><img src="img/fig1_carrier_null.png" alt="Carrier power versus deviation and Bessel lines"><figcaption><b>Fig. 1.</b> Left: carrier power vs deviation (f<sub>m</sub> = 1 kHz) from the
+      simulated modulator and 20 log|J<sub>0</sub>|. Right: line spectra for β = 2.405 (carrier gone) and β = 5; crosses are |J<sub>n</sub>(β)|.</figcaption></figure>
+    <p><b>Calibration with only a spectrum display.</b> (1) Modulate with a pure tone of known frequency f<sub>m</sub> (generated in software, so its frequency is exact). (2) Set the FFT
+      resolution well below f<sub>m</sub> (e.g. 50–100 Hz) so the carrier line is separated from the sidebands. (3) Starting from zero, raise the tone amplitude (or the Sensitivity) slowly:
+      the carrier line falls and disappears at the first null, where Δf = 2.405·f<sub>m</sub> <i>exactly</i>, independent of any gain or power calibration. (4) The setting at the null gives
+      the modulator constant (Hz per unit input); the second null (5.520·f<sub>m</sub>) checks linearity. To set a <i>target</i> deviation directly, choose f<sub>m</sub> = Δf/2.405 and adjust the
+      level until the carrier vanishes: Δf = 5 kHz → f<sub>m</sub> = 2079 Hz; Δf = 75 kHz → f<sub>m</sub> = 31.19 kHz (first null) or 13.59 kHz (second null). The null is a sharp minimum, more than
+      40 dB deep, so the method is accurate to a fraction of a percent.</p>
+
+    <h3 class="sub-h">2.3 The discrete discriminator</h3>
+    <p>From eq. (4), x[n] = A e<sup>jφ[n]</sup> with φ[n] − φ[n−1] = k<sub>f</sub> m[n]. Hence x[n]x*[n−1] = A² e<sup>j k<sub>f</sub> m[n]</sup>. arg(·) returns the principal value in (−π, π],
+      and arg(A² e<sup>jθ</sup>) = θ exactly if and only if θ ∈ (−π, π] (the factor A² &gt; 0 does not change the angle, so no limiter is needed). Therefore
+      <span class="eq">y[n] = k<sub>f</sub> m[n] for every m[n] with |k<sub>f</sub> m[n]| &lt; π</span>, and m̂[n] = y[n]/k<sub>f</sub> = f<sub>s</sub>/(2πΔf)·y[n] reproduces the message exactly, with no
+      approximation of a derivative. If |k<sub>f</sub> m[n]| exceeds π, y[n] wraps by 2π and the output shows spikes.</p>
+    <p><b>Maximum deviation at f<sub>s</sub> = 240 kHz:</b> k<sub>f</sub>·1 = 2πΔf/f<sub>s</sub> &lt; π ⇒ <span class="eq">Δf<sub>max</sub> = f<sub>s</sub>/2 = 120 kHz</span> (the instantaneous frequency must stay inside
+      the Nyquist band; with a carrier offset δf the condition becomes Δf + |δf| &lt; f<sub>s</sub>/2). Simulation (Fig. 3): SINAD of a 1 kHz tone above 119 dB (numerical precision) for every
+      Δf up to 115 kHz, 24 dB at exactly 120 kHz and negative beyond (phase wraps).</p>
+    <p><b>Receiver set for twice the real Δf:</b> the gain f<sub>s</sub>/(2π·2Δf) is half the correct value, so the output is the correct message scaled by ½: <b>−6.02 dB in level,
+      no distortion</b> (simulated amplitude 0.500 instead of 1.000). Conversely, a too-small Δf setting makes the audio too loud and may clip later stages.</p>
+    <figure class="fig"><img src="img/fig3_discriminator.png" alt="Discriminator SINAD vs deviation and waveforms"><figcaption><b>Fig. 3.</b> Quadrature Demod at 240 kHz. Left: SINAD vs deviation —
+      exact up to f<sub>s</sub>/2. Right: correct gain (blue), gain set for 150 kHz (orange, half amplitude), and Δf = 130 kHz &gt; f<sub>s</sub>/2 (red, wrapped phase).</figcaption></figure>
+
+    <h3 class="sub-h">2.4 Discriminator vs PLL detector</h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Aspect</th><th>Discriminator (Quadrature Demod)</th><th>PLL detector (PLL Freq Det)</th></tr></thead><tbody>
+      <tr><td>Parameters to design</td><td>Only the gain f<sub>s</sub>/(2πΔf); the channel filter in front sets the noise bandwidth.</td><td>Loop bandwidth (with the fixed damping it sets α<sub>L</sub>, β<sub>L</sub>
+        and B<sub>L</sub> ≈ 1.06·LBW·f<sub>s</sub>), Max/Min phase per sample (pull-in range, must cover Δf + offset), output gain f<sub>s</sub>/(2πΔf).</td></tr>
+      <tr><td>Above threshold</td><td>Follows eq. (8). Simulation at CNR = 20 dB: NBFM 34.6 dB, WFM 47.4 dB (eq. 8: 33.5 / 46.5 dB).</td><td>Identical when the loop follows the message: 34.6 / 47.2 dB.
+        A too-narrow loop low-passes or distorts the audio (Fig. 4).</td></tr>
+      <tr><td>Near threshold</td><td>Clicks when the noise phasor encircles the origin; within 1 dB of eq. (8) down to CNR = 9 dB (NBFM) and 12 dB (WFM).</td><td>Sees only the noise in B<sub>L</sub>;
+        NBFM: no gain (9 dB), WFM: 8 dB, i.e. ≈ 4 dB of threshold extension (at CNR = 10 dB: 37.1 vs 31.9 dB).</td></tr>
+      <tr><td>Carrier frequency error</td><td>Gives a DC term δf/Δf; works as long as the signal stays inside the channel filter and |f<sub>i</sub>| &lt; f<sub>s</sub>/2.</td><td>Also gives DC, and the offset
+        uses up part of the pull-in range: if |δf| + Δf exceeds Max phase/sample the loop never locks.</td></tr>
+      <tr><td>Computational load</td><td>Per sample: 1 complex multiply + 1 atan2.</td><td>Per sample: complex multiply, phase detector (atan2), NCO sin/cos, two loop-filter updates and limit
+        checks — about 2–3× the discriminator, still negligible next to the channel FIR (≈ 69 M multiply-adds/s for 289 taps at 240 kHz output).</td></tr>
+    </tbody></table></div>
+    <p><b>Why the PLL advantage grows with β.</b> The discriminator’s threshold is set by the CNR in the whole channel, B<sub>T</sub> = 2(β + 1)W. The PLL needs a loop that follows the
+      instantaneous frequency, whose rate of change is set mainly by the message bandwidth W, and the noise that causes cycle slips is the noise inside B<sub>L</sub>. For small β,
+      B<sub>T</sub> ≈ 2W and the loop must be about as wide as the channel (our NBFM design: B<sub>L</sub> ≈ 21.6 kHz ≥ B<sub>T</sub> = 16 kHz), so the PLL sees the same noise and the thresholds
+      coincide. For large β, B<sub>T</sub> grows ∝ β while the needed loop width grows more slowly, so the CNR inside the loop is higher than the CNR in B<sub>T</sub> and the loop keeps a
+      small phase error at CNRs where the discriminator already clicks. This is what Fig. 5 shows: no difference for β = 1.67, about 4 dB for β = 5.</p>
+    <figure class="fig"><img src="img/fig5_snr_vs_cnr.png" alt="Output SNR versus CNR for discriminator and PLL"><figcaption><b>Fig. 5.</b> SNR<sub>o</sub> (1 kHz full-deviation tone, noise in 20 Hz…W)
+      vs CNR in B<sub>T</sub>; 1 s of signal per point, AWGN, channel FIR of width B<sub>T</sub>. Dashed: eq. (8). Dotted red: CNR = 10 dB.</figcaption></figure>
+
+    <h3 class="sub-h">2.5 FM improvement and its price</h3>
+    <p>Insert CNR = P<sub>R</sub>/(N<sub>0</sub>B<sub>T</sub>) into eq. (8): <span class="eq">SNR<sub>o</sub> = 3/2·(Δf/W)²·P<sub>R</sub>/(N<sub>0</sub>W)</span> — B<sub>T</sub> cancels. At constant received power,
+      doubling Δf (with B<sub>T</sub> following Carson) multiplies SNR<sub>o</sub> by 4: <b>+6.02 dB</b>. The threshold, however, is a CNR in B<sub>T</sub>: P<sub>R,th</sub> = 10·N<sub>0</sub>B<sub>T</sub>, so the
+      received power needed to stay above threshold rises by 10 log(B<sub>T,new</sub>/B<sub>T,old</sub>):</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Link</th><th class="num">B<sub>T</sub> before</th><th class="num">B<sub>T</sub> after doubling Δf</th><th class="num">SNR<sub>o</sub> change</th><th class="num">Threshold power change</th></tr></thead><tbody>
+      <tr><td>NBFM, W = 3 kHz, Δf 5 → 10 kHz</td><td class="num">16 kHz</td><td class="num">26 kHz</td><td class="num">+6.0 dB</td><td class="num"><b>+2.1 dB</b></td></tr>
+      <tr><td>WFM, W = 15 kHz, Δf 75 → 150 kHz</td><td class="num">180 kHz</td><td class="num">330 kHz</td><td class="num">+6.0 dB</td><td class="num"><b>+2.6 dB</b></td></tr>
+      <tr><td>Limit β ≫ 1</td><td class="num" colspan="2">B<sub>T</sub> ∝ Δf</td><td class="num">+6.0 dB</td><td class="num">+3.0 dB</td></tr></tbody></table></div>
+    <p>The extra deviation therefore helps only strong signals; weak signals reach the threshold 2–3 dB earlier, and the wider channel needs a wider filter and a higher sample rate.</p>
+
+    <h3 class="sub-h">2.6 Carrier frequency error</h3>
+    <p>With an error δf the received phase is φ[n] = k<sub>f</sub> Σ m + 2πδf·n/f<sub>s</sub>, so φ[n] − φ[n−1] = k<sub>f</sub> m[n] + 2πδf/f<sub>s</sub>, and after the gain f<sub>s</sub>/(2πΔf):
+      <span class="eq">m̂[n] = m[n] + δf/Δf</span> — a constant (DC) term. For 30 ppm at 434 MHz: <span class="eq">δf = 30·10<sup>−6</sup> × 434 MHz = 13.02 kHz</span>, a DC of
+      13.02/5 = 2.6 times full scale for Δf = 5 kHz.</p>
+    <p><b>Problem with B<sub>T</sub> = 16 kHz:</b> the error is larger than the whole half-bandwidth (8 kHz). The signal occupies 13.0 ± 8 kHz = 5…21 kHz, so a channel filter centred on the
+      nominal frequency passes only its lowest few kHz: most of the signal power is removed, the noise in the pass band is unchanged, and what is left is strongly distorted. In the
+      simulation (Fig. 6) the SINAD of a 1 kHz tone falls from 53.6 dB to 33 dB at only 2 kHz error and to 13.7 dB at 13 kHz; the measured DC stops following δf/Δf as soon as the signal
+      leaves the filter. A 12 kHz cut-off tolerates about 4 kHz (SINAD 58 dB) but not 13 kHz. The DC term itself is harmless for audio (blocked by the sound card or a DC blocker), but it
+      uses up the pull-in range of a PLL. <b>Remedy:</b> measure the offset on the spectrum first and correct it with the centre frequency of the Freq Xlating FIR Filter (the
+      <i>rx_offset</i> slider of our flowgraphs) or the LO frequency, or transmit and receive with the same Pluto (common reference, δf ≈ 0).</p>
+    <figure class="fig"><img src="img/fig6_freq_error.png" alt="DC term and SINAD vs carrier frequency error"><figcaption><b>Fig. 6.</b> NBFM (Δf = 5 kHz, 1 kHz tone) with a carrier error δf. Left: DC at
+      the discriminator output vs δf/Δf. Right: SINAD after a 3 kHz audio filter for channel filters with 8 and 12 kHz cut-off. Dotted: 30 ppm at 434 MHz.</figcaption></figure>
+  </section>
+
+  <!-- ================================================================ task 3 -->
+  <section class="task" id="t3">
+    <span class="kicker">Task 3</span>
+    <h2>Design of the rate chain and the block constants (Table 3)</h2>
+    <p>Number of taps of a Hamming-window FIR: N ≈ 3.3·f<sub>s</sub>/Δf<sub>tr</sub> (handout). GNU Radio’s <span class="mono">firdes.low_pass</span> uses its own estimate (≈ 2.4·f<sub>s</sub>/Δf<sub>tr</sub>),
+      given in brackets.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Quantity</th><th>Value</th><th>Numerical reason</th></tr></thead><tbody>
+      <tr><td>Input rate, decimations and intermediate rates to 48 kHz</td><td>2.4 MS/s → Freq Xlating FIR ↓10 → <b>240 kHz</b> → detector → audio FIR ↓5 → <b>48 kHz</b>.
+        RDS: 240 kHz → shift 57 kHz, ↓10 → 24 kHz → ×19/24 → <b>19 kHz</b></td>
+        <td>240 kHz complex covers ±120 kHz ≥ 75 kHz deviation + sidebands; as a real rate after the detector it holds the MPX up to 60 kHz (RDS) with margin.
+          2.4 M/240 k = 10 and 240 k/48 k = 5 are integers; 48 kHz is a native sound-card rate; 19 kHz/1187.5 bit/s = exactly 16 samples per RDS bit.</td></tr>
+      <tr><td>Channel filter, WFM</td><td>at 2.4 MS/s: cut-off 100 kHz, transition 20 kHz, <b>N ≈ 396</b> (firdes: 289)</td>
+        <td>Passes the mono Carson band ±90 kHz; the stop band starts at 120 kHz = Nyquist of the 240 kHz output, so nothing aliases into the pass band; rejects the next station at ±200 kHz.
+          The stereo sidebands (±128 kHz) are partly cut: simulated stereo separation 28.9 dB (24.7 dB with 80 kHz, 32.3 dB with 115 kHz cut-off).</td></tr>
+      <tr><td>Channel filter, NBFM</td><td>two stages: the same first stage, then at 240 kHz cut-off 10 kHz, transition 4 kHz, <b>N ≈ 198</b> (firdes: 145)</td>
+        <td>B<sub>T</sub>/2 = 8 kHz plus 2 kHz margin for residual frequency error; stop band from 14 kHz. In a single stage at 2.4 MS/s it would need N ≈ 1980 taps
+          (firdes: 1445), about 7× more multiplications.</td></tr>
+      <tr><td>Audio filter (240 kHz → 48 kHz)</td><td>WFM: 15 kHz / 5 kHz, N ≈ 159 (115); NBFM: 3.5 kHz / 2 kHz, N ≈ 396 (289)</td>
+        <td>Stop band (≤ 20 kHz) below the 24 kHz Nyquist of the 48 kHz output; removes pilot, L−R and RDS before decimation.</td></tr>
+      <tr><td>Quadrature Demod Gain and Frequency Mod Sensitivity, Δf = 5 kHz</td><td>Gain = 240000/(2π·5000) = <b>7.639</b>;<br>Sensitivity = 2π·5000/240000 = <b>0.1309 rad/sample</b>
+        (0.01309 if the modulator runs at 2.4 MS/s, as in our transmitter)</td><td>Eq. (4)–(5): k<sub>f</sub> = 2πΔf/f<sub>s</sub>, gain = 1/k<sub>f</sub>. (WFM 75 kHz: gain 0.5093, sensitivity 1.963 rad/sample at 240 kHz.)</td></tr>
+      <tr><td>PLL Loop Bandwidth and frequency limits, NBFM</td><td>LBW = <b>0.085</b> (B<sub>L</sub> ≈ 21.6 kHz); Max/Min = ±2π·15 kHz/240 kHz = <b>±0.393 rad/sample</b></td>
+        <td>Simulation (Fig. 4): the smallest LBW with a flat (±1 dB) and undistorted (SINAD ≥ 40 dB) response up to 3 kHz is 0.057 (B<sub>L</sub> 14.4 kHz); ×1.5 margin. Range = 5 kHz deviation +
+          10 kHz for frequency error.</td></tr>
+      <tr><td>PLL Loop Bandwidth and frequency limits, WFM</td><td>LBW = <b>0.50</b> (B<sub>L</sub> ≈ 126 kHz); Max/Min = ±2π·110 kHz/240 kHz = <b>±2.88 rad/sample</b></td>
+        <td>Smallest LBW that keeps lock and stays flat to 15 kHz at the full 75 kHz deviation: 0.33 (B<sub>L</sub> ≈ 84 kHz); ×1.5. The handout’s example value 0.118 (B<sub>L</sub> = 30 kHz) is fine for
+          NBFM but loses lock with 75 kHz deviation at audio frequencies above ≈ 5 kHz.</td></tr>
+      <tr><td>Transmitter attenuation for −60 dBm at the receiver</td><td><b>36.5 dB</b></td><td>+7 dBm − A − 30 dB pad − 0.5 dB cable = −60 dBm ⇒ A = 36.5 dB (Pluto steps of 0.25 dB);
+          50 dB below the −10 dBm limit. With A = 40 dB: −63.5 dBm (example 4).</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <!-- ================================================================ simulation -->
+  <section class="task" id="sim">
+    <span class="kicker">Simulation</span>
+    <h2>GNU Radio simulations behind the numbers</h2>
+    <p><b>How we ran it.</b> All signals pass through the GNU Radio 3.10.12 blocks used in the session (Frequency Mod, Quadrature Demod, PLL Freq Det, Freq Xlating FIR Filter,
+      Decimating FIR, Rational Resampler, PLL Carrier Regeneration, FM Deemphasis) through vector sources and sinks; the test signals and the analysis (Blackman–Harris FFT, SINAD, Welch PSD)
+      are in numpy. One script (<span class="mono">fm_prelab_sim.py</span>, 43 s on our laptop) produces every figure and the file <a href="prelab-data.json">prelab-data.json</a>.</p>
+
+    <h3 class="sub-h">PLL loop bandwidth (used for Table 3 and prediction 5)</h3>
+    <figure class="fig"><img src="img/fig4_pll_loop_bw.png" alt="PLL response versus loop bandwidth"><figcaption><b>Fig. 4.</b> Full-deviation tones through PLL Freq Det at 240 kHz. Left and middle: tone level
+      relative to the discriminator (green band ±1 dB); right: SINAD. NBFM: a narrow loop acts as a linear low-pass on the frequency (smooth roll-off, clean tone). WFM: with 75 kHz
+      deviation a too-narrow loop slips cycles and the tone collapses abruptly.</figcaption></figure>
+    <p>Two different failure modes appear. For NBFM (peak phase excursion only 1.7 rad) a slow loop simply low-passes the instantaneous frequency: the 3 kHz tone drops smoothly
+      while the SINAD stays high. For WFM the phase error grows with the deviation, and below a critical LBW the loop slips cycles: the 1 kHz tone needs ≥ 0.07, 5 kHz ≥ 0.17,
+      15 kHz ≥ 0.33. The stereo subcarrier band (38–53 kHz) and RDS (57 kHz) are still off by 1–3 dB even at the largest bandwidths (0.64–0.8), so the PLL detector at 240 kHz suits mono audio,
+      but <b>stereo and RDS should be taken from the discriminator</b>.</p>
+
+    <h3 class="sub-h">De-emphasis</h3>
+    <figure class="fig" style="max-width:640px"><img src="img/fig7_deemphasis.png" alt="FM deemphasis responses"><figcaption><b>Fig. 7.</b> Impulse response of GNU Radio’s FM Deemphasis at 48 kHz vs the
+      analog RC network. They agree at low frequencies (−0.40 vs −0.41 dB at 1 kHz for 50 µs) and diverge near f<sub>s</sub>/2: −17.1 vs −13.7 dB at 15 kHz.</figcaption></figure>
+    <p>Iran is in ITU Region 1, where broadcast FM uses <b>τ = 50 µs</b> (f<sub>1</sub> = 3183 Hz); GNU Radio’s default is 75 µs. Using 75 µs on a 50 µs station cuts the treble by
+      3.4 dB at 15 kHz (dull audio); our flowgraphs use τ = 50 µs.</p>
+
+    <h3 class="sub-h">The complete rate plan at 2.4 MS/s: mono, stereo and RDS</h3>
+    <p>A 1 s test signal at 2.4 MS/s held two FM stations (the wanted one at +500 kHz with L = 1 kHz tone, R = 0, pilot and RDS; an interferer at −400 kHz, 6 dB weaker) plus noise. The
+      receiver followed Fig. 5 of the handout: Freq Xlating FIR (289 taps, ↓10) → Quadrature Demod (240 kHz) → pilot band-pass (579 taps) + PLL Carrier Regeneration → 38 kHz
+      reference = (pilot)², with a <b>Delay of 289 samples</b> on the MPX path to match the band-pass filter → L±R audio filters ↓5 → 48 kHz.</p>
+    <figure class="fig"><img src="img/fig8_mpx_rds.png" alt="Simulated MPX spectrum and RDS waveform"><figcaption><b>Fig. 8.</b> Left: spectrum after the FM detector — L+R up to 15 kHz, pilot at 19 kHz,
+      L−R between 23 and 53 kHz (suppressed carrier at 38 kHz), RDS at 57 kHz (compare Fig. 4 of the handout). Right: RDS after the 57 kHz shift, ↓10 and ×19/24 — each bit is 16 samples.</figcaption></figure>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>
+      <tr><td>Stereo separation (L tone leaking into R)</td><td><b>28.9 dB</b> with the 100 kHz channel filter; L SINAD 43.0 dB</td></tr>
+      <tr><td>Mono (L+R) output vs decoded L</td><td>0.47 vs 0.92 — L is twice the mono sum, as expected for R = 0</td></tr>
+      <tr><td>RDS samples per bit at 19 kHz</td><td>19000/1187.5 = <b>16</b> exactly</td></tr>
+      <tr><td>RDS bits recovered (biphase matched filter + differential decoding)</td><td><b>0 errors in 946 bits</b>; 1187.5/104 = 11.4 groups per second</td></tr></tbody></table></div>
+    <p>The separation is limited by the channel filter cutting the outer sidebands of the stereo signal (24.7 dB at 80 kHz, 32.3 dB at 115 kHz cut-off) — worth checking in the second session.
+      The RDS carrier phase was set offline from the data; in the lab a Costas loop / Constellation Receiver does this.</p>
+
+    <h3 class="sub-h">Flowgraphs for the session</h3>
+    <ul class="bul">
+      <li><span class="mono">lab3_fm_sim.grc</span> — no hardware: tone → Frequency Mod → carrier error and AWGN at a chosen CNR → the receiver of Table 3 with a run-time choice of Quadrature Demod or
+        PLL Freq Det (QT GUI Chooser + Selector), an NBFM/WFM switch, and sliders for loop bandwidth, CNR, frequency error and receiver tuning correction; spectra of the channel, the detector output and the audio.</li>
+      <li><span class="mono">lab3_fm_link.grc</span> — the same receiver fed by the Pluto, with the Pluto transmitting the FM tone at 434 MHz (cable + 30 dB pad only; the TX attenuation slider starts at
+        40 dB and cannot go below 36.5 dB).</li>
+    </ul>
+    <p class="small dim">Both were generated by <span class="mono">make_grc.py</span> and compiled with grcc 3.10.12; the simulation flowgraph was run for 5 s in both modes and with both detectors.
+      The Pluto flowgraph has not yet been tested on hardware.</p>
+  </section>
+
+  <!-- ================================================================ task 4 -->
+  <section class="task" id="t4">
+    <span class="kicker">Task 4</span>
+    <h2>Prediction table for session 1 (Table 4)</h2>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Quantity</th><th>Prediction</th><th>Measured</th></tr></thead><tbody>
+      <tr><td>1</td><td>The two deviations at which the carrier vanishes, f<sub>m</sub> = 1 kHz (Hz)</td><td><b>2405 and 5520 Hz</b> (2.4048 and 5.5201 × f<sub>m</sub>; simulation 2405.0 / 5520.0 Hz)</td><td></td></tr>
+      <tr><td>2</td><td>Occupied bandwidth of the NBFM link, Δf = 5 kHz, f<sub>m</sub> = 3 kHz (kHz)</td><td><b>16 kHz</b> by Carson; the lines at ±3, ±6 kHz hold 98.0 % (12 kHz) and 99 % needs 18 kHz,
+        so a spectrum display will show 12–18 kHz depending on the power criterion</td><td></td></tr>
+      <tr><td>3</td><td>Power at the receiver input with 40 dB TX attenuation (dBm)</td><td><b>−63.5 dBm</b> (7 − 40 − 30 − 0.5)</td><td></td></tr>
+      <tr><td>4</td><td>Frequency error between TX and RX at the team frequency (Hz)</td><td><b>≈ 0 Hz</b> if TX and RX are the same Pluto (one 40 MHz reference for both synthesizers);
+        with two different Plutos up to ±50 ppm × 434 MHz = ±21.7 kHz worst case — our Pluto was 26 ppm slow in Lab 1, i.e. ≈ −11 kHz against an accurate reference</td><td></td></tr>
+      <tr><td>5</td><td>Smallest Loop Bandwidth that gives the WFM station without distortion</td><td><b>≈ 0.33</b> (B<sub>L</sub> ≈ 84 kHz) for 15 kHz audio at full deviation; real programme
+        rarely has full deviation at high audio frequencies, so audible distortion may start lower, around 0.15–0.2; below ≈ 0.07 even low notes break up</td><td></td></tr>
+    </tbody></table></div>
+  </section>
+
+  <!-- ================================================================ task 5 -->
+  <section class="task" id="t5">
+    <span class="kicker">Task 5</span>
+    <h2>Three likely mistakes and how to prevent them</h2>
+    <ol class="bul">
+      <li><b>Too much power into the receiver, or radiating (transmission safety).</b> Running the Pluto sink with a low attenuation (the GRC default is 10 dB) and no pad gives
+        +7 − 10 − 0.5 = −3.5 dBm at the receiver, above the −10 dBm limit; an antenna left on the TX port radiates at 434 MHz. <i>Prevention:</i> compute the level before connecting
+        (Table 3: ≥ 36.5 dB with the 30 dB pad, start at 40 dB → −63.5 dBm); fit the 30 dB pad directly on the TX port; never connect an antenna to TX; connect all cables before starting
+        the flowgraph and stop it before changing anything; check the operating frequency (434 MHz) in the flowgraph before pressing Run.</li>
+      <li><b>Wrong rate in a gain or filter.</b> Using samp_rate (2.4 MS/s) instead of quad_rate (240 kHz) in the Quadrature Demod Gain or the modulator Sensitivity scales the output by 10
+        (too quiet, or phase wrapping); an audio sink that is not at 48 kHz gives under-runs (“aUaU”); the default 75 µs de-emphasis instead of 50 µs dulls the audio by 3.4 dB at 15 kHz.
+        <i>Prevention:</i> define samp_rate, quad_rate, audio_rate and dev as variables and build every parameter from them; check that a full-deviation tone gives amplitude ≈ 1 after the
+        detector (both detectors must give the same level).</li>
+      <li><b>Frequency offset and PLL settings.</b> An uncorrected offset moves the NBFM signal out of the narrow channel filter (13 kHz at 30 ppm; 2 kHz already costs 20 dB of SINAD
+        with an 8 kHz filter) and outside the PLL pull-in range, so the PLL never locks; a loop bandwidth taken from the handout example (0.118) loses lock on a 75 kHz WFM station.
+        <i>Prevention:</i> look at the spectrum first and correct the offset (rx_offset); set Max/Min phase per sample to cover Δf + |δf| with margin; start the PLL at the Table 3
+        values (NBFM 0.085, WFM 0.5) and only then sweep the bandwidth down to find prediction 5.</li>
+    </ol>
+  </section>
+
+  <section class="task no-print" id="files">
+    <span class="kicker">Files</span>
+    <h2>Scripts, flowgraphs and raw results</h2>
+    <ul class="bul small">
+      <li>In the <a href="../#lab-03">Lab 3 files</a> on the SDR Lab page: <span class="mono">fm_prelab_sim.py</span> (all simulations and figures), <span class="mono">make_grc.py</span>,
+        <span class="mono">lab3_fm_sim.grc</span>, <span class="mono">lab3_fm_link.grc</span>, <span class="mono">sim_results.json</span>.</li>
+      <li>All numbers of this page: <a href="prelab-data.json">prelab-data.json</a> · PDF version: <a href="prelab.pdf">prelab.pdf</a></li>
+    </ul>
+  </section>
+
+  <section class="task" id="refs">
+    <span class="kicker">References</span>
+    <ol class="bul small">
+      <li>J. G. Proakis and M. Salehi, <i>Communication Systems Engineering</i>, 2nd ed., Prentice Hall, 2002 — angle modulation; effect of noise on angle modulation (threshold, pre-/de-emphasis).</li>
+      <li>M. Lichtman, <i>PySDR: A Guide to SDR and DSP using Python</i>, chapter “End-to-End Example” (FM reception and RDS decoding), https://pysdr.org</li>
+      <li>ITU-R Recommendations BS.450 (FM sound broadcasting at VHF) and BS.643 (Radio Data System).</li>
+      <li>B. Bloessl, gr-rds: FM RDS/TMC transceiver for GNU Radio, https://github.com/bastibl/gr-rds</li>
+      <li>GNU Radio project, GNU Radio Wiki: block documentation, https://wiki.gnuradio.org</li>
+    </ol>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Team SDR — Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+    <a href="../">← Back to SDR Lab</a>
+  </div>
+</footer>
+<script src="../../assets/js/main.js"></script>
+<script src="../../assets/js/sdr-scope.js"></script>
+</body>
+</html>

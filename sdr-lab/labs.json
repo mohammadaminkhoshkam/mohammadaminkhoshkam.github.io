@@ -8,7 +8,10 @@
     "semester": "",
     "instructor": "",
     "teamName": "SDR",
-    "team": ["Mohammad Amin Khoshkam", "Sobhan Yarmohammadi"]
+    "team": [
+      "Mohammad Amin Khoshkam",
+      "Sobhan Yarmohammadi"
+    ]
   },
   "labs": [
     {
@@ -34,13 +37,33 @@
       "status": "done",
       "page": "lab-02/",
       "pageLabel": "Open the lab report →",
-      "pages": [{ "href": "lab-02/prelab.html", "label": "Pre-lab report" }],
+      "pages": [
+        {
+          "href": "lab-02/prelab.html",
+          "label": "Pre-lab report"
+        }
+      ],
       "highlights": [
-        { "k": "NF @ 40.2 dB", "v": "2.7 dB" },
-        { "k": "ADC full scale", "v": "−48.2 dBm" },
-        { "k": "P1dB", "v": "≈ −46 dBm" },
-        { "k": "IIP3", "v": "≥ −28.6 dBm" },
-        { "k": "TX duty", "v": "66.4 %" }
+        {
+          "k": "NF @ 40.2 dB",
+          "v": "2.7 dB"
+        },
+        {
+          "k": "ADC full scale",
+          "v": "−48.2 dBm"
+        },
+        {
+          "k": "P1dB",
+          "v": "≈ −46 dBm"
+        },
+        {
+          "k": "IIP3",
+          "v": "≥ −28.6 dBm"
+        },
+        {
+          "k": "TX duty",
+          "v": "66.4 %"
+        }
       ],
       "summary": "Noise figure, compression and intermodulation of the ADALM-Pluto receiver, measured with the Pluto's own transmitter as noise and tone source. The report is computed from our data sheets and from 26 raw I/Q captures; the captures showed that the transmitter was on only two thirds of the time, which shifts every averaged reading by 1.78 dB.",
       "tasks": [
@@ -49,6 +72,45 @@
         "Two-tone test: no slope-3 region at this gain, so only a lower bound IIP3 ≥ −28.6 dBm",
         "Antenna link sweep 400–3000 MHz: 3 dB band 1624–1749 MHz",
         "Pre-lab: theory, GNU Radio simulation of the course receiver model, prediction tables"
+      ]
+    },
+    {
+      "id": "lab-03",
+      "number": 3,
+      "title": "FM Radio, Stereo and RDS",
+      "date": "2026-11-17",
+      "status": "in-progress",
+      "page": "lab-03/prelab.html",
+      "pageLabel": "Open the pre-lab report →",
+      "highlights": [
+        {
+          "k": "Carrier nulls",
+          "v": "2405 / 5520 Hz"
+        },
+        {
+          "k": "Carson (mono)",
+          "v": "180 kHz"
+        },
+        {
+          "k": "PLL threshold gain",
+          "v": "≈ 4 dB (β = 5)"
+        },
+        {
+          "k": "TX atten. → −60 dBm",
+          "v": "36.5 dB"
+        },
+        {
+          "k": "RDS (sim)",
+          "v": "0 / 946 bit errors"
+        }
+      ],
+      "summary": "Pre-lab for the FM session (handout: Experiment 2): FM and Carson bandwidth, discriminator vs PLL detector, FM threshold, the 2.4 MS/s → 240 kHz → 48 kHz rate plan, stereo and RDS. Every number is checked with GNU Radio 3.10 simulations using the session's blocks; two flowgraphs (simulation and Pluto cable link at 434 MHz) are ready for the lab.",
+      "tasks": [
+        "One-page summary: why FM beats AM in noise, its bandwidth price and the threshold",
+        "Theory: Bessel spectrum, carrier-null calibration, discrete discriminator (|Δf| < fs/2 = 120 kHz), frequency error (13 kHz at 30 ppm)",
+        "Design table: channel/audio filters, Gain 7.639, Sensitivity 0.1309, PLL loop bandwidth 0.085 (NBFM) / 0.5 (WFM)",
+        "Simulation: SNR vs CNR — PLL extends the threshold by ≈ 4 dB for WFM, none for NBFM; stereo separation 28.9 dB",
+        "Prediction table and three risks (transmission safety, wrong rates, frequency offset)"
       ]
     }
   ]

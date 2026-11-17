@@ -1,0 +1,1078 @@
+options:
+  parameters:
+    author: Team SDR (M. A. Khoshkam, S. Yarmohammadi)
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    generate_options: qt_gui
+    id: lab3_fm_link
+    output_language: python
+    placement: (0,0)
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    title: SDR Lab 3 - FM cable link with ADALM-Pluto at 434 MHz (TX 30 dB pad!)
+    window_size: (1400,1000)
+    max_nouts: '0'
+    realtime_scheduling: ''
+    qt_qss_theme: ''
+    thread_safe_setters: ''
+    copyright: ''
+    description: ''
+    comment: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    hier_block_src_path: '.:'
+    cmake_opt: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 8
+    - 8
+    rotation: 0
+    state: enabled
+blocks:
+- name: imports
+  id: import
+  parameters:
+    imports: import math
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 200
+    - 8
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    value: 2.4e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 330
+    - 8
+    rotation: 0
+    state: enabled
+- name: decim1
+  id: variable
+  parameters:
+    value: '10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 450
+    - 8
+    rotation: 0
+    state: enabled
+- name: quad_rate
+  id: variable
+  parameters:
+    value: samp_rate/decim1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 550
+    - 8
+    rotation: 0
+    state: enabled
+- name: decim_audio
+  id: variable
+  parameters:
+    value: '5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 680
+    - 8
+    rotation: 0
+    state: enabled
+- name: audio_rate
+  id: variable
+  parameters:
+    value: quad_rate/decim_audio
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 800
+    - 8
+    rotation: 0
+    state: enabled
+- name: tau
+  id: variable
+  parameters:
+    value: 50e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 940
+    - 8
+    rotation: 0
+    state: enabled
+- name: chan_cut
+  id: variable
+  parameters:
+    value: 100e3 if mode == 1 else 10e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1040
+    - 8
+    rotation: 0
+    state: enabled
+- name: chan_tw
+  id: variable
+  parameters:
+    value: 20e3 if mode == 1 else 4e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1180
+    - 8
+    rotation: 0
+    state: enabled
+- name: audio_cut
+  id: variable
+  parameters:
+    value: 15e3 if mode == 1 else 3.5e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1300
+    - 8
+    rotation: 0
+    state: enabled
+- name: audio_tw
+  id: variable
+  parameters:
+    value: 5e3 if mode == 1 else 2e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1440
+    - 8
+    rotation: 0
+    state: enabled
+- name: dev
+  id: variable
+  parameters:
+    value: 75e3 if mode == 1 else 5e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1040
+    - 90
+    rotation: 0
+    state: enabled
+- name: pll_fmax
+  id: variable
+  parameters:
+    value: 110e3 if mode == 1 else 15e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1180
+    - 90
+    rotation: 0
+    state: enabled
+- name: mode
+  id: variable_qtgui_chooser
+  parameters:
+    label: '''Mode'''
+    type: int
+    num_opts: '2'
+    value: '0'
+    widget: radio_buttons
+    orient: QtCore.Qt.Horizontal
+    gui_hint: 0,0,1,1
+    options: '[0, 1, 2]'
+    labels: '['''', '''', '''']'
+    option0: '0'
+    label0: '''NBFM 5 kHz'''
+    option1: '1'
+    label1: '''WFM 75 kHz'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 200
+    - 120
+    rotation: 0
+    state: enabled
+- name: detector
+  id: variable_qtgui_chooser
+  parameters:
+    label: '''Detector'''
+    type: int
+    num_opts: '2'
+    value: '0'
+    widget: radio_buttons
+    orient: QtCore.Qt.Horizontal
+    gui_hint: 0,1,1,1
+    options: '[0, 1, 2]'
+    labels: '['''', '''', '''']'
+    option0: '0'
+    label0: '''Quadrature Demod'''
+    option1: '1'
+    label1: '''PLL Freq Det'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 380
+    - 120
+    rotation: 0
+    state: enabled
+- name: pll_lbw
+  id: variable_qtgui_range
+  parameters:
+    label: '''PLL Loop Bandwidth (rad/sample)'''
+    rangeType: float
+    value: '0.085'
+    start: '0.005'
+    stop: '0.8'
+    step: '0.005'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 3,0,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 560
+    - 120
+    rotation: 0
+    state: enabled
+- name: volume
+  id: variable_qtgui_range
+  parameters:
+    label: '''Volume'''
+    rangeType: float
+    value: '0.3'
+    start: '0'
+    stop: '1'
+    step: '0.01'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 3,1,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 760
+    - 120
+    rotation: 0
+    state: enabled
+- name: tone_f
+  id: variable_qtgui_range
+  parameters:
+    label: '''Tone frequency (Hz)'''
+    rangeType: float
+    value: '1000'
+    start: '100'
+    stop: '15000'
+    step: '100'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 4,0,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 960
+    - 120
+    rotation: 0
+    state: enabled
+- name: tx_atten
+  id: variable_qtgui_range
+  parameters:
+    label: '''TX attenuation (dB) - keep >= 36.5 with a 30 dB pad'''
+    rangeType: float
+    value: '40'
+    start: '36.5'
+    stop: '89.75'
+    step: '0.25'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 4,1,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1160
+    - 120
+    rotation: 0
+    state: enabled
+- name: rf_gain
+  id: variable_qtgui_range
+  parameters:
+    label: '''RX gain (dB)'''
+    rangeType: float
+    value: '30'
+    start: '0'
+    stop: '70'
+    step: '1'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 5,0,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1360
+    - 120
+    rotation: 0
+    state: enabled
+- name: rx_offset
+  id: variable_qtgui_range
+  parameters:
+    label: '''Receiver tuning correction (Hz)'''
+    rangeType: float
+    value: '0'
+    start: '-20000.0'
+    stop: '20000.0'
+    step: '50'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 5,1,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1560
+    - 120
+    rotation: 0
+    state: enabled
+- name: f_c
+  id: variable
+  parameters:
+    value: 434e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1320
+    - 90
+    rotation: 0
+    state: enabled
+- name: uri
+  id: variable
+  parameters:
+    value: '''usb:'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1460
+    - 90
+    rotation: 0
+    state: enabled
+- name: tone
+  id: analog_sig_source_x
+  parameters:
+    type: float
+    samp_rate: samp_rate
+    waveform: analog.GR_SIN_WAVE
+    freq: tone_f
+    amp: '1'
+    offset: '0'
+    phase: '0'
+    showports: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 40
+    - 300
+    rotation: 0
+    state: enabled
+- name: fm_mod
+  id: analog_frequency_modulator_fc
+  parameters:
+    sensitivity: 2*math.pi*dev/samp_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 240
+    - 300
+    rotation: 0
+    state: enabled
+- name: tx_scale
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: complex
+    const: '0.5'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 440
+    - 300
+    rotation: 0
+    state: enabled
+- name: pluto_tx
+  id: iio_pluto_sink
+  parameters:
+    uri: uri
+    frequency: int(f_c)
+    samplerate: int(samp_rate)
+    bandwidth: int(samp_rate)
+    buffer_size: '32768'
+    cyclic: 'False'
+    attenuation1: tx_atten
+    filter_source: '''Off'''
+    filter: ''''''
+    fpass: '0'
+    fstop: '0'
+    len_tag_key: ''''''
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 620
+    - 280
+    rotation: 0
+    state: enabled
+- name: pluto_rx
+  id: iio_pluto_source
+  parameters:
+    uri: uri
+    frequency: int(f_c)
+    samplerate: int(samp_rate)
+    bandwidth: int(samp_rate)
+    buffer_size: '32768'
+    gain1: '''manual'''
+    manual_gain1: rf_gain
+    quadrature: 'True'
+    rfdc: 'True'
+    bbdc: 'True'
+    filter_source: '''Off'''
+    filter: ''''''
+    fpass: '0'
+    fstop: '0'
+    len_tag_key: packet_len
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 40
+    - 480
+    rotation: 0
+    state: enabled
+- name: chan_filter
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    type: ccf
+    decim: decim1
+    taps: firdes.low_pass(1.0, samp_rate, 100e3, 20e3, window.WIN_HAMMING)
+    center_freq: rx_offset
+    samp_rate: samp_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 760
+    - 480
+    rotation: 0
+    state: enabled
+- name: chan_filter2
+  id: fir_filter_xxx
+  parameters:
+    type: ccf
+    decim: '1'
+    taps: firdes.low_pass(1.0, quad_rate, chan_cut, chan_tw, window.WIN_HAMMING)
+    samp_delay: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 960
+    - 480
+    rotation: 0
+    state: enabled
+- name: quad_demod
+  id: analog_quadrature_demod_cf
+  parameters:
+    gain: quad_rate/(2*math.pi*dev)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1260
+    - 420
+    rotation: 0
+    state: enabled
+- name: pll_det
+  id: analog_pll_freqdet_cf
+  parameters:
+    w: pll_lbw
+    max_freq: 2*math.pi*pll_fmax/quad_rate
+    min_freq: -2*math.pi*pll_fmax/quad_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1260
+    - 520
+    rotation: 0
+    state: enabled
+- name: pll_gain
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: float
+    const: quad_rate/(2*math.pi*dev)
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1480
+    - 520
+    rotation: 0
+    state: enabled
+- name: det_select
+  id: blocks_selector
+  parameters:
+    type: float
+    enabled: 'True'
+    num_inputs: '2'
+    num_outputs: '1'
+    input_index: detector
+    output_index: '0'
+    vlen: '1'
+    showports: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1680
+    - 480
+    rotation: 0
+    state: enabled
+- name: audio_filter
+  id: fir_filter_xxx
+  parameters:
+    type: fff
+    decim: decim_audio
+    taps: firdes.low_pass(1.0, quad_rate, audio_cut, audio_tw, window.WIN_HAMMING)
+    samp_delay: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1860
+    - 480
+    rotation: 0
+    state: enabled
+- name: deemph
+  id: analog_fm_deemph
+  parameters:
+    samp_rate: audio_rate
+    tau: tau
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2060
+    - 480
+    rotation: 0
+    state: enabled
+- name: volume_gain
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: float
+    const: volume
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2240
+    - 480
+    rotation: 0
+    state: enabled
+- name: audio_out
+  id: audio_sink
+  parameters:
+    samp_rate: int(audio_rate)
+    device_name: ''''''
+    ok_to_block: 'True'
+    num_inputs: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2420
+    - 480
+    rotation: 0
+    state: enabled
+- name: spec_chan
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    name: '''Channel (240 kHz complex)'''
+    fftsize: '4096'
+    freqhalf: 'True'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    norm_window: 'False'
+    fc: '0'
+    bw: quad_rate
+    grid: 'True'
+    autoscale: 'False'
+    average: '0.2'
+    ymin: '-100'
+    ymax: '10'
+    label: '''Relative Gain'''
+    units: '''dB'''
+    nconnections: '1'
+    update_time: '0.10'
+    showports: 'False'
+    gui_hint: 1,0,1,1
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_level: '0.0'
+    tr_chan: '0'
+    tr_tag: ''''''
+    ctrlpanel: 'False'
+    legend: 'True'
+    axislabels: 'True'
+    label1: ''''''
+    width1: '1'
+    color1: '''blue'''
+    alpha1: '1.0'
+    label2: ''''''
+    width2: '1'
+    color2: '''red'''
+    alpha2: '1.0'
+    label3: ''''''
+    width3: '1'
+    color3: '''green'''
+    alpha3: '1.0'
+    label4: ''''''
+    width4: '1'
+    color4: '''black'''
+    alpha4: '1.0'
+    label5: ''''''
+    width5: '1'
+    color5: '''cyan'''
+    alpha5: '1.0'
+    label6: ''''''
+    width6: '1'
+    color6: '''magenta'''
+    alpha6: '1.0'
+    label7: ''''''
+    width7: '1'
+    color7: '''yellow'''
+    alpha7: '1.0'
+    label8: ''''''
+    width8: '1'
+    color8: '''dark red'''
+    alpha8: '1.0'
+    label9: ''''''
+    width9: '1'
+    color9: '''dark green'''
+    alpha9: '1.0'
+    label10: ''''''
+    width10: '1'
+    color10: '''dark blue'''
+    alpha10: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1260
+    - 640
+    rotation: 0
+    state: enabled
+- name: spec_det
+  id: qtgui_freq_sink_x
+  parameters:
+    type: float
+    name: '''Detector output (240 kHz): L+R, pilot, L-R, RDS'''
+    fftsize: '4096'
+    freqhalf: 'False'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    norm_window: 'False'
+    fc: '0'
+    bw: quad_rate
+    grid: 'True'
+    autoscale: 'False'
+    average: '0.2'
+    ymin: '-100'
+    ymax: '10'
+    label: '''Relative Gain'''
+    units: '''dB'''
+    nconnections: '1'
+    update_time: '0.10'
+    showports: 'False'
+    gui_hint: 1,1,1,1
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_level: '0.0'
+    tr_chan: '0'
+    tr_tag: ''''''
+    ctrlpanel: 'False'
+    legend: 'True'
+    axislabels: 'True'
+    label1: ''''''
+    width1: '1'
+    color1: '''blue'''
+    alpha1: '1.0'
+    label2: ''''''
+    width2: '1'
+    color2: '''red'''
+    alpha2: '1.0'
+    label3: ''''''
+    width3: '1'
+    color3: '''green'''
+    alpha3: '1.0'
+    label4: ''''''
+    width4: '1'
+    color4: '''black'''
+    alpha4: '1.0'
+    label5: ''''''
+    width5: '1'
+    color5: '''cyan'''
+    alpha5: '1.0'
+    label6: ''''''
+    width6: '1'
+    color6: '''magenta'''
+    alpha6: '1.0'
+    label7: ''''''
+    width7: '1'
+    color7: '''yellow'''
+    alpha7: '1.0'
+    label8: ''''''
+    width8: '1'
+    color8: '''dark red'''
+    alpha8: '1.0'
+    label9: ''''''
+    width9: '1'
+    color9: '''dark green'''
+    alpha9: '1.0'
+    label10: ''''''
+    width10: '1'
+    color10: '''dark blue'''
+    alpha10: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1860
+    - 640
+    rotation: 0
+    state: enabled
+- name: spec_audio
+  id: qtgui_freq_sink_x
+  parameters:
+    type: float
+    name: '''Audio (48 kHz)'''
+    fftsize: '4096'
+    freqhalf: 'False'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    norm_window: 'False'
+    fc: '0'
+    bw: audio_rate
+    grid: 'True'
+    autoscale: 'False'
+    average: '0.2'
+    ymin: '-110'
+    ymax: '0'
+    label: '''Relative Gain'''
+    units: '''dB'''
+    nconnections: '1'
+    update_time: '0.10'
+    showports: 'False'
+    gui_hint: 2,0,1,1
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_level: '0.0'
+    tr_chan: '0'
+    tr_tag: ''''''
+    ctrlpanel: 'False'
+    legend: 'True'
+    axislabels: 'True'
+    label1: ''''''
+    width1: '1'
+    color1: '''blue'''
+    alpha1: '1.0'
+    label2: ''''''
+    width2: '1'
+    color2: '''red'''
+    alpha2: '1.0'
+    label3: ''''''
+    width3: '1'
+    color3: '''green'''
+    alpha3: '1.0'
+    label4: ''''''
+    width4: '1'
+    color4: '''black'''
+    alpha4: '1.0'
+    label5: ''''''
+    width5: '1'
+    color5: '''cyan'''
+    alpha5: '1.0'
+    label6: ''''''
+    width6: '1'
+    color6: '''magenta'''
+    alpha6: '1.0'
+    label7: ''''''
+    width7: '1'
+    color7: '''yellow'''
+    alpha7: '1.0'
+    label8: ''''''
+    width8: '1'
+    color8: '''dark red'''
+    alpha8: '1.0'
+    label9: ''''''
+    width9: '1'
+    color9: '''dark green'''
+    alpha9: '1.0'
+    label10: ''''''
+    width10: '1'
+    color10: '''dark blue'''
+    alpha10: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2420
+    - 640
+    rotation: 0
+    state: enabled
+- name: scope_audio
+  id: qtgui_time_sink_x
+  parameters:
+    type: float
+    name: '''Audio waveform'''
+    size: '1024'
+    srate: audio_rate
+    grid: 'True'
+    autoscale: 'False'
+    ymin: '-1.5'
+    ymax: '1.5'
+    nconnections: '1'
+    update_time: '0.10'
+    entags: 'True'
+    showports: 'False'
+    gui_hint: 2,1,1,1
+    tr_mode: qtgui.TRIG_MODE_AUTO
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_level: '0.0'
+    tr_delay: '0'
+    tr_chan: '0'
+    tr_tag: ''''''
+    ctrlpanel: 'False'
+    legend: 'True'
+    axislabels: 'True'
+    ylabel: '''Amplitude'''
+    yunit: ''''''
+    stemplot: 'False'
+    label1: '''audio'''
+    width1: '1'
+    color1: '''blue'''
+    style1: '1'
+    marker1: '-1'
+    alpha1: '1.0'
+    label2: ''''''
+    width2: '1'
+    color2: '''blue'''
+    style2: '1'
+    marker2: '-1'
+    alpha2: '1.0'
+    label3: ''''''
+    width3: '1'
+    color3: '''blue'''
+    style3: '1'
+    marker3: '-1'
+    alpha3: '1.0'
+    label4: ''''''
+    width4: '1'
+    color4: '''blue'''
+    style4: '1'
+    marker4: '-1'
+    alpha4: '1.0'
+    label5: ''''''
+    width5: '1'
+    color5: '''blue'''
+    style5: '1'
+    marker5: '-1'
+    alpha5: '1.0'
+    label6: ''''''
+    width6: '1'
+    color6: '''blue'''
+    style6: '1'
+    marker6: '-1'
+    alpha6: '1.0'
+    label7: ''''''
+    width7: '1'
+    color7: '''blue'''
+    style7: '1'
+    marker7: '-1'
+    alpha7: '1.0'
+    label8: ''''''
+    width8: '1'
+    color8: '''blue'''
+    style8: '1'
+    marker8: '-1'
+    alpha8: '1.0'
+    label9: ''''''
+    width9: '1'
+    color9: '''blue'''
+    style9: '1'
+    marker9: '-1'
+    alpha9: '1.0'
+    label10: ''''''
+    width10: '1'
+    color10: '''blue'''
+    style10: '1'
+    marker10: '-1'
+    alpha10: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2420
+    - 800
+    rotation: 0
+    state: enabled
+connections:
+- - tone
+  - '0'
+  - fm_mod
+  - '0'
+- - fm_mod
+  - '0'
+  - tx_scale
+  - '0'
+- - tx_scale
+  - '0'
+  - pluto_tx
+  - '0'
+- - pluto_rx
+  - '0'
+  - chan_filter
+  - '0'
+- - chan_filter
+  - '0'
+  - chan_filter2
+  - '0'
+- - chan_filter2
+  - '0'
+  - quad_demod
+  - '0'
+- - chan_filter2
+  - '0'
+  - pll_det
+  - '0'
+- - chan_filter2
+  - '0'
+  - spec_chan
+  - '0'
+- - pll_det
+  - '0'
+  - pll_gain
+  - '0'
+- - quad_demod
+  - '0'
+  - det_select
+  - '0'
+- - pll_gain
+  - '0'
+  - det_select
+  - '1'
+- - det_select
+  - '0'
+  - audio_filter
+  - '0'
+- - det_select
+  - '0'
+  - spec_det
+  - '0'
+- - audio_filter
+  - '0'
+  - deemph
+  - '0'
+- - deemph
+  - '0'
+  - volume_gain
+  - '0'
+- - volume_gain
+  - '0'
+  - audio_out
+  - '0'
+- - deemph
+  - '0'
+  - spec_audio
+  - '0'
+- - deemph
+  - '0'
+  - scope_audio
+  - '0'
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
