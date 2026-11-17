@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RIS-Aided Localization &amp; Synchronization — M. A. Khoshkam</title>
+  <meta name="description" content="B.Sc. project: joint localization and synchronization of a mobile user aided by reconfigurable intelligent surfaces whose positions are only known through a prior — hybrid Cramér–Rao bound and a hybrid MAP/ML estimator, in MATLAB.">
+  <meta property="og:title" content="RIS-Aided Localization and Synchronization under Uncertain RIS Geometry">
+  <meta property="og:image" content="https://mohammadaminkhoshkam.github.io/projects/ris-localization/img/bounds-vs-snr.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060a1c'/%3E%3Crect x='6' y='6' width='9' height='9' fill='%233d7bd9'/%3E%3Crect x='17' y='6' width='9' height='9' fill='%234fe3d0'/%3E%3Crect x='6' y='17' width='9' height='9' fill='%23e8608a'/%3E%3Crect x='17' y='17' width='9' height='9' fill='%23b49bff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="ris.css">
+</head>
+<body class="ppage">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a href="../../#projects">Projects</a>
+      <a href="#lab">Explorer</a>
+      <a href="#results">Results</a>
+      <a class="pill" href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization" target="_blank" rel="noopener">GitHub</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ================================================================ hero -->
+  <section class="pp-hero">
+    <div class="container pp-hero-grid">
+      <div>
+        <a class="eyebrow" href="../../#projects">← Projects · B.Sc. project · Wireless</a>
+        <h1>RIS-Aided <em>Localization &amp; Synchronization</em> under Uncertain RIS Geometry</h1>
+        <p class="lead">Reconfigurable intelligent surfaces (RISs) can serve as extra anchors for locating a user, but only if we know where they are.
+          This project builds the RIS position uncertainty <b>into the signal model, the Cramér–Rao bound and the estimator</b>, and estimates the user’s
+          position, velocity, clock offset and frequency error together with the RIS states from OFDM pilots.</p>
+        <div class="pp-meta">
+          <span><b>Author:</b> Mohammad Amin Khoshkam</span>
+          <span><b>Supervisor:</b> Dr. Rouhollah Amiri</span>
+          <span><b>Where:</b> Sharif University of Technology, B.Sc. project, Winter 2026</span>
+          <span><b>Type:</b> theory and MATLAB simulation</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#stages">Walk through the method</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization" target="_blank" rel="noopener">Repository</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization/blob/main/report/RIS_Localization_Report_EN.pdf" target="_blank" rel="noopener">Report (PDF)</a>
+        </div>
+      </div>
+      <figure class="pp-sign">
+        <canvas data-ris-hero aria-label="Top view of the base station, the user and the three RISs, with the user's position error bound"></canvas>
+        <figcaption>bound scenario, top view · circle radius = UE position error bound at 20 dB · tile colours illustrate the focusing phase</figcaption>
+      </figure>
+    </div>
+    <div class="pp-strip"></div>
+  </section>
+
+  <div class="container">
+
+  <!-- ================================================================ overview -->
+  <section class="pp-sec" id="overview" style="padding-top:26px">
+    <div class="pp-kpi">
+      <div class="k"><b>1.176<i>m</i></b><span>UE position error bound (PEB)</span></div>
+      <div class="k"><b>1.864<i>m/s</i></b><span>UE velocity error bound (VEB)</span></div>
+      <div class="k"><b>0.985<i>ns</i></b><span>clock-offset bound</span></div>
+      <div class="k"><b>0.00146<i>ppm</i></b><span>frequency-error bound</span></div>
+      <div class="k"><b>3.21 → 0.62<i>m</i></b><span>UE position error of the estimator, one run</span></div>
+      <div class="k"><b>26 / 26</b><span>FIM rank, condition number 9.2×10⁷</span></div>
+    </div>
+    <p class="small dim" style="margin-top:6px">Bounds: three RISs, SNR = 20 dB, RIS prior σ<sub>p</sub> = 0.1 m. The estimator figure comes from a different geometry and a single noise realization, so it is not comparable with the bound.</p>
+
+    <div class="pp-chain" style="--n:5" aria-label="Stages">
+      <a href="#s1"><span class="node">1</span><b>Signal model</b><small>effective delay</small></a>
+      <a href="#s2"><span class="node">2</span><b>Hybrid bound</b><small>data + RIS prior</small></a>
+      <a href="#s3"><span class="node">3</span><b>What limits it</b><small>prior, geometry</small></a>
+      <a href="#s4"><span class="node">4</span><b>Estimator</b><small>hybrid MAP/ML</small></a>
+      <a href="#results"><span class="node">Σ</span><b>Results</b><small>and limits</small></a>
+    </div>
+
+    <div class="pp-cols" style="margin-top:28px">
+      <div>
+        <p>An RIS is a flat panel of many small elements whose reflection can be programmed. Placed around a room or a street, it adds controllable reflected paths between a
+          base station (BS) and a user (UE), and every reflected path is a new geometric measurement for localization. The catch is that the RIS then acts as an anchor:
+          an error in where it is assumed to be becomes an error in where the user is estimated to be. Surveying, installation, vibration and calibration all leave the
+          real RIS position, and even its motion, a little different from the nominal value.</p>
+        <p>Two easy shortcuts both fail. Assuming the RISs are perfectly known gives over-optimistic bounds and biased estimates; treating their positions as completely
+          unknown adds so many unknowns that the problem can become unidentifiable. This project takes the middle ground: the RIS states have a Gaussian <b>prior</b>, and
+          the UE, the synchronization errors and the path gains are ordinary unknowns. It answers two questions: what accuracy is achievable at best (a hybrid Cramér–Rao
+          bound), and how to build an estimator that uses the RIS prior without inventing priors for anything else (a hybrid MAP/ML estimator).</p>
+        <figure class="pp-plate" style="max-width:520px">
+          <a href="img/bound-geometry.png"><img loading="lazy" src="img/bound-geometry.png" alt="3D geometry of the base station, the user and three RISs with the propagation paths"></a>
+          <figcaption><b>Scenario of the bound:</b> BS at (0, 0, 5) m, UE at (8, 7, 1.5) m moving at (1.2, −0.4, 0.1) m/s, RISs at heights 3, 4 and 6 m.</figcaption>
+        </figure>
+      </div>
+      <div class="pp-spec">
+        <h4>Simulation settings</h4>
+        <dl>
+          <div><dt>RISs (reflected paths) K</dt><dd>3</dd></div>
+          <div><dt>Subcarriers N</dt><dd>129 (−64 … 64)</dd></div>
+          <div><dt>Subcarrier spacing Δf</dt><dd>480 kHz</dd></div>
+          <div><dt>Occupied bandwidth</dt><dd>≈ 62 MHz</dd></div>
+          <div><dt>Snapshots L, interval T<sub>s</sub></dt><dd>32, 5 ms</dd></div>
+          <div><dt>Observation window</dt><dd>−77.5 … 77.5 ms</dd></div>
+          <div><dt>Complex samples NL</dt><dd>4128</dd></div>
+          <div><dt>SNR</dt><dd>20 dB (sweep −10 … 30)</dd></div>
+          <div><dt>RIS prior σ<sub>p</sub>, σ<sub>v</sub></dt><dd>0.1 m, 0.05 m/s</dd></div>
+          <div><dt>True η, δ<sub>c</sub></dt><dd>2 ppm, 40 ns</dd></div>
+          <div><dt>Unknowns</dt><dd>26 physical + 8 gain</dd></div>
+        </dl>
+        <h4>Code</h4>
+        <dl>
+          <div><dt>Language</dt><dd>MATLAB R2024a</dd></div>
+          <div><dt>Optimizer</dt><dd>fmincon (SQP)</dd></div>
+          <div><dt>Random seed</dt><dd>42</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ explorer -->
+  <section class="pp-sec" id="lab">
+    <div class="pp-head">
+      <div class="pp-badge"><small>TRY</small>σ</div>
+      <div><span class="kicker">Error-budget explorer</span><h2>What sets the user’s position error</h2></div>
+    </div>
+    <p>The two sweeps of the bound package, on the scenario map. Raising the SNR shrinks the user’s error circle until it stops at about 1.16 m; loosening the RIS prior
+      grows it almost in proportion. Both curves are the project’s computed bounds, not a model: the explorer only looks them up.</p>
+    <div class="pp-lab" data-ris-lab>
+      <div class="view">
+        <canvas class="map" aria-label="Scenario map with the UE error circle and the RIS uncertainty circles"></canvas>
+        <canvas class="chart" aria-label="UE position error bound against the swept quantity"></canvas>
+      </div>
+      <div class="ctl">
+        <div>
+          <label>Sweep</label>
+          <div class="pp-seg">
+            <button type="button" data-sweep="snr" aria-pressed="true">SNR</button>
+            <button type="button" data-sweep="prior" aria-pressed="false">RIS prior</button>
+          </div>
+        </div>
+        <label>Value <output id="ris-step-out">20 dB</output>
+          <input type="range" id="ris-step" min="0" max="16" step="1" value="12">
+        </label>
+        <p class="hint" id="ris-hint">RIS prior fixed: σp = 0.1 m, σv = 0.05 m/s per axis.</p>
+        <div class="pp-reads">
+          <div><small>UE position bound</small><b class="v" id="ris-peb">—</b></div>
+          <div><small>UE velocity bound</small><b id="ris-veb">—</b></div>
+          <div><small>Frequency error <i>η</i></small><b id="ris-eta">—</b></div>
+          <div><small>Clock offset <i>δc</i></small><b id="ris-dc">—</b></div>
+          <div><small>Each RIS position bound</small><b id="ris-rpeb">—</b></div>
+          <div><small>FIM condition number</small><b id="ris-cond">—</b></div>
+        </div>
+        <p class="hint">Violet circle: radius equal to the UE PEB, drawn to the map’s scale. Dashed teal circles: radius equal to each RIS’s position bound. The PEB is one
+          number (the root of the summed variances); most of it is vertical, which a top view cannot show.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="stages"></div>
+
+  <!-- ================================================================ stage 1 -->
+  <section class="pp-sec" id="s1">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STAGE</small>1</div>
+      <div><span class="kicker">OFDM signal model</span><h2>One effective delay per path and snapshot</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p>The BS sends known OFDM pilots on N subcarriers in L snapshots. Path 0 is the direct BS–UE path; path k goes from the BS to RIS k and on to the UE. Each RIS creates
+          one effective reflected path whose internal array response and phase profile are absorbed into its complex gain β<sub>k</sub>, so the model concentrates on
+          position, motion and synchronization. The UE and the RISs move at constant velocity, and the snapshot times are centred around zero, which reduces the
+          numerical coupling between initial position and velocity.</p>
+        <p>Propagation delay, the change of the path length over time, the frequency error η of the UE oscillator and the clock offset δ<sub>c</sub> all act on the same
+          phase. They are gathered into one effective delay:</p>
+        <div class="pp-eqn">a<sub>l,k</sub> = τ<sub>l,k</sub> − (ν<sub>l,k</sub> − η)·T<sub>l</sub> − δ<sub>c</sub></div>
+        <p>The estimator never sees these effects separately, only through a<sub>l,k</sub>. Many subcarriers resolve delay; many snapshots reveal the rate terms, which is the
+          only way to tell the clock offset (a constant shift) from motion and frequency error (shifts that grow with time). Stacking all 4128 samples gives</p>
+        <div class="pp-eqn">y = A(θ)·β + z,   [A]<sub>(n,l),k</sub> = √(ε/N)·x<sub>n,l</sub>·exp(−j2π·n·Δf·a<sub>l,k</sub>(θ))</div>
+        <p>This relation carries the whole project. A depends nonlinearly on geometry and synchronization, but the model is <b>linear in the path gains</b>, so for a fixed θ the
+          best β has a closed form. The bound and the estimator both exploit that.</p>
+      </div>
+      <div class="pp-spec">
+        <h4>Unknowns for K = 3</h4>
+        <dl>
+          <div><dt>UE position, velocity</dt><dd>3 + 3</dd></div>
+          <div><dt>Frequency error, clock offset</dt><dd>1 + 1</dd></div>
+          <div><dt>RIS positions, velocities</dt><dd>9 + 9</dd></div>
+          <div><dt>Physical parameters θ</dt><dd>26</dd></div>
+          <div><dt>Path gains β (real + imag.)</dt><dd>8</dd></div>
+          <div><dt>Total</dt><dd>34</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="theta" aria-label="Parameter vector">
+      <span class="ue"><b>u₀</b> ×3</span><span class="ue"><b>u̇</b> ×3</span>
+      <span class="ris"><b>p₁,₀ p₂,₀ p₃,₀</b> ×9</span><span class="ris"><b>ṗ₁ ṗ₂ ṗ₃</b> ×9</span>
+      <span class="sync"><b>η</b></span><span class="sync"><b>δc</b></span>
+      <span class="gain"><b>Re β, Im β</b> ×8</span>
+      <span style="border:0;background:none;padding-left:2px"><small>violet: user, no prior · teal: RIS, Gaussian prior · amber: synchronization, no prior · dashed: nuisance</small></span>
+    </div>
+  </section>
+
+  <!-- ================================================================ stage 2 -->
+  <section class="pp-sec" id="s2">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STAGE</small>2</div>
+      <div><span class="kicker">Hybrid Fisher information</span><h2>A bound that keeps the RIS uncertainty</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p>The Fisher information matrix (FIM) measures how much the data say about each parameter; its inverse is the Cramér–Rao bound, the smallest covariance any
+          locally unbiased estimator can reach. Because part of the parameter vector is random (the RISs, with a prior) and part deterministic, the framework is
+          <b>hybrid</b>: the data information is computed for all parameters, and the prior adds information only to the RIS blocks.</p>
+        <div class="pp-eqn">J<sub>γ</sub> = J<sub>data</sub> + J<sub>prior</sub>,   J<sub>prior</sub> = E<sub>ρ</sub><sup>T</sup>·blkdiag(I/σ<sub>p</sub>², I/σ<sub>v</sub>²)·E<sub>ρ</sub></div>
+        <p>The report insists on treating three kinds of parameter differently, and getting this right is what makes the bound honest:</p>
+        <div class="kinds">
+          <div><span class="tag2">exactly known</span><b>BS position</b><p>Not in the unknown vector at all.</p></div>
+          <div><span class="tag2">uncertain, with prior</span><b>RIS positions and velocities</b><p>Kept in the vector with the prior added. Dropping them would hide their effect on the UE and give a bound that is too optimistic.</p></div>
+          <div><span class="tag2">nuisance</span><b>Path gains β</b><p>Removed with a Schur complement, not by deleting rows and columns, which would amount to assuming the gains are known.</p></div>
+        </div>
+        <div class="pp-eqn">J<sub>e</sub> = J<sub>θθ</sub> − J<sub>θb</sub>·J<sub>bb</sub><sup>†</sup>·J<sub>bθ</sub>,   PEB = √tr([J<sub>e</sub><sup>−1</sup>]<sub>u₀u₀</sub>)</div>
+        <p>At 20 dB the user’s position bound is 1.176 m and its velocity bound 1.864 m/s. Every RIS bound equals √3·σ exactly: 0.173 m and 0.087 m/s. The observations
+          do not noticeably reduce the RIS uncertainty in this configuration; the prior dominates those blocks, and the data are used to locate the user.</p>
+      </div>
+      <div class="pp-spec">
+        <h4>Bounds at 20 dB</h4>
+        <dl>
+          <div><dt>UE position (PEB)</dt><dd class="ok">1.176 m</dd></div>
+          <div><dt>UE velocity (VEB)</dt><dd class="ok">1.864 m/s</dd></div>
+          <div><dt>Frequency error η</dt><dd>0.00146 ppm</dd></div>
+          <div><dt>Clock offset δ<sub>c</sub></dt><dd>0.985 ns</dd></div>
+          <div><dt>Each RIS position</dt><dd>0.173 m = √3·σ<sub>p</sub></dd></div>
+          <div><dt>Each RIS velocity</dt><dd>0.087 m/s = √3·σ<sub>v</sub></dd></div>
+        </dl>
+        <h4>Over the sweep −10 → 30 dB</h4>
+        <dl>
+          <div><dt>UE PEB</dt><dd>5.506 → 1.165 m</dd></div>
+          <div><dt>UE VEB</dt><dd>55.94 → 0.811 m/s</dd></div>
+          <div><dt>η bound</dt><dd>0.0433 → 0.000655 ppm</dd></div>
+          <div><dt>δ<sub>c</sub> bound</dt><dd>4.586 → 0.976 ns</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="pp-plates">
+      <figure class="pp-plate"><a href="img/bounds-vs-snr.png"><img loading="lazy" src="img/bounds-vs-snr.png" alt="Aggregate bounds versus SNR"></a><figcaption><b>Bounds vs SNR:</b> the UE PEB and the clock-offset bound level off, the VEB and the η bound keep falling. The RIS curves wiggle by about 10⁻¹⁰, which is numerical noise.</figcaption></figure>
+      <figure class="pp-plate"><a href="img/bounds-at-20db.png"><img loading="lazy" src="img/bounds-at-20db.png" alt="Bars of all bounds at 20 dB"></a><figcaption><b>At 20 dB:</b> the vertical components dominate the UE bounds; the RIS bounds sit at the prior.</figcaption></figure>
+      <figure class="pp-plate"><a href="img/sync-and-gains.png"><img loading="lazy" src="img/sync-and-gains.png" alt="Synchronization and channel-gain bounds versus SNR"></a><figcaption><b>Synchronization and gains:</b> the imaginary parts of β₁ and β₂ carry the least information (bounds ≈ 0.012 and 0.010 at 20 dB).</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ stage 3 -->
+  <section class="pp-sec" id="s3">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STAGE</small>3</div>
+      <div><span class="kicker">Reading the bound</span><h2>What limits the accuracy</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p><b>The RIS prior is part of the error budget.</b> Sweeping the RIS position prior from 0.02 m to 0.5 m (velocity prior scaled with it) raises the user’s position
+          bound from 0.288 m to 5.822 m, roughly in proportion (11.6 to 14.4 times σ<sub>p</sub>). Calibrating the RISs better can matter as much as adding power: the prior is not a
+          regularization detail, it decides the result.</p>
+        <p><b>Height is the weak direction.</b> Per axis, the 20 dB position bounds are 0.116, 0.150 and 1.161 m, and the velocity bounds 0.105, 0.225 and 1.847 m/s. The
+          three RISs surround the user horizontally but sit only 3–6 m high, with the BS at 5 m and the user at 1.5 m, so there is little geometric diversity in z.
+          No amount of SNR fixes this.</p>
+        <p><b>An error floor.</b> Position-type bounds stop improving at high SNR: the PEB levels off near 1.16 m and the clock-offset bound near 0.98 ns, held up by the RIS
+          uncertainty and by the coupling between delays. Rate-type bounds keep improving thanks to time diversity across the 32 snapshots.</p>
+        <p><b>Full rank is not enough.</b> The equivalent FIM has rank 26/26 and the full FIM 34/34, so every parameter is locally identifiable. Its condition number is
+          9.25×10⁷ at 20 dB, rising to 6.1×10⁸ at 30 dB: some directions carry far less information than others, which makes the problem sensitive to noise, scaling and the
+          starting point.</p>
+      </div>
+      <div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">σ<sub>p</sub> (m)</th><th class="num">σ<sub>v</sub> (m/s)</th><th class="num">UE PEB (m)</th><th class="num">UE VEB (m/s)</th></tr></thead><tbody>
+          <tr><td class="num">0.02</td><td class="num">0.010</td><td class="num">0.288</td><td class="num">1.773</td></tr>
+          <tr><td class="num">0.05</td><td class="num">0.025</td><td class="num">0.606</td><td class="num">1.793</td></tr>
+          <tr class="hl"><td class="num">0.10</td><td class="num">0.050</td><td class="num">1.176</td><td class="num">1.864</td></tr>
+          <tr><td class="num">0.20</td><td class="num">0.100</td><td class="num">2.334</td><td class="num">2.124</td></tr>
+          <tr><td class="num">0.50</td><td class="num">0.250</td><td class="num">5.822</td><td class="num">3.431</td></tr>
+        </tbody></table></div>
+        <div class="pp-spec">
+          <h4>Per-axis UE bounds at 20 dB</h4>
+          <dl>
+            <div><dt>Position x / y / z</dt><dd>0.116 / 0.150 / 1.161 m</dd></div>
+            <div><dt>Velocity x / y / z</dt><dd>0.105 / 0.225 / 1.847 m/s</dd></div>
+          </dl>
+          <h4>Conditioning</h4>
+          <dl>
+            <div><dt>Rank, equivalent / full FIM</dt><dd>26/26, 34/34</dd></div>
+            <div><dt>Condition number, 20 dB</dt><dd>9.25×10⁷</dd></div>
+            <div><dt>Condition number, 30 dB</dt><dd>6.1×10⁸</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+    <div class="pp-plates">
+      <figure class="pp-plate"><a href="img/prior-sensitivity.png"><img loading="lazy" src="img/prior-sensitivity.png" alt="UE bounds versus the RIS prior standard deviation"></a><figcaption><b>Prior sensitivity:</b> the UE position bound tracks the RIS prior on log–log axes.</figcaption></figure>
+      <figure class="pp-plate"><a href="img/ue-per-axis.png"><img loading="lazy" src="img/ue-per-axis.png" alt="Per-axis UE position and velocity bounds versus SNR"></a><figcaption><b>Per axis:</b> the z components lie an order of magnitude above x and y.</figcaption></figure>
+      <figure class="pp-plate"><a href="img/fim-diagnostics.png"><img loading="lazy" src="img/fim-diagnostics.png" alt="Correlation matrix, eigenvalue spectrum and condition number of the FIM"></a><figcaption><b>FIM diagnostics:</b> correlations, an eigenvalue spread of about eight decades, and the condition number (×10⁸) against SNR.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ stage 4 -->
+  <section class="pp-sec" id="s4">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STAGE</small>4</div>
+      <div><span class="kicker">Hybrid MAP / ML estimator</span><h2>Using the prior only where it exists</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p>The estimator follows the same split as the bound: maximum a posteriori for the RIS states, which have a prior, and maximum likelihood for the user, the
+          synchronization and the gains, which do not.</p>
+        <div class="pp-eqn">J<sub>c</sub>(θ) = ‖P<sub>A(θ)</sub><sup>⊥</sup>·y‖² / σ² + ½·(ρ − ρ̄)<sup>T</sup>·Q·(ρ − ρ̄)</div>
+        <ul class="bul">
+          <li><b>Variable projection.</b> For any θ the gains are a least-squares fit, β̂ = A<sup>†</sup>y, so they are removed from the search analytically: eight real unknowns
+            fewer in a nonlinear problem. The 4128 × 4128 projector is never formed; the residual is computed directly.</li>
+          <li><b>Scaling and bounds.</b> Metres, ppm and nanoseconds differ by up to nine orders of magnitude, so the optimizer works on scaled variables inside physical bounds
+            and a local box around each start.</li>
+          <li><b>Coarse-to-fine synchronization.</b> Most local minima come from η and δ<sub>c</sub>, so they are first found on a 25 × 33 grid and then a 13 × 13 grid, refitting
+            the gains at every point.</li>
+          <li><b>Multi-start SQP.</b> Random starts around the initial guess are ranked by cost and the best eight are refined with constrained SQP (<span class="mono">fmincon</span>,
+            up to 600 iterations each).</li>
+        </ul>
+        <p>In the saved run the grid search lowered the cost from 407 890 to 106 313 and moved the start from (1 ppm, 30 ns) to (2 ppm, 35 ns). All eight starts reached the same
+          final cost, 4123.258. The data part of it, divided by the 4128 samples, is 0.999 per sample: the residual looks exactly like the assumed noise.</p>
+        <div class="pp-note alt"><b>Read with care</b>The estimator scenario differs from the bound’s (BS at (3, 4, 5) m, UE at (8, 10, 1.5) m), and this is one noise realization.
+          The 0.617 m error is therefore not a comparison with the 1.176 m bound; the local bound at the estimate in this geometry is about 1.08 m. A Monte Carlo study is the
+          project’s first item of future work.</div>
+      </div>
+      <div class="pp-spec">
+        <h4>One run, SNR 20 dB</h4>
+        <dl>
+          <div><dt>UE position error</dt><dd class="ok">3.212 → 0.617 m</dd></div>
+          <div><dt>UE velocity error</dt><dd>0.245 → 0.314 m/s</dd></div>
+          <div><dt>η error</dt><dd>0.000136 ppm</dd></div>
+          <div><dt>δ<sub>c</sub> error</dt><dd>0.418 ns</dd></div>
+          <div><dt>Gains β₀, β₁ error</dt><dd>0.0025, 0.0018</dd></div>
+          <div><dt>Gains β₂, β₃ error</dt><dd>0.130, 0.129</dd></div>
+          <div><dt>Normalized residual</dt><dd>0.999 per sample</dd></div>
+          <div><dt>Starts at the same cost</dt><dd>8 / 8</dd></div>
+          <div><dt>Local FIM</dt><dd>26/26, κ 5.7×10⁷</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Parameter</th><th class="num">True</th><th class="num">Initial</th><th class="num">Estimate</th><th class="num">Error</th><th class="num">Local std bound</th></tr></thead><tbody>
+      <tr><td>u<sub>x</sub> (m)</td><td class="num">8.000</td><td class="num">7.800</td><td class="num">8.019</td><td class="num">0.019</td><td class="num">0.137</td></tr>
+      <tr><td>u<sub>y</sub> (m)</td><td class="num">10.000</td><td class="num">6.800</td><td class="num">9.800</td><td class="num">−0.200</td><td class="num">0.219</td></tr>
+      <tr><td>u<sub>z</sub> (m)</td><td class="num">1.500</td><td class="num">1.700</td><td class="num">0.916</td><td class="num">−0.584</td><td class="num">1.048</td></tr>
+      <tr><td>u̇<sub>x</sub> (m/s)</td><td class="num">1.200</td><td class="num">1.000</td><td class="num">1.367</td><td class="num">0.167</td><td class="num">0.311</td></tr>
+      <tr><td>u̇<sub>y</sub> (m/s)</td><td class="num">−0.400</td><td class="num">−0.300</td><td class="num">−0.470</td><td class="num">−0.070</td><td class="num">0.191</td></tr>
+      <tr><td>u̇<sub>z</sub> (m/s)</td><td class="num">0.100</td><td class="num">0.000</td><td class="num">0.357</td><td class="num">0.257</td><td class="num">0.850</td></tr>
+    </tbody></table></div>
+    <p class="small dim">From <span class="mono">estimator/hybrid_map_results/physical_parameters.csv</span>. Height again contributes most of the error. The estimate of u<sub>y</sub> is exactly 9.8 m,
+      the edge of the local search box (6.8 + 3 m), with the true 10 m outside it: part of that error comes from the box, not from the data. The velocity error grew in
+      this run, which a single realization does not contradict but cannot explain either.</p>
+    <div class="pp-plates">
+      <figure class="pp-plate"><a href="img/sync-search.png"><img loading="lazy" src="img/sync-search.png" alt="Coarse and fine synchronization search cost surfaces"></a><figcaption><b>Synchronization search:</b> the cost is sharp along η and elongated along δ<sub>c</sub>, the less separable of the two.</figcaption></figure>
+      <figure class="pp-plate"><a href="img/estimator-diagnostics.png"><img loading="lazy" src="img/estimator-diagnostics.png" alt="Convergence, residual map, path gains and parameter errors"></a><figcaption><b>Diagnostics:</b> convergence in about 80 iterations, a structureless residual, and the two weaker path gains.</figcaption></figure>
+      <figure class="pp-plate"><a href="img/estimator-geometry.png"><img loading="lazy" src="img/estimator-geometry.png" alt="True, prior, initial and estimated geometry"></a><figcaption><b>Geometry:</b> the UE moves from the initial guess towards the truth; the RISs stay at their prior mean.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ results -->
+  <section class="pp-sec" id="results">
+    <div class="pp-head">
+      <div class="pp-badge"><small>ALL</small>Σ</div>
+      <div><span class="kicker">Summary</span><h2>Results and limits</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Part</th><th>Quantity</th><th class="num">Value</th><th>Source file</th></tr></thead><tbody>
+      <tr class="hl"><td rowspan="5">Hybrid bound, 20 dB</td><td>UE position error bound</td><td class="num">1.176 m</td><td class="mono small">summary_bounds.csv</td></tr>
+      <tr><td>UE velocity error bound</td><td class="num">1.864 m/s</td><td class="mono small">summary_bounds.csv</td></tr>
+      <tr><td>Frequency error / clock offset</td><td class="num">0.00146 ppm / 0.985 ns</td><td class="mono small">summary_bounds.csv</td></tr>
+      <tr><td>Each RIS position / velocity</td><td class="num">0.173 m / 0.087 m/s</td><td class="mono small">summary_bounds.csv</td></tr>
+      <tr><td>FIM rank, condition number</td><td class="num">26/26, 9.25×10⁷</td><td class="mono small">crlb_results.mat</td></tr>
+      <tr><td rowspan="2">Prior sweep, 20 dB</td><td>UE PEB at σ<sub>p</sub> = 0.02 m</td><td class="num">0.288 m</td><td class="mono small">prior_sensitivity.csv</td></tr>
+      <tr><td>UE PEB at σ<sub>p</sub> = 0.5 m</td><td class="num">5.822 m</td><td class="mono small">prior_sensitivity.csv</td></tr>
+      <tr><td rowspan="4">Estimator, one run</td><td>UE position error</td><td class="num">3.212 → 0.617 m</td><td class="mono small">summary.csv</td></tr>
+      <tr><td>η / δ<sub>c</sub> error</td><td class="num">0.000136 ppm / 0.418 ns</td><td class="mono small">summary.csv</td></tr>
+      <tr><td>Normalized residual</td><td class="num">0.999</td><td class="mono small">summary.csv</td></tr>
+      <tr><td>Multi-start</td><td class="num">8 / 8 at 4123.258</td><td class="mono small">multi_start_summary.csv</td></tr>
+    </tbody></table></div>
+    <p class="small dim">All results are simulations. Re-running the two MATLAB packages with seed 42 in R2024a reproduces these files.</p>
+
+    <h3 class="sub-h">What the project showed</h3>
+    <ul class="bul">
+      <li><b>The RIS map belongs in the error budget.</b> The user’s position bound grows roughly in proportion to the RIS prior standard deviation, from 0.29 m to 5.8 m over the
+        sweep; RIS calibration can matter as much as transmit power.</li>
+      <li><b>Geometry decides which errors remain.</b> With the RISs spread horizontally but at similar heights, the vertical axis carries most of the error, and higher SNR cannot remove it.</li>
+      <li><b>Full rank does not mean well posed.</b> Every parameter is identifiable, yet the information differs by about eight decades between directions.</li>
+      <li><b>Removing the gains analytically pays off.</b> Variable projection, a synchronization grid and multiple starts take the estimator from 3.2 m to 0.6 m, with a residual that matches the noise.</li>
+    </ul>
+
+    <h3 class="sub-h">Limitations stated in the report</h3>
+    <ul class="bul small">
+      <li>Constant-velocity motion; no acceleration.</li>
+      <li>Inter-carrier interference neglected, and path gains held constant over the block.</li>
+      <li>The bound and the estimator use slightly different geometries, so their numbers are not directly comparable.</li>
+      <li>The estimator is evaluated on one noise realization; there is no Monte Carlo RMSE yet.</li>
+      <li>Local optimization: no guarantee of a global minimum, and the local box was active for u<sub>y</sub> in the saved run.</li>
+      <li>Only one placement of the BS, the UE and the RISs was studied.</li>
+    </ul>
+
+    <div class="pp-links">
+      <a class="btn primary" href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization" target="_blank" rel="noopener">Repository: MATLAB code and results →</a>
+      <a class="btn" href="https://github.com/mohammadaminkhoshkam/RIS-Localization-Synchronization/blob/main/report/RIS_Localization_Report_EN.pdf" target="_blank" rel="noopener">Report (PDF)</a>
+      <a class="btn" href="../../#projects">← All projects</a>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Mohammad Amin Khoshkam · supervised by Dr. Rouhollah Amiri</span>
+    <a href="../../">← Back to home</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script src="ris.js"></script>
+</body>
+</html>
