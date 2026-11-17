@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GPIB Studio — M. A. Khoshkam</title>
+  <meta name="description" content="GPIB Studio: a Windows desktop app that controls an HP 8563E spectrum analyzer, an HP 8720D network analyzer, an HP 83752B source and a GDS-1104B oscilloscope, runs automated RF tests and analyzes the saved data — with a full simulation mode.">
+  <meta property="og:title" content="GPIB Studio — control, automated tests and analysis for an HP RF bench">
+  <meta property="og:image" content="https://mohammadaminkhoshkam.github.io/projects/gpib-studio/img/studio-autotest-flatness.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317181b'/%3E%3Crect x='4' y='6' width='24' height='16' rx='2' fill='%2307100a' stroke='%234a4e56'/%3E%3Cpath d='M6 19 9 18 11 12 13 18 15 17 17 10 19 18 22 17 26 18' stroke='%235cff8a' stroke-width='1.6' fill='none'/%3E%3Crect x='7' y='25' width='18' height='3' rx='1' fill='%23f5a524'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="gpib.css">
+</head>
+<body class="ppage">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a href="../../#projects">Projects</a>
+      <a href="#tests">Test library</a>
+      <a href="#results">Summary</a>
+      <a class="pill" href="https://github.com/mohammadaminkhoshkam/GPIB-Studio" target="_blank" rel="noopener">GitHub</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ================================================================ hero -->
+  <section class="pp-hero">
+    <div class="container pp-hero-grid">
+      <div>
+        <a class="eyebrow" href="../../#projects">← Projects · Software · RF test</a>
+        <h1><em>GPIB Studio</em>: one app for a classic HP RF bench</h1>
+        <p class="lead">A Windows desktop program that <b>drives a spectrum analyzer, a network analyzer, a signal source and an oscilloscope</b>, runs a library of
+          automated RF tests, files every run in a project folder and analyzes the saved data. A built-in simulation mode runs everything without a single instrument.</p>
+        <div class="pp-meta">
+          <span><b>Author:</b> Mohammad Amin Khoshkam</span>
+          <span><b>Stack:</b> Python 3.12, PySide6 (Qt), NumPy, SciPy, Matplotlib, PyVISA</span>
+          <span><b>Type:</b> desktop app, MIT licence</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#bench">See what it does</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam/GPIB-Studio" target="_blank" rel="noopener">Repository</a>
+        </div>
+      </div>
+      <figure class="pp-sign">
+        <div class="inst" data-instrument>
+          <div class="inst-top"><span>GPIB Studio · <b data-name>HP 8563E · spectrum analyzer</b></span><span data-addr>GPIB0::18</span></div>
+          <div class="inst-body">
+            <div class="crt"><canvas aria-label="Instrument display drawn from the app's simulator model"></canvas></div>
+            <div class="keys" role="group" aria-label="Instrument">
+              <button type="button" class="key" data-mode="spectrum" aria-pressed="true">Spectrum<small>8563E</small></button>
+              <button type="button" class="key" data-mode="network" aria-pressed="false">Network<small>8720D</small></button>
+              <button type="button" class="key" data-mode="source" aria-pressed="false">Source<small>83752B</small></button>
+              <button type="button" class="key" data-mode="scope" aria-pressed="false">Scope<small>GDS-1104B</small></button>
+            </div>
+          </div>
+          <div class="inst-foot"><span><i class="led"></i>SIMULATION</span><span><i class="led amber"></i>RF OFF</span><span class="gpib-conn" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+        </div>
+        <figcaption>traces computed in your browser from the app’s simulator model · press a key to switch instrument</figcaption>
+      </figure>
+    </div>
+    <div class="pp-strip"></div>
+  </section>
+
+  <div class="container">
+
+  <!-- ================================================================ overview -->
+  <section class="pp-sec" id="overview" style="padding-top:26px">
+    <div class="pp-kpi">
+      <div class="k"><b>4<i>instruments</i></b><span>three over GPIB, one over LAN</span></div>
+      <div class="k"><b>18<i>auto tests</i></b><span>from flatness to P1dB and pulse delay</span></div>
+      <div class="k"><b>2<i>programs</i></b><span>full Studio and a one-window Lite</span></div>
+      <div class="k"><b>14.4k<i>lines</i></b><span>of Python in the application</span></div>
+      <div class="k"><b>942<i>test cases</i></b><span>pytest; 941 passed in a full run, one is timing-sensitive</span></div>
+    </div>
+
+    <div class="pp-chain" style="--n:5" aria-label="Sections">
+      <a href="#bench"><span class="node">1</span><b>The bench</b><small>links, addresses</small></a>
+      <a href="#manual"><span class="node">2</span><b>Manual control</b><small>read, apply, verify</small></a>
+      <a href="#tests"><span class="node">3</span><b>Auto tests</b><small>18 procedures</small></a>
+      <a href="#data"><span class="node">4</span><b>Data</b><small>projects, analysis</small></a>
+      <a href="#safety"><span class="node">5</span><b>Safety, sim</b><small>and testing</small></a>
+    </div>
+
+    <div class="pp-cols" style="margin-top:28px">
+      <div>
+        <p>A lab bench of classic HP RF instruments is precise but slow to use by hand: every measurement means front-panel key sequences, copying numbers off a
+          screen and repeating it for the next frequency. The instruments all speak GPIB (IEEE-488), so a computer can do this for them, provided the software
+          knows each instrument’s command set, its limits and its quirks.</p>
+        <p>GPIB Studio is that software for one specific bench. It reads traces and settings, changes settings and reads them back, runs complete test procedures
+          point by point, and keeps every result in an organized project. Because instrument time is scarce, everything also works against a <b>simulated
+          bench</b> that answers the same commands with synthetic data.</p>
+        <figure class="pp-plate cover" style="max-width:560px">
+          <a href="img/studio-autotest-flatness.png"><img loading="lazy" src="img/studio-autotest-flatness.png" alt="GPIB Studio main window running an automated flatness test"></a>
+          <figcaption><b>GPIB Studio 3:</b> project tree, test library, live trace, result charts and the test’s settings, here running a flatness test in simulation mode.</figcaption>
+        </figure>
+      </div>
+      <div class="pp-spec">
+        <h4>Instruments</h4>
+        <dl>
+          <div><dt>Spectrum analyzer</dt><dd>HP 8563E</dd></div>
+          <div><dt>Network analyzer</dt><dd>HP 8720D</dd></div>
+          <div><dt>Signal source</dt><dd>HP 83752B (SCPI)</dd></div>
+          <div><dt>Oscilloscope</dt><dd>GW Instek GDS-1104B</dd></div>
+        </dl>
+        <h4>Links</h4>
+        <dl>
+          <div><dt>GPIB</dt><dd>NI GPIB-USB-HS, NI-VISA</dd></div>
+          <div><dt>8720D, alternatively</dt><dd>Prologix USB or RS-232</dd></div>
+          <div><dt>Oscilloscope</dt><dd>raw LAN socket</dd></div>
+        </dl>
+        <h4>Runs on</h4>
+        <dl>
+          <div><dt>OS</dt><dd>Windows 10/11, 64-bit</dd></div>
+          <div><dt>Python</dt><dd>3.12 x64</dd></div>
+          <div><dt>Packaging</dt><dd>PyInstaller, portable ZIP</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ 1 bench -->
+  <section class="pp-sec" id="bench">
+    <div class="pp-head">
+      <div class="pp-badge"><small>PART</small>1</div>
+      <div><span class="kicker">Connections</span><h2>The bench and how it is wired</h2></div>
+    </div>
+    <div class="bus" aria-label="Connection diagram">
+      <svg viewBox="0 0 980 262" role="img" aria-label="PC connected over GPIB to three HP instruments and over LAN to an oscilloscope">
+        <!-- PC -->
+        <rect class="box" x="16" y="78" width="132" height="84" rx="8"/>
+        <rect class="scr" x="28" y="90" width="108" height="46" rx="3"/>
+        <path class="tr" d="M34 126 46 122 54 104 62 124 72 118 82 98 92 124 104 120 130 122"/>
+        <text class="t" x="82" y="154" text-anchor="middle">PC · GPIB Studio</text>
+        <!-- adapter -->
+        <rect class="box" x="190" y="34" width="118" height="34" rx="6"/>
+        <text x="249" y="55" text-anchor="middle">NI GPIB-USB-HS</text>
+        <path class="cable" d="M148 100 C168 100 168 51 190 51"/>
+        <!-- GPIB bus -->
+        <path class="cable" d="M308 51 H930"/>
+        <text class="a" x="320" y="40">GPIB (IEEE-488) · daisy chain</text>
+        <!-- instruments -->
+        <g>
+          <path class="cable" d="M420 51 V84"/>
+          <rect class="box" x="352" y="84" width="140" height="74" rx="6"/><rect class="scr" x="362" y="94" width="72" height="44" rx="2"/>
+          <path class="tr" d="M366 132 374 131 380 112 386 131 392 129 398 104 404 131 410 130 430 131"/>
+          <rect x="442" y="96" width="40" height="7" rx="2" fill="#c9c5b9"/><rect x="442" y="108" width="40" height="7" rx="2" fill="#c9c5b9"/><rect x="442" y="120" width="40" height="7" rx="2" fill="#c9c5b9"/>
+          <text class="t" x="422" y="176" text-anchor="middle">HP 8563E</text><text x="422" y="192" text-anchor="middle">spectrum · addr 18</text>
+        </g>
+        <g>
+          <path class="cable" d="M600 51 V84"/>
+          <rect class="box" x="532" y="84" width="140" height="74" rx="6"/><rect class="scr" x="542" y="94" width="72" height="44" rx="2"/>
+          <path class="tr" d="M546 132 C566 132 568 100 578 100 C588 100 590 132 610 132"/>
+          <rect x="622" y="96" width="40" height="7" rx="2" fill="#c9c5b9"/><rect x="622" y="108" width="40" height="7" rx="2" fill="#c9c5b9"/><rect x="622" y="120" width="40" height="7" rx="2" fill="#c9c5b9"/>
+          <text class="t" x="602" y="176" text-anchor="middle">HP 8720D</text><text x="602" y="192" text-anchor="middle">network · addr 16</text>
+        </g>
+        <g>
+          <path class="cable" d="M780 51 V84"/>
+          <rect class="box" x="712" y="84" width="140" height="74" rx="6"/><rect x="722" y="98" width="88" height="22" rx="2" fill="#120c02" stroke="#3a2a0c"/>
+          <text class="a" x="766" y="114" text-anchor="middle" style="font-size:12px">2480.000 MHz</text>
+          <rect x="722" y="128" width="30" height="10" rx="2" fill="#f5a524"/><text x="758" y="137" style="font-size:9px">RF OFF</text>
+          <text class="t" x="782" y="176" text-anchor="middle">HP 83752B</text><text x="782" y="192" text-anchor="middle">source · addr 19</text>
+        </g>
+        <!-- serial alternative to the 8720D -->
+        <path class="ser" d="M148 120 C170 120 170 72 200 72 H556 V84"/>
+        <text x="180" y="98">or: Prologix / RS-232 → 8720D</text>
+        <!-- LAN scope -->
+        <path class="lan" d="M82 162 V236 H972 V124 H968"/>
+        <rect class="box" x="880" y="84" width="88" height="80" rx="6"/><rect class="scr" x="888" y="92" width="72" height="44" rx="2"/>
+        <path class="tr" d="M890 114 C896 98 902 98 908 114 C914 130 920 130 926 114 C932 98 938 98 944 114 C950 130 956 130 958 120"/>
+        <text class="t" x="924" y="182" text-anchor="middle">GDS-1104B</text>
+        <text class="g" x="520" y="252" text-anchor="middle">LAN · raw socket, port 3000</text>
+      </svg>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p>Three instruments share one GPIB bus through an NI GPIB-USB-HS adapter and NI-VISA. The network analyzer can instead be reached through a Prologix-style
+          GPIB-USB adapter or an RS-232 ↔ GPIB converter, which needs no NI drivers. The oscilloscope is on the LAN and is addressed through a raw socket.</p>
+        <p>Nothing connects when the program starts: no automatic connection, no preset, no RF ON. The <b>Devices</b> dialog has one card per instrument with its address,
+          Connect/Disconnect and a summary of its settings, and a status light: green when connected and its settings have been read, orange when connected without
+          settings, grey when disconnected. The program never installs drivers or changes NI MAX settings.</p>
+      </div>
+      <figure class="pp-plate" style="margin:0">
+        <a href="img/devices-dialog.png"><img loading="lazy" src="img/devices-dialog.png" alt="Devices dialog with one card per instrument and the simulation option"></a>
+        <figcaption><b>Devices dialog:</b> addresses, independent Connect buttons, and the simulation switch with a choice of DUT and test signal.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ 2 manual -->
+  <section class="pp-sec" id="manual">
+    <div class="pp-head">
+      <div class="pp-badge"><small>PART</small>2</div>
+      <div><span class="kicker">Manual control</span><h2>Read, apply, read back</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p>The manual tabs (Spectrum, Network, Source) follow one rule: the screen shows what the instrument reported, not what the user typed.</p>
+        <ul class="bul">
+          <li><b>Read and Live never change the instrument.</b> Read takes the current trace buffer or source settings once; Live repeats it at an interval. Neither
+            triggers a new sweep or turns RF on; the instrument’s own Run, Single and Trigger buttons are separate.</li>
+          <li><b>Typed values are drafts.</b> A setting is sent only when its group is applied, and then the settings are read back, because instruments round values
+            or change related ones.</li>
+          <li><b>Old data is labelled.</b> A trace that belongs to an earlier connection or setting is marked <span class="mono">stale</span> or
+            <span class="mono">PREVIOUS</span> until it is read again.</li>
+          <li><b>History.</b> Record keeps every acquisition so it can be replayed, compared, shown as a waterfall or exported as Touchstone (S1P/S2P).</li>
+        </ul>
+      </div>
+      <div class="pp-spec">
+        <h4>Per instrument</h4>
+        <dl>
+          <div><dt>8563E trace</dt><dd>601 points</dd></div>
+          <div><dt>8563E controls</dt><dd>span, RBW/VBW, detector, markers</dd></div>
+          <div><dt>8720D points</dt><dd>up to 1601</dd></div>
+          <div><dt>8720D views</dt><dd>dB, phase, SWR, Smith, polar</dd></div>
+          <div><dt>83752B</dt><dd>CW, sweep, AM/FM/pulse, ALC</dd></div>
+          <div><dt>83752B display</dt><dd>programmed state</dd></div>
+          <div><dt>GDS-1104B</dt><dd>4 ch, full-record statistics</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ 3 tests -->
+  <section class="pp-sec" id="tests">
+    <div class="pp-head">
+      <div class="pp-badge"><small>PART</small>3</div>
+      <div><span class="kicker">Automated tests</span><h2>A library of 18 test procedures</h2></div>
+    </div>
+    <p>Each test is a complete procedure: choose it, fill in its settings, confirm RF when the source is used, and press Run. The live trace, the result charts and
+      the results table update point by point, and the run is saved when it ends. Tests that need rewiring part-way, such as the DUT chain, pause and ask for the
+      new connections before they continue.</p>
+    <div data-library>
+      <div class="lib-filter" role="group" aria-label="Filter by instrument">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="sa" aria-pressed="false">Spectrum analyzer</button>
+        <button type="button" data-filter="na" aria-pressed="false">Network analyzer</button>
+        <button type="button" data-filter="sg" aria-pressed="false">Source</button>
+        <button type="button" data-filter="osc" aria-pressed="false">Oscilloscope</button>
+        <span class="small dim" style="align-self:center" data-count>18 tests</span>
+      </div>
+      <div class="lib">
+        <div class="t" data-inst="sa"><div class="inst-tags"><span>SA</span></div><b>Flatness · peak search and envelope</b><p>Finds every peak above a threshold in turn; the peaks form the envelope, and flatness is its spread.</p></div>
+        <div class="t" data-inst="sa"><div class="inst-tags"><span>SA</span></div><b>Wideband scan + spur search</b><p>Measures a wide range in consecutive 601-point windows, joins them and lists peaks above a limit line as spurs.</p></div>
+        <div class="t" data-inst="sa"><div class="inst-tags"><span>SA</span></div><b>Auto-zoom peak finder</b><p>Starts wide, finds the strongest signal and narrows the span around it step by step, optionally ending with the frequency counter.</p></div>
+        <div class="t" data-inst="sa"><div class="inst-tags"><span>SA</span></div><b>Drift monitor</b><p>Repeats single sweeps at an interval and follows the strongest signal’s frequency and level over time.</p></div>
+        <div class="t" data-inst="na"><div class="inst-tags"><span>NA</span></div><b>Filter characterization</b><p>Finds the passband, re-sweeps it, and reports centre, bandwidth, loss, ripple, Q, shape factor, group delay and return loss.</p></div>
+        <div class="t" data-inst="na"><div class="inst-tags"><span>NA</span></div><b>Segmented S-parameter sweep</b><p>Joins several sweeps to go beyond the 1601-point limit; all four S-parameters can go into one S2P file.</p></div>
+        <div class="t" data-inst="sg sa"><div class="inst-tags"><span>SG</span><span>SA</span></div><b>Source tracking (frequency × level)</b><p>Steps the source over a frequency × level grid; the analyzer follows and measures each point.</p></div>
+        <div class="t" data-inst="sg sa"><div class="inst-tags"><span>SG</span><span>SA</span></div><b>Nested bounds sweep</b><p>An inner sweep between two bounds and an outer sweep that slides, zooms or expands those bounds.</p></div>
+        <div class="t" data-inst="sg sa"><div class="inst-tags"><span>SG</span><span>SA</span></div><b>Path loss / flatness</b><p>One level across frequency; loss = set level − reading, savable as a correction table.</p></div>
+        <div class="t" data-inst="sg sa"><div class="inst-tags"><span>SG</span><span>SA</span></div><b>Harmonics</b><p>Measures 2f, 3f, … in dBc, with an optional re-check at 10 dB more attenuation to catch analyzer-made distortion.</p></div>
+        <div class="t" data-inst="sg sa"><div class="inst-tags"><span>SG</span><span>SA</span></div><b>P1dB compression</b><p>Raises the input step by step at each frequency; P1dB is interpolated where the gain has dropped 1 dB.</p></div>
+        <div class="t" data-inst="sg sa"><div class="inst-tags"><span>SG</span><span>SA</span></div><b>Analyzer level linearity</b><p>Steps the source level down; the reading should follow 1 dB per dB, and the error is plotted.</p></div>
+        <div class="t" data-inst="na sg sa"><div class="inst-tags"><span>NA</span><span>SG</span><span>SA</span></div><b>DUT chain: S-parameters → gain → P1dB</b><p>Finds the passband with the network analyzer, pauses for rewiring, then measures gain and P1dB inside that band.</p></div>
+        <div class="t" data-inst="osc"><div class="inst-tags"><span>OSC</span></div><b>Waveform amplitude and frequency</b><p>Captures a new record and checks Vpp and frequency against limits, using every sample; flags clipping as inconclusive.</p></div>
+        <div class="t" data-inst="osc"><div class="inst-tags"><span>OSC</span></div><b>Pulse width and channel delay</b><p>From one acquisition, measures the positive pulse width and the delay between two channels.</p></div>
+        <div class="t" data-inst="sg osc"><div class="inst-tags"><span>SG</span><span>OSC</span></div><b>Swept-sine voltage gain</b><p>10–100 MHz; gain is 20·log₁₀ of the RMS ratio of output to input channel.</p></div>
+        <div class="t" data-inst="osc sa"><div class="inst-tags"><span>OSC</span><span>SA</span></div><b>Scope / spectrum frequency agreement</b><p>Compares the frequency measured in the time domain with the strongest spectral peak of the same sine.</p></div>
+        <div class="t" data-inst="na osc"><div class="inst-tags"><span>NA</span><span>OSC</span></div><b>S21 and pulse response</b><p>Measures S21 over 50–100 MHz, pauses for reconnection, then records a pulse response; two independent records.</p></div>
+      </div>
+    </div>
+    <div class="pp-plates" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <figure class="pp-plate cover"><a href="img/lite-source-tracking.png"><img loading="lazy" src="img/lite-source-tracking.png" alt="GPIB Test Lite running a source tracking test"></a><figcaption><b>GPIB Test Lite:</b> the same tests in one numbered window, here a source-tracking run that ends in FAIL against its 0 dB expected path gain, with RF OFF verified at the end.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ 4 data -->
+  <section class="pp-sec" id="data">
+    <div class="pp-head">
+      <div class="pp-badge"><small>PART</small>4</div>
+      <div><span class="kicker">Projects, analysis, oscilloscope</span><h2>Every run filed, every file usable</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <p>Results are stored as <b>project → DUT → date → run</b>, and every automated test or manual session gets its own numbered run folder with CSV tables, MAT data,
+          PNG charts and a PDF report. A register at project level lists every run.</p>
+        <div class="tree"><span class="d">Radar Front-End\</span>                     <span class="c">project</span>
+  <span class="f">Register.csv</span>                        <span class="c">all runs</span>
+  <span class="d">DUT\LNA_SN001\2026-10-22\</span>
+    <span class="d">R001_Manual_…\</span>
+    <span class="d">R002_Flatness_2280-2620MHz_141205\</span>
+      <span class="f">results.csv  data.mat  charts.png  report.pdf</span></div>
+        <p class="small dim">The folder pattern is from the README; the file names in the last line are illustrative of the four kinds of output it lists.</p>
+        <p>The <b>Analysis</b> tab works on saved CSV, MAT, S1P/S2P files and run folders: band metrics (maximum, minimum, mean, flatness, σ, −3 dB bandwidth), statistics across
+          datasets, math between two datasets and smoothing, and a PASS/FAIL mask against upper and lower limit lines. The <b>Scope</b> tab shows four channels with
+          full-record statistics, peak-preserving zoom and cursors. MAT files from the author’s earlier MATLAB version can still be opened.</p>
+      </div>
+      <div class="pp-spec">
+        <h4>Saved per run</h4>
+        <dl>
+          <div><dt>Tables</dt><dd>CSV</dd></div>
+          <div><dt>Data</dt><dd>MAT</dd></div>
+          <div><dt>Charts</dt><dd>PNG (exports also SVG, PDF)</dd></div>
+          <div><dt>Report</dt><dd>PDF</dd></div>
+          <div><dt>Network data</dt><dd>Touchstone S1P / S2P</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="pp-plates" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <figure class="pp-plate cover"><a href="img/studio-analysis.png"><img loading="lazy" src="img/studio-analysis.png" alt="Analysis tab comparing two saved envelopes against a limit mask"></a><figcaption><b>Analysis:</b> two saved envelopes checked against a mask; both fail by 0.44 dB at the lower limit near 2400 MHz.</figcaption></figure>
+      <figure class="pp-plate cover"><a href="img/studio-scope.png"><img loading="lazy" src="img/studio-scope.png" alt="Scope tab with two 1 kHz sine channels"></a><figcaption><b>Scope:</b> two channels of a simulated 1 kHz, 2 Vpp sine with full-record statistics.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ 5 safety -->
+  <section class="pp-sec" id="safety">
+    <div class="pp-head">
+      <div class="pp-badge"><small>PART</small>5</div>
+      <div><span class="kicker">RF safety, simulation, testing</span><h2>Built not to surprise the bench</h2></div>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <ul class="rules">
+          <li>Most source changes (frequency, power, modulation, markers) require RF OFF, and the program checks that state on the instrument itself.</li>
+          <li>RF ON always needs explicit confirmation and re-checks the programmed level against a power ceiling (default −20 dBm). The README is clear that this is a
+            software check, not a physical limiter.</li>
+          <li>Disconnecting, returning the source to local, or closing the program does not switch RF off; the program says so, and RF OFF is its own button.</li>
+          <li>An output state that cannot be confirmed is shown as RF UNKNOWN rather than assumed off.</li>
+        </ul>
+        <p><b>Simulation.</b> The simulator is a fake VISA resource manager that answers the same HP-IB and SCPI commands the controllers send, so the whole stack runs
+          unchanged. Its DUT is a 4th-order Butterworth bandpass at 2.44 GHz (80 MHz wide) followed by a 20 dB amplifier with Rapp compression and harmonics, or a
+          plain cable; comb signals can be injected at its input. Every identity string says SIMULATED.</p>
+        <p><b>Testing and packaging.</b> Both programs have a command-line self-test that runs on simulated data and writes screenshots, MAT and CSV files. A pytest suite
+          covers analysis, readers, instruments, tests and the user interface: run on 17 Nov 2026 with the pinned dependencies, 941 of its 942 cases passed and the remaining one passed when re-run on its own, which points to a timing-sensitive test. The build script packages both programs with PyInstaller, tests
+          each built EXE with simulated data, and writes portable ZIPs and an installer.</p>
+      </div>
+      <div class="pp-spec">
+        <h4>Simulated DUT (simulator.py)</h4>
+        <dl>
+          <div><dt>Filter</dt><dd>Butterworth, 4th order</dd></div>
+          <div><dt>Centre, bandwidth</dt><dd>2.44 GHz, 80 MHz</dd></div>
+          <div><dt>Passband loss</dt><dd>1.8 dB</dd></div>
+          <div><dt>Amplifier gain, Psat</dt><dd>20 dB, 12 dBm</dd></div>
+          <div><dt>OIP2, OIP3</dt><dd>38 dBm, 26 dBm</dd></div>
+          <div><dt>Cable</dt><dd>0.9 dB/√GHz</dd></div>
+        </dl>
+        <h4>Code</h4>
+        <dl>
+          <div><dt>Application</dt><dd>≈ 14 400 lines, 40 modules</dd></div>
+          <div><dt>Unit tests</dt><dd>942 cases (288 functions)</dd></div>
+          <div><dt>Dependencies</dt><dd>7, versions pinned</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="pp-note"><b>Note</b>All screenshots and example files in the repository come from the simulation mode; it shows what the program does, not measurements of a
+      real device. The README itself adds that simulated tests do not replace verification on real hardware.</div>
+  </section>
+
+  <!-- ================================================================ summary -->
+  <section class="pp-sec" id="results">
+    <div class="pp-head">
+      <div class="pp-badge"><small>ALL</small>Σ</div>
+      <div><span class="kicker">Summary</span><h2>What it does</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Area</th><th>What GPIB Studio provides</th></tr></thead><tbody>
+      <tr><td>Instrument control</td><td>Spectrum, network, source and oscilloscope panels; read, live, apply-and-read-back; markers and peak tables on the plotted data</td></tr>
+      <tr><td>Connections</td><td>NI GPIB-USB-HS with NI-VISA; Prologix or RS-232 for the 8720D; LAN socket for the oscilloscope</td></tr>
+      <tr class="hl"><td>Automation</td><td>18 test procedures over one to three instruments, with live charts, PASS/FAIL against limits and guided rewiring</td></tr>
+      <tr><td>Data</td><td>Project → DUT → date → run folders; CSV, MAT, PNG, PDF report, Touchstone; register of all runs</td></tr>
+      <tr><td>Analysis</td><td>Band metrics, statistics, dataset math, smoothing, limit masks; waterfall and comparison of recorded traces</td></tr>
+      <tr><td>Safety</td><td>RF OFF checks before source changes, confirmed RF ON with a power ceiling, explicit RF UNKNOWN state</td></tr>
+      <tr><td>Without hardware</td><td>Full simulation mode, command-line self-test, unit tests, portable build tested after packaging</td></tr>
+    </tbody></table></div>
+
+    <h3 class="sub-h">Design choices worth noting</h3>
+    <ul class="bul">
+      <li><b>The instrument is the source of truth.</b> Settings are read back after every change and old data is labelled, so the screen does not show a state that only exists in the program.</li>
+      <li><b>Nothing happens by itself.</b> No automatic connection, preset or RF ON at start-up, and Read never triggers a sweep.</li>
+      <li><b>One command set, two back ends.</b> The simulator speaks the instruments’ own commands, which lets the same code be tested end to end without a lab.</li>
+      <li><b>Two front ends for two kinds of user.</b> Studio is a docking workspace for exploring; Lite is a numbered, one-window path for running a test correctly.</li>
+    </ul>
+    <p class="small dim">According to the repository’s third-party notices, GPIB Studio 2 was built on an earlier, supplied HP GPIB Python application; the libraries it uses keep their own licences.</p>
+
+    <div class="pp-links">
+      <a class="btn primary" href="https://github.com/mohammadaminkhoshkam/GPIB-Studio" target="_blank" rel="noopener">Repository: source, setup and docs →</a>
+      <a class="btn" href="../../#projects">← All projects</a>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Mohammad Amin Khoshkam · MIT licence</span>
+    <a href="../../">← Back to home</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script src="gpib.js"></script>
+</body>
+</html>
