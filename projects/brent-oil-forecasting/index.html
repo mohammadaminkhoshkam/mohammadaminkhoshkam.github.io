@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brent Oil Forecasting — M. A. Khoshkam</title>
+  <meta name="description" content="Forecasting 1- and 5-day Brent crude returns from geopolitical events, Iran sanctions and market data: leakage-safe features, 52 models under purged chronological validation and block-bootstrap uncertainty. Data Science project by Mohammad Amin Khoshkam, Iman Alimohammadi and Sadra Yeganeh.">
+  <meta property="og:title" content="Brent crude forecasting from geopolitics, sanctions and market data">
+  <meta property="og:description" content="9,214 trading days, 44 point-in-time predictors, 52 models, a 2020–2025 out-of-sample test and calibrated 90% bands.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0c0a'/%3E%3Cpath d='M16 5c4 6 7 9.5 7 13.2A7 7 0 0 1 9 18.2C9 14.5 12 11 16 5z' fill='%23f2a93b'/%3E%3Cpath d='M12.5 19.5a3.6 3.6 0 0 0 3.5 3.3' stroke='%230d0c0a' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="oil.css">
+</head>
+<body class="ppage">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a href="../../#projects">Projects</a>
+      <a href="#validation">Method</a>
+      <a href="#results">Results</a>
+      <a class="pill" href="https://github.com/mohammadaminkhoshkam/Brent-Oil-Geopolitics-Forecasting" target="_blank" rel="noopener">GitHub</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ================================================================ hero -->
+  <section class="pp-hero">
+    <div class="container pp-hero-grid">
+      <div>
+        <a class="eyebrow" href="../../#projects">← Projects · Data science · Energy markets</a>
+        <h1>Forecasting <em>Brent crude</em> from geopolitics, sanctions and market data</h1>
+        <p class="lead">Can what is known at today's close (recent price action, volatility, geopolitical risk, Iran sanctions, OPEC supply) predict
+          where <b>Brent</b> goes over the next <b>1 or 5 trading days</b>? We built a point-in-time dataset of 35 years and tested
+          <b>52 models</b> under strict, leakage-resistant chronological validation, then scored the frozen choice once on <b>2020–2025</b>.</p>
+        <div class="team" aria-label="Team">
+          <span><i>MK</i>Mohammad Amin Khoshkam</span>
+          <span><i>IA</i>Iman Alimohammadi</span>
+          <span><i>SY</i>Sadra Yeganeh</span>
+        </div>
+        <p class="team-note">joint project · all three members contributed equally</p>
+        <div class="pp-meta">
+          <span><b>Course:</b> Data Science, Sharif University of Technology</span>
+          <span><b>Instructor:</b> Dr. Salavati</span>
+          <span><b>Term:</b> Summer 2026</span>
+          <span><b>Stack:</b> Python, pandas, scikit-learn, Jupyter</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#results">See the results</a>
+          <a class="btn" href="https://github.com/mohammadaminkhoshkam/Brent-Oil-Geopolitics-Forecasting" target="_blank" rel="noopener">Repository</a>
+        </div>
+      </div>
+      <figure class="pp-sign" style="margin:0">
+        <div class="term">
+          <div class="term-top">
+            <span class="term-sym"><b>BRENT</b>Europe spot · USD/bbl</span>
+            <span class="term-px" id="term-last">–</span>
+            <div class="term-ranges" role="group" aria-label="Time range">
+              <button type="button" data-range="1Y" aria-pressed="false">1Y</button>
+              <button type="button" data-range="5Y" aria-pressed="true">5Y</button>
+              <button type="button" data-range="10Y" aria-pressed="false">10Y</button>
+              <button type="button" data-range="ALL" aria-pressed="false">ALL</button>
+            </div>
+          </div>
+          <canvas id="candles" aria-label="Candlestick chart of the Brent crude spot price"></canvas>
+          <div class="term-foot">
+            <span><span id="term-period">weekly candles</span> · last <span id="term-date">–</span></span>
+            <span class="lg"><i style="background:#2bc48a"></i>up<i style="background:#ef5a48"></i>down<i style="background:#f2a93b;transform:rotate(45deg);border-radius:1px"></i>key event</span>
+          </div>
+        </div>
+        <figcaption style="font-family:var(--mono);font-size:.7rem;color:var(--ink-dim);text-align:center;margin-top:6px">real EIA Brent spot series (RBRTE) · candles built from daily closes · hover for OHLC and events</figcaption>
+      </figure>
+    </div>
+    <div class="pp-strip"></div>
+  </section>
+
+  <div class="container">
+
+  <!-- ================================================================ overview -->
+  <section class="pp-sec" id="overview" style="padding-top:26px">
+    <div class="pp-kpi">
+      <div class="k"><b>9,214<i>days</i></b><span>daily observations, 1990–2025</span></div>
+      <div class="k"><b>44<i>inputs</i></b><span>point-in-time predictors</span></div>
+      <div class="k"><b>52<i>models</i></b><span>configurations from 12 families</span></div>
+      <div class="k"><b>1,382<i>test days</i></b><span>untouched, 2020–2025</span></div>
+      <div class="k"><b>+3.7%<i>skill</i></b><span>best 5-day MAE gain over a no-change forecast</span></div>
+      <div class="k"><b>99%<i>prob.</i></b><span>bootstrap support for the 5-day gain</span></div>
+    </div>
+
+    <div class="pp-chain" style="--n:5" aria-label="Sections">
+      <a href="#data"><span class="node">1</span><b>Data</b><small>5 sources, 35 years</small></a>
+      <a href="#features"><span class="node">2</span><b>Features</b><small>44 predictors</small></a>
+      <a href="#validation"><span class="node">3</span><b>Validation</b><small>purged, expanding</small></a>
+      <a href="#results"><span class="node">4</span><b>Results</b><small>2020–2025 test</small></a>
+      <a href="#uncertainty"><span class="node">5</span><b>Uncertainty</b><small>bootstrap, bands</small></a>
+    </div>
+  </section>
+
+  <!-- ================================================================ data -->
+  <section class="pp-sec" id="data">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STEP</small>01</div>
+      <div><span class="kicker">Phase 1 · cleaning and alignment</span><h2>Oil prices meet geopolitics</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <div class="pp-cols">
+      <div>
+        <p>The project joins five tables into one daily master table: <b>Brent, WTI and Dubai prices</b>, a curated timeline of <b>68
+          market-moving geopolitical events</b>, <b>25 US/EU/UN sanctions</b> on Iran, <b>Iran's crude exports</b> by destination, and monthly
+          risk indicators (Geopolitical Risk Index, VIX, dollar index, OPEC spare capacity, Strait of Hormuz closure probability).</p>
+        <p>Events and sanctions are moved to the next trading day when they fall on a weekend, and every lower-frequency series is lagged by its reporting
+          delay: monthly indicators by one month, annual export data by one year. Nothing enters a row before it would have been public.</p>
+        <p>The source market series are <b>synthetic but calibrated to historical levels</b>, as their author states, and they contain long flat stretches
+          at artificial price ceilings. Instead of deleting them, we flag every row whose features or target touch a ceiling. That gives two training
+          populations: <b>all rows</b> (the complete history) and <b>eligible rows</b> (about 72% of days, with clean targets).</p>
+        <div class="pp-note alt"><b>Note</b>Because the price paths are synthetic, the project is an educational benchmark of a sound forecasting workflow, not a
+          trading strategy. The candlestick chart at the top shows the <i>real</i> EIA Brent series for context.</div>
+      </div>
+      <div class="pp-spec">
+        <h4>Dataset</h4>
+        <dl>
+          <div><dt>Period</dt><dd>2 Jan 1990 – 25 Apr 2025</dd></div>
+          <div><dt>Trading days</dt><dd>9,214</dd></div>
+          <div><dt>Eligible rows (1-day / 5-day)</dt><dd>6,633 / 6,613</dd></div>
+          <div><dt>Geopolitical events</dt><dd>68 (25 involve Iran)</dd></div>
+          <div><dt>Sanctions</dt><dd>25 (1979–2025)</dd></div>
+        </dl>
+        <h4>Targets</h4>
+        <dl>
+          <div><dt>1-day Brent return</dt><dd>σ ≈ 1.8–2.0%</dd></div>
+          <div><dt>5-day Brent return</dt><dd>σ ≈ 4.8–5.2%</dd></div>
+          <div><dt>Largest 1-day move</dt><dd>−26.0% / +16.6%</dd></div>
+        </dl>
+        <h4>Sources</h4>
+        <dl>
+          <div><dt>Market and events</dt><dd>Kaggle, Apache 2.0</dd></div>
+          <div><dt>Real Brent spot</dt><dd>U.S. EIA</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ features -->
+  <section class="pp-sec" id="features">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STEP</small>02</div>
+      <div><span class="kicker">Phase 2 · feature engineering</span><h2>44 predictors, all known at the close</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <p>From 124 candidate columns, administrative fields, raw price levels, unlagged indicators and near-duplicates (|Spearman ρ| ≥ 0.90) were removed.
+      The remaining <b>44 predictors</b> fall into seven groups:</p>
+    <div class="fgroups">
+      <div><b>Return lags<span>6</span></b><p>Brent returns 1, 2, 3, 5, 10 and 20 days back</p></div>
+      <div><b>Rolling return statistics<span>11</span></b><p>mean, volatility, average absolute move and share of up-days over 5–60 days</p></div>
+      <div><b>Momentum and trend<span>6</span></b><p>5–60-day momentum, distance from the 5- and 60-day moving averages</p></div>
+      <div><b>Geopolitical risk<span>8</span></b><p>GPR index, Iran-specific risk, Hormuz closure probability and risk premium, event pulse</p></div>
+      <div><b>Sanctions<span>5</span></b><p>days since the last sanction, oil/financial sector hit, relief flag, pressure step</p></div>
+      <div><b>Macro and supply<span>5</span></b><p>VIX, dollar index, OPEC production and spare capacity, US rig count</p></div>
+      <div><b>Calendar<span>3</span></b><p>day of week, month-end flag, seasonal month term</p></div>
+    </div>
+    <p class="pp-eqn">target: y<sub>t,h</sub> = 100 · (Brent<sub>t+h</sub> / Brent<sub>t</sub> − 1),&nbsp; h ∈ {1, 5} &nbsp;·&nbsp; every feature on row t uses data up to Brent<sub>t</sub> only</p>
+  </section>
+
+  <!-- ================================================================ validation -->
+  <section class="pp-sec" id="validation">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STEP</small>03</div>
+      <div><span class="kicker">Phase 3 · model selection</span><h2>Leakage-resistant chronological validation</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <p>No shuffling, ever. Each experiment uses four expanding validation blocks followed by a final, untouched 15% test. A training row is admitted only if
+      its full h-day target was already observed when the evaluation block starts (<span class="mono">record_id + h ≤ origin</span>), so overlapping
+      5-day targets cannot leak across the boundary.</p>
+    <div class="folds" role="img" aria-label="Expanding-window validation design">
+      <svg viewBox="0 0 760 178" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="trg" x1="0" x2="1"><stop offset="0" stop-color="#1f5f86"/><stop offset="1" stop-color="#26a99d"/></linearGradient>
+        </defs>
+        <text x="0" y="14" class="t">train</text><rect x="40" y="6" width="22" height="10" rx="2" fill="url(#trg)"/>
+        <text x="80" y="14" class="t">validate</text><rect x="140" y="6" width="22" height="10" rx="2" fill="#f2a93b"/>
+        <text x="180" y="14" class="t">final test</text><rect x="252" y="6" width="22" height="10" rx="2" fill="#ef5a48"/>
+        <text x="292" y="14">gap between blocks = purge of h days</text>
+        <g transform="translate(90,30)">
+          <text x="-90" y="13">fold 1</text><rect x="0" y="3" width="292" height="13" rx="3" fill="url(#trg)"/><rect x="297" y="3" width="65" height="13" rx="3" fill="#f2a93b"/>
+          <text x="-90" y="37">fold 2</text><rect x="0" y="27" width="357" height="13" rx="3" fill="url(#trg)"/><rect x="362" y="27" width="65" height="13" rx="3" fill="#f2a93b"/>
+          <text x="-90" y="61">fold 3</text><rect x="0" y="51" width="422" height="13" rx="3" fill="url(#trg)"/><rect x="427" y="51" width="65" height="13" rx="3" fill="#f2a93b"/>
+          <text x="-90" y="85">fold 4</text><rect x="0" y="75" width="487" height="13" rx="3" fill="url(#trg)"/><rect x="492" y="75" width="65" height="13" rx="3" fill="#f2a93b"/>
+          <text x="-90" y="109" class="t">test</text><rect x="0" y="99" width="552" height="13" rx="3" fill="url(#trg)" opacity=".55"/><rect x="557" y="99" width="113" height="13" rx="3" fill="#ef5a48"/>
+          <line x1="0" y1="126" x2="670" y2="126" stroke="#4a4030"/>
+          <text x="0" y="142">1990</text><text x="282" y="142">45%</text><text x="347" y="142">55%</text><text x="412" y="142">65%</text><text x="477" y="142">75%</text><text x="542" y="142">85%</text><text x="640" y="142">2025</text>
+        </g>
+      </svg>
+    </div>
+    <div class="pp-cols">
+      <div>
+        <h3 class="sub-h" style="margin-top:4px">Twelve model families, one rulebook</h3>
+        <p>Every candidate receives the same 44 inputs and the same folds: recency-weighted <b>Ridge</b>, <b>Elastic Net</b>, robust <b>Huber SGD</b>,
+          <b>linear and RBF SVR</b>, distance-weighted <b>KNN</b>, <b>Random Forest</b>, <b>Extra Trees</b>, <b>AdaBoost</b>, <b>Gradient Boosting</b>,
+          <b>Histogram Gradient Boosting</b> and a four-layer <b>MLP</b>, alongside zero-return and training-median baselines. The family with the lowest
+          pooled validation MAE is frozen, then its walk-forward refit cadence (every 5, 20, 60 or 252 days, or never) is tuned on the same folds.</p>
+      </div>
+      <ul class="checks">
+        <li>Lags use <span class="mono">shift(k ≥ 1)</span>; rolling windows use returns up to day t only</li>
+        <li>Imputation and scaling fitted inside each training fold</li>
+        <li>Monthly / annual indicators lagged by their publication delay</li>
+        <li>Future-window and administrative flags never used as inputs</li>
+        <li>Family, settings and cadence frozen before the single test run</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================================ results -->
+  <section class="pp-sec" id="results">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STEP</small>04</div>
+      <div><span class="kicker">Out-of-sample test · 2020–2025</span><h2>How accurate were the forecasts?</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <p>Short-horizon oil returns are notoriously hard to predict, so the fair yardstick is a <b>no-change (zero-return) forecast</b>, which is what an efficient
+      market implies. The test period includes the 2020 COVID crash, the 2022 Ukraine shock and the 2023–2025 Middle East escalation.</p>
+
+    <div class="chart-card">
+      <div class="chart-row">
+        <div class="seg" role="group" aria-label="Experiment">
+          <button type="button" data-scn="eligible_5d" aria-pressed="true">5-day · eligible rows</button>
+          <button type="button" data-scn="all_rows_5d" aria-pressed="false">5-day · all rows</button>
+          <button type="button" data-scn="eligible_1d" aria-pressed="false">1-day · eligible rows</button>
+          <button type="button" data-scn="all_rows_1d" aria-pressed="false">1-day · all rows</button>
+        </div>
+        <div class="seg" role="group" aria-label="Window">
+          <button type="button" data-win="120" aria-pressed="false">120 d</button>
+          <button type="button" data-win="250" aria-pressed="true">250 d</button>
+          <button type="button" data-win="all" aria-pressed="false">full test</button>
+        </div>
+      </div>
+      <div class="reads">
+        <div class="wide"><small>selected model</small><b class="gold" id="r-model">–</b></div>
+        <div><small>test MAE</small><b id="r-mae">–</b></div>
+        <div><small>skill vs no-change</small><b id="r-skill">–</b></div>
+        <div><small>direction hit rate</small><b id="r-dir">–</b></div>
+        <div><small>90% band coverage</small><b id="r-cov">–</b></div>
+        <div><small>test days</small><b id="r-n">–</b></div>
+      </div>
+      <h3 style="margin-top:12px">Forecast vs realised <span data-h>5-day</span> Brent return</h3>
+      <p class="sub">bars: realised return · gold line: forecast · teal band: 90% volatility-scaled prediction band (hover for values)</p>
+      <canvas id="chart-returns"></canvas>
+      <div class="chart-legend"><span><i style="background:#2bc48a"></i>realised up</span><span><i style="background:#ef5a48"></i>realised down</span><span><i style="background:#f2a93b"></i>forecast</span><span><i class="band" style="background:#36c9bb"></i>90% band</span></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Simulated price path: forecast vs actual Brent</h3>
+      <p class="sub">each point turns a forecast made at the origin into a price, P<sub>t</sub>·(1 + ŷ), and compares it with the price actually reached <span data-h>5-day</span> later.
+        Most of the close fit comes from prices moving little relative to their level; the skill numbers above measure what the model adds.</p>
+      <canvas id="chart-price" class="short"></canvas>
+      <div class="chart-legend"><span><i style="background:#efe7d8"></i>actual Brent in the project dataset (synthetic, calibrated)</span><span><i style="background:#f2a93b"></i>model-implied price</span><span>gaps: excluded price-ceiling periods</span></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="chart-card">
+        <h3>Forecast vs outcome</h3>
+        <p class="sub">every test day; dots in the shaded quadrants called the direction correctly · dashed: perfect forecast</p>
+        <canvas id="chart-scatter"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Validation leaderboard</h3>
+        <p class="sub">best configuration of each family vs the zero-return forecast · gold: selected model</p>
+        <canvas id="chart-board"></canvas>
+      </div>
+    </div>
+
+    <div class="tbl-wrap" style="margin-top:18px"><table class="tbl">
+      <thead><tr><th>Experiment</th><th>Selected model</th><th class="num">Test MAE</th><th class="num">No-change MAE</th><th class="num">Skill vs no-change</th><th class="num">Skill vs persistence</th><th class="num">Direction</th><th class="num">R²</th></tr></thead>
+      <tbody>
+        <tr><td>All rows · 1-day</td><td>Ridge, refit 5</td><td class="num">1.625</td><td class="num">1.641</td><td class="num">+1.0%</td><td class="num">+27.7%</td><td class="num">46.6%</td><td class="num">0.023</td></tr>
+        <tr><td>Eligible · 1-day</td><td>Extra Trees, refit 20</td><td class="num">1.870</td><td class="num">1.922</td><td class="num">+2.7%</td><td class="num">+29.7%</td><td class="num">52.0%</td><td class="num">0.031</td></tr>
+        <tr><td>All rows · 5-day</td><td>Ridge, refit 5</td><td class="num">4.143</td><td class="num">4.278</td><td class="num">+3.2%</td><td class="num">+18.4%</td><td class="num">51.2%</td><td class="num">0.069</td></tr>
+        <tr class="hl"><td>Eligible · 5-day</td><td>Ridge, refit 20</td><td class="num">4.868</td><td class="num">5.058</td><td class="num">+3.7%</td><td class="num">+16.1%</td><td class="num">57.6%</td><td class="num">0.054</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small dim" style="margin-top:8px">MAE in percentage points of return. “Persistence” repeats the most recently completed return over the same horizon. Direction: share of days where the forecast had the right sign.</p>
+
+    <div class="pp-note"><b>Reading</b>All four frozen models beat the no-change forecast out of sample, by 1–4% in MAE, and cut the error of a naive persistence forecast by
+      16–30%. The gains are small, as they should be for a liquid market. The 5-day models carry the clearest signal: a Spearman correlation of about 0.23 with the
+      outcome, and the eligible 5-day model is the only one whose hit rate (57.6%) beats always guessing the majority direction (55.7%).</div>
+  </section>
+
+  <!-- ================================================================ uncertainty -->
+  <section class="pp-sec" id="uncertainty">
+    <div class="pp-head">
+      <div class="pp-badge"><small>STEP</small>05</div>
+      <div><span class="kicker">Is the edge real?</span><h2>Bootstrap tests and prediction bands</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <div class="pp-cols">
+      <div>
+        <p>Forecast errors on neighbouring days are correlated, especially for overlapping 5-day targets, so a plain bootstrap would be overconfident. We
+          resample <b>20-day blocks</b> of the test errors 5,000 times and ask how often the model beats the no-change forecast.</p>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Experiment</th><th class="num">MAE gain (pp)</th><th class="num">95% CI</th><th class="num">P(gain &gt; 0)</th></tr></thead>
+          <tbody>
+            <tr><td>All rows · 1-day</td><td class="num">0.017</td><td class="num">[−0.002, 0.041]</td><td class="num">95.2%</td></tr>
+            <tr><td>Eligible · 1-day</td><td class="num">0.052</td><td class="num">[−0.002, 0.130]</td><td class="num">97.0%</td></tr>
+            <tr class="hl"><td>All rows · 5-day</td><td class="num">0.135</td><td class="num">[0.016, 0.281]</td><td class="num">99.0%</td></tr>
+            <tr class="hl"><td>Eligible · 5-day</td><td class="num">0.190</td><td class="num">[0.034, 0.378]</td><td class="num">99.3%</td></tr>
+          </tbody>
+        </table></div>
+        <p>At the <b>5-day horizon the gain is statistically supported</b>: both intervals exclude zero. At one day the evidence is borderline. Comparing the
+          two training populations on identical test days gives no decisive winner, since both paired intervals cross zero.</p>
+      </div>
+      <div class="pp-spec">
+        <h4>90% prediction bands</h4>
+        <dl>
+          <div><dt>All rows · 1-day</dt><dd>85.0% · ±2.7 pp</dd></div>
+          <div><dt>Eligible · 1-day</dt><dd class="ok">89.8% · ±3.6 pp</dd></div>
+          <div><dt>All rows · 5-day</dt><dd>84.0% · ±6.7 pp</dd></div>
+          <div><dt>Eligible · 5-day</dt><dd class="ok">88.3% · ±8.9 pp</dd></div>
+        </dl>
+        <p class="small dim" style="margin:6px 0 12px">coverage on the test set · median half-width. Bands scale with recent 20-day volatility, using the 90th percentile of normalised validation errors.</p>
+        <h4>What did not work</h4>
+        <dl>
+          <div><dt>Deep MLP</dt><dd>weakest family everywhere</dd></div>
+          <div><dt>Flexible boosting</dt><dd>loses to zero in validation</dd></div>
+          <div><dt>Best performers</dt><dd>heavily shrunk Ridge</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ takeaways -->
+  <section class="pp-sec" id="takeaways">
+    <div class="pp-head">
+      <div class="pp-badge"><small>ALL</small>Σ</div>
+      <div><span class="kicker">Summary</span><h2>What we learned</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <ul class="bul">
+      <li><b>Timing discipline matters more than model choice.</b> With every feature strictly point-in-time and a purged split, the honest edge over a no-change
+        forecast is a few percent, not the near-perfect fits that leakage would produce.</li>
+      <li><b>Simple beats complex here.</b> Strongly regularised, recency-weighted Ridge regression was selected in three of four experiments; deep and boosted
+        models mostly learned noise.</li>
+      <li><b>Longer horizons are easier.</b> Five-day returns carry a small but statistically supported signal; daily returns are close to a random walk.</li>
+      <li><b>Report uncertainty, not just a number.</b> Block-bootstrap intervals and volatility-scaled bands (84–90% coverage for a 90% target) show how far a
+        single forecast can be trusted.</li>
+    </ul>
+
+    <div class="pp-links">
+      <a class="btn primary" href="https://github.com/mohammadaminkhoshkam/Brent-Oil-Geopolitics-Forecasting" target="_blank" rel="noopener">Repository: notebooks, data and predictions →</a>
+      <a class="btn" href="../../#projects">← All projects</a>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Mohammad Amin Khoshkam, Iman Alimohammadi, Sadra Yeganeh</span>
+    <a href="../../">← Back to home</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script src="oil.js"></script>
+</body>
+</html>
