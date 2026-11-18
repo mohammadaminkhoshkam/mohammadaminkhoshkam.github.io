@@ -346,7 +346,49 @@
     all();
   }
 
+  // =====================================================================
+  // 3. Phase 4: volatility forecasts on real Brent (log scale)
+  // =====================================================================
+  function initVol(V) {
+    const cv = $("#chart-vol"); if (!cv) return;
+    let h = "5", lay = null;
+    function table() {
+      const H = V.horizons[h], tb = $("#vol-table tbody");
+      tb.innerHTML = H.test_table.map((r) => `<tr class="${r.model === H.selected ? "hl" : ""}"><td>${r.model}${r.model === H.selected ? " · selected" : ""}</td>` +
+        `<td class="num">${fmt(r.MAE, 3)}</td><td class="num">${fmt(r.R2, 3)}</td><td class="num">${sgn(r["MAE skill vs hist. mean (%)"], 1)}%</td><td class="num">${sgn(r["MAE skill vs naive (%)"], 1)}%</td></tr>`).join("");
+      $("#vol-model").textContent = H.selected;
+    }
+    function draw() {
+      const H = V.horizons[h], { ctx, w, hgt = cv.clientHeight } = setup(cv);
+      const padL = 44, padR = 10, padT = 10, padB = 22, n = H.date.length;
+      const lo = Math.log(0.5), hi = Math.log(Math.max(...H.actual, ...H.forecast) * 1.1);
+      const X = (i) => padL + (w - padL - padR) * (i / (n - 1)), Y = (v) => padT + (hgt - padT - padB) * (1 - (Math.log(Math.max(v, 0.5)) - lo) / (hi - lo));
+      lay = { padL, padR, w, n };
+      ctx.font = MONO; ctx.textBaseline = "middle"; ctx.textAlign = "right";
+      [0.5, 1, 2, 5, 10, 20, 50].filter((v) => Math.log(v) <= hi).forEach((v) => {
+        const y = Y(v); ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke(); ctx.fillStyle = C.dim; ctx.fillText(v + "%", padL - 6, y);
+      });
+      ctx.textAlign = "center"; ctx.textBaseline = "top"; let last = "";
+      H.date.forEach((d, i) => { const yv = d.slice(0, 4); if (yv !== last) { const x = X(i); ctx.fillStyle = C.dim; ctx.fillText(yv, x, hgt - padB + 6); ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, hgt - padB); ctx.stroke(); last = yv; } });
+      const line = (arr, col, lw, dash) => { ctx.setLineDash(dash || []); ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); arr.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)))); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1; };
+      line(H.hist_mean, C.dim, 1, [5, 4]);
+      line(H.actual, C.ink, 1);
+      line(H.forecast, C.gold, 1.4);
+    }
+    cv.addEventListener("mousemove", (ev) => {
+      if (!lay) return;
+      const H = V.horizons[h], r = cv.getBoundingClientRect(), i = Math.round((ev.clientX - r.left - lay.padL) / (lay.w - lay.padL - lay.padR) * (lay.n - 1));
+      if (i < 0 || i >= lay.n) return hideTip();
+      showTip(`<b>${prettyDate(H.date[i])}</b><br>realised next ${h}d: ${fmt(H.actual[i], 2)}%/day<br>forecast: ${fmt(H.forecast[i], 2)}%<br>historical avg: ${fmt(H.hist_mean[i], 2)}%`, ev.clientX, ev.clientY);
+    });
+    cv.addEventListener("mouseleave", hideTip);
+    $$("[data-vh]").forEach((b) => b.addEventListener("click", () => { h = b.dataset.vh; $$("[data-vh]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); table(); draw(); }));
+    onResize(draw);
+    table(); draw();
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    fetch("data/volatility.json").then((r) => r.json()).then(initVol).catch((e) => console.error("volatility data", e));
     fetch("data/brent_eia.json").then((r) => r.json()).then(initTerminal).catch((e) => console.error("brent data", e));
     fetch("data/results.json").then((r) => r.json()).then(initResults).catch((e) => console.error("results data", e));
   });

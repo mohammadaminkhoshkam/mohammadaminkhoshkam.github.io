@@ -99,12 +99,13 @@
       <div class="k"><b>99%<i>prob.</i></b><span>bootstrap support for the 5-day gain</span></div>
     </div>
 
-    <div class="pp-chain" style="--n:5" aria-label="Sections">
+    <div class="pp-chain" style="--n:6" aria-label="Sections">
       <a href="#data"><span class="node">1</span><b>Data</b><small>5 sources, 35 years</small></a>
       <a href="#features"><span class="node">2</span><b>Features</b><small>44 predictors</small></a>
       <a href="#validation"><span class="node">3</span><b>Validation</b><small>purged, expanding</small></a>
       <a href="#results"><span class="node">4</span><b>Results</b><small>2020–2025 test</small></a>
       <a href="#uncertainty"><span class="node">5</span><b>Uncertainty</b><small>bootstrap, bands</small></a>
+      <a href="#volatility"><span class="node">6</span><b>Real-market risk</b><small>volatility forecasts</small></a>
     </div>
   </section>
 
@@ -338,6 +339,50 @@
     </div>
   </section>
 
+  <!-- ================================================================ extension: real-market volatility -->
+  <section class="pp-sec" id="volatility">
+    <div class="pp-head">
+      <div class="pp-badge"><small>EXT</small>06</div>
+      <div><span class="kicker">Phase 4 · extension on real EIA Brent</span><h2>The direction is a coin toss, the risk is not</h2></div>
+    </div>
+    <div class="pp-strip thin"></div>
+    <p>Returns behave almost like a random walk, but <b>volatility clusters</b>: turbulent weeks tend to follow turbulent weeks. The extension applies the
+      same point-in-time protocol to the <b>real</b> EIA Brent series (1987–2026). It forecasts <b>realised volatility over the next 5 and 22 trading days</b>
+      with eight models (historical mean, naive, EWMA, GARCH(1,1), HAR, log-HAR, HAR-X Ridge, gradient boosting). The choice is made on pre-2020 data and
+      tested once on 2020–2026, a period in which Brent spot fell to $9.12 and moved up to 64% in a single day.</p>
+
+    <div class="pp-kpi" style="margin-top:14px">
+      <div class="k"><b>+15.6%<i>skill</i></b><span>5-day volatility forecast vs the historical average, out of sample</span></div>
+      <div class="k"><b>100%<i>prob.</i></b><span>bootstrap support for that gain (95% CI 0.09–0.29 pp)</span></div>
+      <div class="k"><b>0.21–0.37<i>R²</i></b><span>5-day volatility: selected model to best HAR-type model on the test</span></div>
+      <div class="k"><b>≈ 0<i>R²</i></b><span>real Brent returns: still unpredictable with the same features</span></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-row">
+        <div class="seg" role="group" aria-label="Volatility horizon">
+          <button type="button" data-vh="5" aria-pressed="true">next 5 days</button>
+          <button type="button" data-vh="22" aria-pressed="false">next 22 days</button>
+        </div>
+        <span class="mono" style="font-size:.74rem;color:var(--ink-dim)">test 2020–2026 · log scale · hover for values</span>
+      </div>
+      <h3>Realised vs forecast volatility of real Brent</h3>
+      <p class="sub">white: realised volatility (% per day) · gold: validation-selected model · dashed: historical average</p>
+      <canvas id="chart-vol" class="tall"></canvas>
+      <div class="chart-legend"><span><i style="background:#efe7d8"></i>realised</span><span><i style="background:#f2a93b"></i>forecast: <span id="vol-model">–</span></span><span><i style="background:#a39985"></i>historical average</span></div>
+    </div>
+
+    <div class="tbl-wrap"><table class="tbl" id="vol-table">
+      <thead><tr><th>Model (test 2020–2026)</th><th class="num">MAE</th><th class="num">R²</th><th class="num">Skill vs historical mean</th><th class="num">Skill vs naive</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="small dim" style="margin-top:8px">Gold row: the model chosen on pre-2020 validation. All models are shown for transparency; none was re-chosen after seeing the test.</p>
+
+    <div class="pp-note"><b>Reading</b>The 5-day volatility forecast holds up out of sample and beats the historical average with a statistically supported gain.
+      At 22 days the narrow validation winner (EWMA) adapted too slowly after the 2020 crash and fell behind. HAR-type regressions were the most stable family
+      across horizons and periods. Geopolitical-event dates added no consistent information beyond recent volatility.</div>
+  </section>
+
   <!-- ================================================================ takeaways -->
   <section class="pp-sec" id="takeaways">
     <div class="pp-head">
@@ -351,6 +396,8 @@
       <li><b>Simple beats complex here.</b> Strongly regularised, recency-weighted Ridge regression was selected in three of four experiments; deep and boosted
         models mostly learned noise.</li>
       <li><b>Longer horizons are easier.</b> Five-day returns carry a small but statistically supported signal; daily returns are close to a random walk.</li>
+      <li><b>Risk is forecastable even when direction is not.</b> On real Brent, a 5-day volatility model beats the historical average by 15.6% out
+        of sample, while return forecasts stay at the no-change benchmark.</li>
       <li><b>Report uncertainty, not just a number.</b> Block-bootstrap intervals and volatility-scaled bands (84–90% coverage for a 90% target) show how far a
         single forecast can be trusted.</li>
     </ul>
