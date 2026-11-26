@@ -78,39 +78,46 @@
       "id": "lab-03",
       "number": 3,
       "title": "FM Radio, Stereo and RDS",
-      "date": "2026-11-17",
-      "status": "in-progress",
-      "page": "lab-03/prelab.html",
-      "pageLabel": "Open the pre-lab report →",
+      "date": "2026-11-22",
+      "status": "done",
+      "page": "lab-03/",
+      "pageLabel": "Open the lab report →",
       "highlights": [
+        {
+          "k": "CNR @ 90.0 MHz",
+          "v": "8.0 dB"
+        },
+        {
+          "k": "Reference error",
+          "v": "−18.7 ± 2.5 ppm"
+        },
+        {
+          "k": "PLL pilot loss @ 0.15",
+          "v": "−9.5 dB"
+        },
         {
           "k": "Carrier nulls",
           "v": "2405 / 5520 Hz"
         },
         {
-          "k": "Carson (mono)",
-          "v": "180 kHz"
-        },
-        {
-          "k": "PLL threshold gain",
-          "v": "≈ 4 dB (β = 5)"
-        },
-        {
-          "k": "TX atten. → −60 dBm",
-          "v": "36.5 dB"
-        },
-        {
-          "k": "RDS (sim)",
-          "v": "0 / 946 bit errors"
+          "k": "−20 dB BW (β = 5 / 1.67)",
+          "v": "14 / 18 kHz"
         }
       ],
-      "summary": "Pre-lab for the FM session (handout: Experiment 2): FM and Carson bandwidth, discriminator vs PLL detector, FM threshold, the 2.4 MS/s → 240 kHz → 48 kHz rate plan, stereo and RDS. Every number is checked with GNU Radio 3.10 simulations using the session's blocks; two flowgraphs (simulation and Pluto cable link at 434 MHz) are ready for the lab.",
+      "summary": "FM session 1 (handout: Experiment 2): a broadcast station received with a quadrature discriminator and a PLL detector, a sweep of the PLL loop bandwidth, a weak-signal comparison, the receiver reference error, and our own NBFM signal over a cabled link. Every figure is computed from our raw I/Q recordings with a Python copy of both GNU Radio detectors; the page also plays the demodulated audio.",
       "tasks": [
-        "One-page summary: why FM beats AM in noise, its bandwidth price and the threshold",
-        "Theory: Bessel spectrum, carrier-null calibration, discrete discriminator (|Δf| < fs/2 = 120 kHz), frequency error (13 kHz at 30 ppm)",
-        "Design table: channel/audio filters, Gain 7.639, Sensitivity 0.1309, PLL loop bandwidth 0.085 (NBFM) / 0.5 (WFM)",
-        "Simulation: SNR vs CNR — PLL extends the threshold by ≈ 4 dB for WFM, none for NBFM; stereo separation 28.9 dB",
-        "Prediction table and three risks (transmission safety, wrong rates, frequency offset)"
+        "Broadcast reception at 90.0 MHz: CNR 8.0 dB in the 180 kHz channel, pilot −22.7 dB re full deviation",
+        "PLL loop bandwidth 0.5 → 0.02: pilot attenuation −1.3 … −47.3 dB, within 4 dB of the linear loop model; narrowest clean loop 0.15",
+        "Weak signal: the PLL wins only near threshold (1–2 dB) because B_L/B_ch ≈ 0.21 for WFM",
+        "Receiver reference error −18.7 ± 2.5 ppm from the spectrum centroid, 0.9 σ from Lab 1",
+        "Cable link at 434 MHz: carrier nulls at the Bessel zeros (< 0.01 %), line levels within 0.05 dB of |J_n(β)|², bandwidth vs Carson",
+        "Pre-lab: theory, design table and GNU Radio simulations"
+      ],
+      "pages": [
+        {
+          "href": "lab-03/prelab.html",
+          "label": "Pre-lab report"
+        }
       ]
     }
   ]

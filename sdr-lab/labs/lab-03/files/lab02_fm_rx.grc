@@ -1,0 +1,2032 @@
+options:
+  parameters:
+    author: SDR Lab
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: lab02_fm_rx
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: SDR Lab 02 - FM receiver (session 1, auto meters)
+    window_size: (1400,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: audio_bw
+  id: variable_qtgui_chooser
+  parameters:
+    comment: ''
+    gui_hint: 2,1,1,1
+    label: Audio bandwidth
+    label0: 3 kHz (voice)
+    label1: 15 kHz (broadcast)
+    label2: ''
+    label3: ''
+    label4: ''
+    labels: '[]'
+    num_opts: '2'
+    option0: 3e3
+    option1: 15e3
+    option2: '2'
+    option3: '3'
+    option4: '4'
+    options: '[0, 1, 2]'
+    orient: Qt.QVBoxLayout
+    type: real
+    value: 15e3
+    widget: combo_box
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 0.0]
+    rotation: 0
+    state: enabled
+- name: audio_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 48e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [336, 152.0]
+    rotation: 0
+    state: enabled
+- name: bl_khz
+  id: variable_qtgui_label
+  parameters:
+    comment: ''
+    formatter: 'lambda x: "%.1f kHz" % x'
+    gui_hint: 3,1,1,1
+    label: 'B_L = 1.06*pll_bw*fq =  '
+    type: real
+    value: 1.06*pll_bw*quad_rate/1e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1024, 164.0]
+    rotation: 0
+    state: enabled
+- name: chan_bw
+  id: variable
+  parameters:
+    comment: ''
+    value: min(2*(dev + audio_bw), 200e3)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [336, 80.0]
+    rotation: 0
+    state: enabled
+- name: det
+  id: variable_qtgui_chooser
+  parameters:
+    comment: ''
+    gui_hint: 2,0,1,1
+    label: Detector
+    label0: Quadrature Demod (non-coherent)
+    label1: PLL (coherent)
+    label2: ''
+    label3: ''
+    label4: ''
+    labels: '[]'
+    num_opts: '2'
+    option0: '0'
+    option1: '1'
+    option2: '2'
+    option3: '3'
+    option4: '4'
+    options: '[0, 1, 2]'
+    orient: Qt.QVBoxLayout
+    type: int
+    value: '0'
+    widget: combo_box
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [80, 336.0]
+    rotation: 0
+    state: enabled
+- name: dev
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 1,2,1,2
+    label: Deviation (Hz)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: 1e3
+    step: '500'
+    stop: 75e3
+    value: 75e3
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 12.0]
+    rotation: 0
+    state: enabled
+- name: f_fine
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 0,2,1,2
+    label: Fine tuning (Hz)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: -30e3
+    step: '10'
+    stop: 30e3
+    value: '0'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [424, 0.0]
+    rotation: 0
+    state: enabled
+- name: f_m
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 3,2,1,1
+    label: Test tone f_m (Hz)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '300'
+    step: '100'
+    stop: 15e3
+    value: 1e3
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 144.0]
+    rotation: 0
+    state: enabled
+- name: f_off
+  id: variable
+  parameters:
+    comment: ''
+    value: 250e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [256, 0.0]
+    rotation: 0
+    state: enabled
+- name: fc
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 0,0,1,2
+    label: Signal frequency fc (Hz)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: 24e6
+    step: 100e3
+    stop: 1766e6
+    value: 98.0e6
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 684.0]
+    rotation: 0
+    state: enabled
+- name: pll_bw
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 3,0,1,1
+    label: PLL loop bandwidth (rad/sample)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0.005'
+    step: '0.005'
+    stop: '0.6'
+    value: '0.3'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 540.0]
+    rotation: 0
+    state: enabled
+- name: ppm
+  id: variable_qtgui_label
+  parameters:
+    comment: ''
+    formatter: 'lambda x: "%+.2f ppm" % x'
+    gui_hint: 4,3,1,1
+    label: 'Receiver error  f_fine/fc =  '
+    type: real
+    value: f_fine/fc*1e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 8.0]
+    rotation: 0
+    state: enabled
+- name: quad_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 240e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 168.0]
+    rotation: 0
+    state: enabled
+- name: rec
+  id: variable_qtgui_check_box
+  parameters:
+    comment: ''
+    'false': 'False'
+    gui_hint: 2,3,1,1
+    label: Record I/Q
+    'true': 'True'
+    type: bool
+    value: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 112.0]
+    rotation: 0
+    state: enabled
+- name: rf_gain
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 1,0,1,2
+    label: RF gain (dB)
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '0.1'
+    stop: '49.6'
+    value: '20.7'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 8.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 2.4e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [336, 0.0]
+    rotation: 0
+    state: enabled
+- name: tau
+  id: variable_qtgui_chooser
+  parameters:
+    comment: ''
+    gui_hint: 2,2,1,1
+    label: De-emphasis
+    label0: 50 us
+    label1: 75 us
+    label2: ''
+    label3: ''
+    label4: ''
+    labels: '[]'
+    num_opts: '2'
+    option0: 50e-6
+    option1: 75e-6
+    option2: '2'
+    option3: '3'
+    option4: '4'
+    options: '[0, 1, 2]'
+    orient: Qt.QVBoxLayout
+    type: real
+    value: 50e-6
+    widget: combo_box
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 384.0]
+    rotation: 0
+    state: enabled
+- name: volume
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 3,3,1,1
+    label: Volume
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '0.01'
+    stop: '1'
+    value: '0.3'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 636.0]
+    rotation: 0
+    state: enabled
+- name: audio_lpf
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: audio_bw
+    decim: '5'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    type: fir_filter_fff
+    width: 0.25*audio_bw + 250
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1528, 704.0]
+    rotation: 0
+    state: enabled
+- name: audio_out
+  id: audio_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    device_name: ''
+    num_inputs: '1'
+    ok_to_block: 'True'
+    samp_rate: '48000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2008, 1008.0]
+    rotation: 0
+    state: enabled
+- name: audio_spec
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.1'
+    axislabels: 'True'
+    bw: audio_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'True'
+    fc: '0'
+    fftsize: '4096'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: tabs@2:0,0,1,1
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Audio spectrum (48 kHz)"'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: float
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-120'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1992, 784.0]
+    rotation: 0
+    state: enabled
+- name: chan_filter
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: chan_bw/2
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    type: fir_filter_ccf
+    width: chan_bw/8
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1264.0, 432]
+    rotation: 270
+    state: enabled
+- name: chan_xlate
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: f_off + f_fine
+    comment: ''
+    decim: '10'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.low_pass(1, samp_rate, 100e3, 20e3)
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1008, 336.0]
+    rotation: 0
+    state: enabled
+- name: d_lmr
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2400, 1770]
+    rotation: 0
+    state: enabled
+- name: d_pil
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2400, 1700]
+    rotation: 0
+    state: enabled
+- name: dc_block
+  id: dc_blocker_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    length: '512'
+    long_form: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: ff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1696, 736.0]
+    rotation: 0
+    state: enabled
+- name: deemph50
+  id: analog_fm_deemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: audio_rate
+    tau: 50e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2008, 1040]
+    rotation: 0
+    state: enabled
+- name: deemph75
+  id: analog_fm_deemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: audio_rate
+    tau: 75e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2008, 1120]
+    rotation: 0
+    state: enabled
+- name: det_select
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: det
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'False'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1304, 688.0]
+    rotation: 0
+    state: enabled
+- name: det_spec
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.1'
+    axislabels: 'True'
+    bw: quad_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'True'
+    fc: '0'
+    fftsize: '4096'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: tabs@1:0,0,1,1
+    label: Relative Gain
+    label1: Discriminator
+    label10: ''''''
+    label2: PLL
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Detector outputs"'
+    nconnections: '2'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: float
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-120'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [784, 568.0]
+    rotation: 180
+    state: enabled
+- name: diffs
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: 5,2,2,2
+    label1: '"Pilot: PLL - Disc"'
+    label10: ''''''
+    label2: '"L-R band: PLL - Disc"'
+    label3: '"Disc: pilot - noise17k"'
+    label4: '"PLL: pilot - noise17k"'
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    max: '60'
+    min: '-40'
+    name: '"Table values (dB)"'
+    nconnections: '4'
+    type: float
+    unit1: dB
+    unit10: ''''''
+    unit2: dB
+    unit3: dB
+    unit4: dB
+    unit5: ''''''
+    unit6: ''''''
+    unit7: ''''''
+    unit8: ''''''
+    unit9: ''''''
+    update_time: '0.20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2600, 1700]
+    rotation: 0
+    state: enabled
+- name: iio_pluto_source_0
+  id: iio_pluto_source
+  parameters:
+    affinity: ''
+    alias: ''
+    bandwidth: '2000000'
+    bbdc: 'True'
+    buffer_size: '32768'
+    comment: ''
+    filter: ''
+    filter_source: '''Auto'''
+    fpass: '0'
+    frequency: int(fc - f_off)
+    fstop: '0'
+    gain1: '''manual'''
+    len_tag_key: packet_len
+    manual_gain1: rf_gain
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quadrature: 'True'
+    rfdc: 'True'
+    samplerate: int(samp_rate)
+    type: fc32
+    uri: pluto_uri
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 260.0]
+    rotation: 0
+    state: enabled
+- name: import_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import math
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [160, 8.0]
+    rotation: 0
+    state: enabled
+- name: lmr_pll_bp
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 38e3
+    comment: ''
+    decim: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    taps: firdes.low_pass(1, quad_rate, 13e3, 2e3)
+    type: fcf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 1800]
+    rotation: 0
+    state: enabled
+- name: lmr_pll_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '6.0206'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2120, 1800]
+    rotation: 0
+    state: enabled
+- name: lmr_pll_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-4
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1960, 1800]
+    rotation: 0
+    state: enabled
+- name: lmr_qd_bp
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 38e3
+    comment: ''
+    decim: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    taps: firdes.low_pass(1, quad_rate, 13e3, 2e3)
+    type: fcf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 1560]
+    rotation: 0
+    state: enabled
+- name: lmr_qd_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '6.0206'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2120, 1560]
+    rotation: 0
+    state: enabled
+- name: lmr_qd_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-4
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1960, 1560]
+    rotation: 0
+    state: enabled
+- name: meters
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: 5,0,2,2
+    label1: '"Disc: pilot 19k"'
+    label10: ''''''
+    label2: '"Disc: noise 17k"'
+    label3: '"Disc: L-R band"'
+    label4: '"PLL: pilot 19k"'
+    label5: '"PLL: noise 17k"'
+    label6: '"PLL: L-R band"'
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    max: '0'
+    min: '-100'
+    name: '"Detector meters (dB re full deviation)"'
+    nconnections: '6'
+    type: float
+    unit1: dB
+    unit10: ''''''
+    unit2: dB
+    unit3: dB
+    unit4: dB
+    unit5: dB
+    unit6: dB
+    unit7: ''''''
+    unit8: ''''''
+    unit9: ''''''
+    update_time: '0.20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2400, 1400]
+    rotation: 0
+    state: enabled
+- name: n17_pll_bp
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 17e3
+    comment: ''
+    decim: '48'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    taps: firdes.low_pass(1, quad_rate, 400, 300)
+    type: fcf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 1720]
+    rotation: 0
+    state: enabled
+- name: n17_pll_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '6.0206'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2120, 1720]
+    rotation: 0
+    state: enabled
+- name: n17_pll_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 1e-3
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1960, 1720]
+    rotation: 0
+    state: enabled
+- name: n17_qd_bp
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 17e3
+    comment: ''
+    decim: '48'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    taps: firdes.low_pass(1, quad_rate, 400, 300)
+    type: fcf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 1480]
+    rotation: 0
+    state: enabled
+- name: n17_qd_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '6.0206'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2120, 1480]
+    rotation: 0
+    state: enabled
+- name: n17_qd_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 1e-3
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1960, 1480]
+    rotation: 0
+    state: enabled
+- name: nd_log
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1272, 1208.0]
+    rotation: 0
+    state: enabled
+- name: nd_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-4
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1072, 1192.0]
+    rotation: 0
+    state: enabled
+- name: notch
+  id: band_reject_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    decim: '1'
+    gain: '1'
+    high_cutoff_freq: f_m + 300
+    interp: '1'
+    low_cutoff_freq: f_m - 300
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: audio_rate
+    type: fir_filter_fff
+    width: '200'
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 1000.0]
+    rotation: 180
+    state: enabled
+- name: offset_avg
+  id: single_pole_iir_filter_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-5
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1272, 904.0]
+    rotation: 0
+    state: enabled
+- name: offset_hz
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: dev
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1480, 904.0]
+    rotation: 0
+    state: enabled
+- name: offset_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: 4,1,1,1
+    label1: '"Offset"'
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '20000'
+    min: '-20000'
+    name: '"Carrier frequency offset (Hz)"'
+    nconnections: '1'
+    type: float
+    unit1: Hz
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1664, 888.0]
+    rotation: 0
+    state: enabled
+- name: pch_log
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1600, 536.0]
+    rotation: 0
+    state: enabled
+- name: pch_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: 4,0,1,1
+    label1: '"P_ch"'
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '0'
+    min: '-100'
+    name: '"Channel power (dBFS)"'
+    nconnections: '1'
+    type: float
+    unit1: dB
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1736, 504.0]
+    rotation: 0
+    state: enabled
+- name: pch_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-5
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1472, 536.0]
+    rotation: 0
+    state: enabled
+- name: pil_pll_bp
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 19e3
+    comment: ''
+    decim: '48'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    taps: firdes.low_pass(1, quad_rate, 200, 300)
+    type: fcf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 1640]
+    rotation: 0
+    state: enabled
+- name: pil_pll_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '6.0206'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2120, 1640]
+    rotation: 0
+    state: enabled
+- name: pil_pll_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 1e-3
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1960, 1640]
+    rotation: 0
+    state: enabled
+- name: pil_qd_bp
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 19e3
+    comment: ''
+    decim: '48'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: quad_rate
+    taps: firdes.low_pass(1, quad_rate, 200, 300)
+    type: fcf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1700, 1400]
+    rotation: 0
+    state: enabled
+- name: pil_qd_db
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '6.0206'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2120, 1400]
+    rotation: 0
+    state: enabled
+- name: pil_qd_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 1e-3
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1960, 1400]
+    rotation: 0
+    state: enabled
+- name: pll_det
+  id: analog_pll_freqdet_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    max_freq: min(2*math.pi*1.5*dev/quad_rate, 3.0)
+    maxoutbuf: '0'
+    min_freq: -min(2*math.pi*1.5*dev/quad_rate, 3.0)
+    minoutbuf: '0'
+    w: pll_bw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816.0, 736]
+    rotation: 270
+    state: enabled
+- name: pll_scale
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: quad_rate/(2*math.pi*dev)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1024, 912.0]
+    rotation: 0
+    state: enabled
+- name: pluto_uri
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Pluto URI
+    short_id: ''
+    type: str
+    value: ip:192.168.1.10
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1392, 20.0]
+    rotation: 0
+    state: enabled
+- name: pn_pll
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2400, 1910]
+    rotation: 0
+    state: enabled
+- name: pn_qd
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2400, 1840]
+    rotation: 0
+    state: enabled
+- name: quad_demod
+  id: analog_quadrature_demod_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain: quad_rate/(2*math.pi*dev)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1056, 552.0]
+    rotation: 180
+    state: enabled
+- name: recorder
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nSDR Lab I/Q recorder -- source code for a GNU Radio Companion\
+      \ \"Python Block\".\n\nWrites raw complex-float32 (cf32) I/Q files named by\
+      \ the lab rule\n    teamID_labNN_fc_fs_gain_timestamp.cf32\ne.g. Team-07_lab01_98000000_2048000_40.2_20261005T101502.cf32\n\
+      \n* A new file is opened each time `record` changes from False to True.\n* Recording\
+      \ stops when `record` returns to False or after `max_seconds`.\n* If fc, fs\
+      \ or gain change while recording, the file is closed, so one\n  file never mixes\
+      \ two settings (untick / tick `record` for a new take).\n\"\"\"\nimport os\n\
+      import time\n\nimport numpy as np\nfrom gnuradio import gr\n\n\nclass blk(gr.sync_block):\n\
+      \    def __init__(self, team='Team-00', lab=1, fc=100e6, fs=2.048e6, gain=0.0,\n\
+      \                 record=False, max_seconds=5.0, folder='.'):\n        gr.sync_block.__init__(self,\
+      \ name='SDR Lab IQ Recorder',\n                               in_sig=[np.complex64],\
+      \ out_sig=None)\n        # Attributes named like the arguments can be changed\
+      \ at run time\n        # from GRC variables (QT GUI Range, QT GUI Check Box,\
+      \ ...).\n        self.team, self.lab = team, lab\n        self.fc, self.fs,\
+      \ self.gain = fc, fs, gain\n        self.record, self.max_seconds, self.folder\
+      \ = record, max_seconds, folder\n        self._fh = None       # open file (None\
+      \ = not recording)\n        self._n = 0           # samples written to the current\
+      \ file\n        self._key = None      # (fc, fs, gain) when the file was opened\n\
+      \        self._armed = True    # False after a take until `record` is released\n\
+      \n    def _open(self):\n        stamp = time.strftime('%Y%m%dT%H%M%S')\n   \
+      \     name = '%s_lab%02d_%d_%d_%.1f_%s.cf32' % (\n            self.team, int(self.lab),\
+      \ round(self.fc), round(self.fs),\n            self.gain, stamp)\n        os.makedirs(self.folder,\
+      \ exist_ok=True)\n        self._fh = open(os.path.join(self.folder, name), 'wb')\n\
+      \        self._n, self._key = 0, (self.fc, self.fs, self.gain)\n        print('[REC]\
+      \ start ' + name)\n\n    def _close(self, why):\n        self._fh.close()\n\
+      \        self._fh, self._armed = None, False\n        print('[REC] stop  %d\
+      \ samples = %.2f s (%s)'\n              % (self._n, self._n / self.fs, why))\n\
+      \n    def work(self, input_items, output_items):\n        x = input_items[0]\n\
+      \        if not self.record:\n            if self._fh is not None:\n       \
+      \         self._close('record off')\n            self._armed = True\n      \
+      \  elif self._fh is None and self._armed:\n            self._open()\n      \
+      \  if self._fh is not None:\n            if (self.fc, self.fs, self.gain) !=\
+      \ self._key:\n                self._close('fc/fs/gain changed')\n          \
+      \  else:\n                left = int(self.max_seconds * self.fs) - self._n\n\
+      \                n = min(len(x), left)\n                x[:n].tofile(self._fh)\n\
+      \                self._n += n\n                if n == left:\n             \
+      \       self._close('max_seconds reached')\n        return len(x)\n\n    def\
+      \ stop(self):\n        if self._fh is not None:\n            self._close('flowgraph\
+      \ stopped')\n        return True\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    fc: fc
+    folder: '''.'''
+    fs: quad_rate
+    gain: rf_gain
+    lab: '2'
+    max_seconds: '30.0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    record: rec
+    team: team
+  states:
+    _io_cache: ('SDR Lab IQ Recorder', 'blk', [('team', "'Team-00'"), ('lab', '1'),
+      ('fc', '100000000.0'), ('fs', '2048000.0'), ('gain', '0.0'), ('record', 'False'),
+      ('max_seconds', '5.0'), ('folder', "'.'")], [('0', 'complex', 1)], [], '', ['fc',
+      'folder', 'fs', 'gain', 'lab', 'max_seconds', 'record', 'team'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1536, 288.0]
+    rotation: 0
+    state: enabled
+- name: rf_spec
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.1'
+    axislabels: 'True'
+    bw: quad_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'True'
+    fc: fc
+    fftsize: '4096'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: tabs@0:0,0,1,1
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Channel spectrum (240 kHz)"'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-120'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1744, 640.0]
+    rotation: 0
+    state: enabled
+- name: sinad_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: 4,2,1,1
+    label1: '"SINAD"'
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '70'
+    min: '0'
+    name: '"SINAD (dB)"'
+    nconnections: '1'
+    type: float
+    unit1: dB
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1648, 1080.0]
+    rotation: 0
+    state: enabled
+- name: sinad_sub
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1504, 1120.0]
+    rotation: 0
+    state: enabled
+- name: tabs
+  id: qtgui_tab_widget
+  parameters:
+    alias: ''
+    comment: ''
+    gui_hint: 7,0,6,4
+    label0: Channel spectrum (RF, 240 kHz)
+    label1: Detector outputs (blue=Disc, red=PLL)
+    label10: Tab 10
+    label11: Tab 11
+    label12: Tab 12
+    label13: Tab 13
+    label14: Tab 14
+    label15: Tab 15
+    label16: Tab 16
+    label17: Tab 17
+    label18: Tab 18
+    label19: Tab 19
+    label2: Audio spectrum
+    label3: Tab 3
+    label4: Tab 4
+    label5: Tab 5
+    label6: Tab 6
+    label7: Tab 7
+    label8: Tab 8
+    label9: Tab 9
+    num_tabs: '3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 772.0]
+    rotation: 0
+    state: enabled
+- name: tau_sel
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: 0 if tau < 62e-6 else 1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'False'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2200, 1072]
+    rotation: 0
+    state: enabled
+- name: team
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Team ID
+    short_id: ''
+    type: str
+    value: Team-02
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1640, -4.0]
+    rotation: 0
+    state: enabled
+- name: tot_log
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1272, 1128.0]
+    rotation: 0
+    state: enabled
+- name: tot_rms
+  id: blocks_rms_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: 2e-4
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1080, 1112.0]
+    rotation: 0
+    state: enabled
+- name: vol
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: volume
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2016, 928.0]
+    rotation: 180
+    state: enabled
+
+connections:
+- [audio_lpf, '0', dc_block, '0']
+- [chan_filter, '0', pch_rms, '0']
+- [chan_filter, '0', pll_det, '0']
+- [chan_filter, '0', quad_demod, '0']
+- [chan_filter, '0', rf_spec, '0']
+- [chan_xlate, '0', chan_filter, '0']
+- [chan_xlate, '0', recorder, '0']
+- [d_lmr, '0', diffs, '1']
+- [d_pil, '0', diffs, '0']
+- [dc_block, '0', audio_spec, '0']
+- [dc_block, '0', deemph50, '0']
+- [dc_block, '0', deemph75, '0']
+- [dc_block, '0', notch, '0']
+- [dc_block, '0', tot_rms, '0']
+- [deemph50, '0', tau_sel, '0']
+- [deemph75, '0', tau_sel, '1']
+- [det_select, '0', audio_lpf, '0']
+- [iio_pluto_source_0, '0', chan_xlate, '0']
+- [lmr_pll_bp, '0', lmr_pll_rms, '0']
+- [lmr_pll_db, '0', d_lmr, '0']
+- [lmr_pll_db, '0', meters, '5']
+- [lmr_pll_rms, '0', lmr_pll_db, '0']
+- [lmr_qd_bp, '0', lmr_qd_rms, '0']
+- [lmr_qd_db, '0', d_lmr, '1']
+- [lmr_qd_db, '0', meters, '2']
+- [lmr_qd_rms, '0', lmr_qd_db, '0']
+- [n17_pll_bp, '0', n17_pll_rms, '0']
+- [n17_pll_db, '0', meters, '4']
+- [n17_pll_db, '0', pn_pll, '1']
+- [n17_pll_rms, '0', n17_pll_db, '0']
+- [n17_qd_bp, '0', n17_qd_rms, '0']
+- [n17_qd_db, '0', meters, '1']
+- [n17_qd_db, '0', pn_qd, '1']
+- [n17_qd_rms, '0', n17_qd_db, '0']
+- [nd_log, '0', sinad_sub, '1']
+- [nd_rms, '0', nd_log, '0']
+- [notch, '0', nd_rms, '0']
+- [offset_avg, '0', offset_hz, '0']
+- [offset_hz, '0', offset_num, '0']
+- [pch_log, '0', pch_num, '0']
+- [pch_rms, '0', pch_log, '0']
+- [pil_pll_bp, '0', pil_pll_rms, '0']
+- [pil_pll_db, '0', d_pil, '0']
+- [pil_pll_db, '0', meters, '3']
+- [pil_pll_db, '0', pn_pll, '0']
+- [pil_pll_rms, '0', pil_pll_db, '0']
+- [pil_qd_bp, '0', pil_qd_rms, '0']
+- [pil_qd_db, '0', d_pil, '1']
+- [pil_qd_db, '0', meters, '0']
+- [pil_qd_db, '0', pn_qd, '0']
+- [pil_qd_rms, '0', pil_qd_db, '0']
+- [pll_det, '0', pll_scale, '0']
+- [pll_scale, '0', det_select, '1']
+- [pll_scale, '0', det_spec, '1']
+- [pll_scale, '0', lmr_pll_bp, '0']
+- [pll_scale, '0', n17_pll_bp, '0']
+- [pll_scale, '0', pil_pll_bp, '0']
+- [pn_pll, '0', diffs, '3']
+- [pn_qd, '0', diffs, '2']
+- [quad_demod, '0', det_select, '0']
+- [quad_demod, '0', det_spec, '0']
+- [quad_demod, '0', lmr_qd_bp, '0']
+- [quad_demod, '0', n17_qd_bp, '0']
+- [quad_demod, '0', offset_avg, '0']
+- [quad_demod, '0', pil_qd_bp, '0']
+- [sinad_sub, '0', sinad_num, '0']
+- [tau_sel, '0', vol, '0']
+- [tot_log, '0', sinad_sub, '0']
+- [tot_rms, '0', tot_log, '0']
+- [vol, '0', audio_out, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0

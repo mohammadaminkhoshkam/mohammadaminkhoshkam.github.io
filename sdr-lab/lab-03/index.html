@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 3 Report — FM Radio: Two Detectors and a Cabled NBFM Link</title>
+  <meta name="description" content="SDR Lab, Lab 3 report (Team SDR): FM broadcast reception with a quadrature discriminator and a PLL detector, PLL loop-bandwidth sweep, weak-signal comparison, receiver reference error, and a cabled NBFM link with carrier-null calibration — computed from our raw I/Q recordings.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050a12'/%3E%3Cpath d='M3 24h4l2-3 2 2 2-14 2 14 2-9 2 9 2-4 2 5h4' stroke='%235ee6ff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/sdr-theme.css">
+  <style>
+    .players { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 8px 0 14px; }
+    .players .card { padding: 12px 14px; }
+    .players .card b { display: block; font-size: .9rem; margin-bottom: 2px; }
+    .players .card span { display: block; color: var(--text-dim); font-size: .8rem; margin-bottom: 8px; }
+    .players audio { width: 100%; }
+    .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+    .pair .figx { margin: 0; }
+  </style>
+</head>
+<body class="sdr">
+
+<header class="nav">
+  <div class="container">
+    <a class="brand" href="../../"><span class="brand-mark">MK</span> M. A. Khoshkam</a>
+    <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links">
+      <a href="../../">Home</a>
+      <a class="pill" href="../">SDR Lab</a>
+      <a href="prelab.html">Pre-lab</a>
+      <a href="#questions">Questions</a>
+      <a href="#listen">Listen</a>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="page-head scope strip">
+    <canvas data-scope data-fc="90" data-span="0.24" aria-hidden="true"></canvas>
+    <div class="container">
+      <a class="eyebrow" href="../">← SDR Lab · Lab 03 · Lab report</a>
+      <h1>FM Radio: Two Detectors and a Cabled NBFM Link</h1>
+      <div class="course-meta">
+        <span><b>Team SDR:</b> Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+        <span><b>Course:</b> Software-Defined Radio Laboratory, Sharif University of Technology (handout: Experiment 2, session 1)</span>
+        <span><b>Session:</b> 22 Nov 2026 · ADALM-Pluto · GNU Radio 3.10 · <span class="mono">lab02_fm_rx.grc</span>, <span class="mono">lab02_fm_tx.grc</span> · 2.4 MS/s → 240 kHz → 48 kHz</span>
+      </div>
+      <nav class="toc" aria-label="Sections">
+        <a href="#summary">Summary</a><a href="#setup">Setup</a><a href="#p1">1 · Discriminator</a><a href="#ppm">Reference error</a>
+        <a href="#p2">2 · PLL</a><a href="#weak">Weak signal</a><a href="#p3">3 · Cable link</a><a href="#analysis">Analyses</a>
+        <a href="#questions">Questions 1–6</a><a href="#pred">Prediction vs measurement</a><a href="#listen">Listen</a><a href="#files">Files</a>
+      </nav>
+    </div>
+  </section>
+
+  <div class="container lab-page rep">
+
+  <!-- ================================================================ summary -->
+  <section class="task" id="summary">
+    <span class="kicker">Summary</span>
+    <h2>What we measured</h2>
+    <div class="kpi">
+      <div class="card stat"><div class="n">8.0<i>dB</i></div><div class="l">CNR of the 90.0 MHz station in the 180 kHz channel (7.5 dB in 200 kHz): close to the FM threshold</div></div>
+      <div class="card stat"><div class="n">−18.7<i>ppm</i></div><div class="l">Receiver reference error (± 2.5 ppm), 0.9 σ from Lab 1 (−25.9 ± 7.6 ppm)</div></div>
+      <div class="card stat"><div class="n">−9.5 / −20.7<i>dB</i></div><div class="l">Pilot attenuation of the PLL at pll_bw 0.15 / 0.08 (model −9.1 / −19.6)</div></div>
+      <div class="card stat"><div class="n">0.15</div><div class="l">Narrowest pll_bw with clean audio (B<sub>L</sub> = 38 kHz)</div></div>
+      <div class="card stat"><div class="n">2405 / 5520<i>Hz</i></div><div class="l">Carrier nulls, theory 2404.83 / 5520.08 Hz (&lt; 0.01 %)</div></div>
+      <div class="card stat"><div class="n">14 / 18<i>kHz</i></div><div class="l">−20 dB bandwidth for f<sub>m</sub> = 1 / 3 kHz; Carson gives 12 / 16 kHz</div></div>
+    </div>
+    <ul class="bul">
+      <li><b>Broadcast reception.</b> The station at 90.0 MHz was received at rf_gain 49.6 dB without saturation (channel power ≈ −58 dBFS, peak sample 0.005 of full scale).
+        The detector output shows the 19 kHz pilot, a noise floor rising as f², and a small bump near 57 kHz (RDS). Measured on the raw file, the pilot sits
+        <b>−22.7 dB re full deviation</b>, i.e. a pilot deviation of about 5.5 kHz (7.3 %).</li>
+      <li><b>The PLL is a low-pass filter on the message.</b> Replaying one raw file through our Python copy of <span class="mono">pll_freqdet_cf</span> for six loop bandwidths
+        attenuates the pilot by −1.3, −9.5, −20.7, −34.5 and −47.3 dB for pll_bw 0.3 … 0.02, within 4 dB of the linear loop model and as the manual expected.
+        The live “Pilot: PLL − Disc” readings in our data sheet (≈ 0 dB down to 0.04) disagree with our own screenshots and are not used.</li>
+      <li><b>Weak signal.</b> The PLL wins only near and below threshold, by 1–2 dB: it has to follow ±75 kHz of deviation, so its loop cannot be made much narrower than the channel
+        (B<sub>L</sub>/B<sub>ch</sub> ≈ 0.21).</li>
+      <li><b>Cabled NBFM link (optional part).</b> Line levels of the raw spectra match |J<sub>n</sub>(β)|² within <b>0.05 dB</b>, the carrier vanished at the two Bessel zeros, and the
+        transmitter and receiver show no frequency offset (shared reference clock). De-emphasis 50 vs 75 µs made <b>no large audible difference</b>, as the theory predicts for programme audio
+        (2–3.4 dB above 3 kHz, 0.4 dB in total level).</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================ setup -->
+  <section class="task" id="setup">
+    <span class="kicker">Setup</span>
+    <h2>Setup and the data we used</h2>
+    <p>Receiver: ADALM-Pluto with an antenna, flowgraph <span class="mono">lab02_fm_rx.grc</span> with two detectors in parallel (Quadrature Demod and PLL Freq. Det.), a
+      selector, audio chain and three meters (channel power, carrier-frequency offset, SINAD). The receiver is tuned 250 kHz below the signal and a
+      <span class="mono">Frequency Xlating FIR Filter</span> (decimation 10) brings it to 0 Hz at 240 kS/s. The I/Q recorder sits after that filter, so every file contains the whole
+      FM channel at 240 kS/s (complex float).</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Recording</th><th>f<sub>c</sub></th><th class="num">Gain</th><th class="num">Length</th><th>Used for</th></tr></thead><tbody>
+      <tr><td class="mono">…_40.0_20261122T142119</td><td>90.0 MHz</td><td class="num">40.0 dB</td><td class="num">8.4 s</td><td>Part 1, first gain, f_fine = 0</td></tr>
+      <tr><td class="mono">…_49.6_20261122T142400</td><td>90.0 MHz</td><td class="num">49.6 dB</td><td class="num">7.8 s</td><td>Part 1, working gain, f_fine = 0</td></tr>
+      <tr><td class="mono">…_49.6_20261122T143354</td><td>90.0 MHz</td><td class="num">49.6 dB</td><td class="num">7.7 s</td><td>Part 1 station recording, f_fine = −150 Hz</td></tr>
+      <tr><td class="mono">…_LB0.5 / 0.3 / 0.15 / 0.08 / 0.04 / 0.02</td><td>90.0 MHz</td><td class="num">49.6 dB</td><td class="num">6.7–10.1 s</td><td>Part 2, one per loop bandwidth</td></tr>
+      <tr><td class="mono">…_434000000_…_fm1000 / fm3000</td><td>434 MHz</td><td class="num">20.7 dB</td><td class="num">5.2 / 5.1 s</td><td>Part 3, Δf = 5 kHz, f<sub>m</sub> = 1 / 3 kHz</td></tr>
+    </tbody></table></div>
+    <p>Besides the 11 recordings we used 27 screenshots and the session data sheet. All figures below were computed from the raw files with our script
+      <a href="../labs/lab-03/files/fm_lab_analysis.py">fm_lab_analysis.py</a>, which contains Python versions of both GNU Radio detectors.</p>
+    <p><span class="eq">B_T ≈ 2(Δf + W)    G_det = f_q / (2π Δf)    B_L ≈ 1.06 · pll_bw · f_q    CNR = (P_on − P_off) / P_off</span></p>
+    <p><span class="eq">PLL (freq. out / freq. in):  H(z) = β z / ((z − 1)² + α (z − 1) + β z),   α = 4ζb/(1+2ζb+b²),  β = 4b²/(1+2ζb+b²),  ζ = 1/√2</span></p>
+  </section>
+
+  <!-- ================================================================ part 1 -->
+  <section class="task" id="p1">
+    <span class="kicker">Part 1</span>
+    <h2>FM receiver with the non-coherent detector</h2>
+    <p>Settings: dev = 75 kHz, audio bandwidth 15 kHz, Quadrature Demod, f<sub>c</sub> = 90.0 MHz, de-emphasis 50 µs.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Quantity</th><th class="num">Value</th><th>Source</th></tr></thead><tbody>
+      <tr><td>Working gain</td><td class="num">49.6 dB</td><td>first step at 40 dB; peak sample 0.005 FS, no saturation</td></tr>
+      <tr><td>De-emphasis</td><td class="num">50 µs</td><td>ITU Region 1 standard; 75 µs sounded only slightly duller — no large difference</td></tr>
+      <tr><td>Above the audio band</td><td class="num">pilot, f² noise, 57 kHz bump</td><td>no L−R programme visible above the noise (screenshot 2, figure 1)</td></tr>
+      <tr><td>Pilot in the discriminator output</td><td class="num">−22.7 dB re Δf</td><td>raw file (5.5 kHz deviation); live meter read −38.3 dB</td></tr>
+      <tr><td>P<sub>on</sub>, station</td><td class="num">−58.25 dBFS</td><td>mean of five readings, −59.46 … −57.27 dBFS</td></tr>
+      <tr><td>P<sub>off</sub>, empty channel 78.0 MHz</td><td class="num">−66.86 dBFS</td><td>screenshot 5 (the data sheet planned 98.2 MHz)</td></tr>
+      <tr><td>CNR in the 180 kHz channel filter</td><td class="num">7.97 dB</td><td>6.5–9.1 dB depending on the P<sub>on</sub> reading</td></tr>
+      <tr><td>CNR in 200 kHz</td><td class="num">7.51 dB</td><td>noise scaled by 200/180</td></tr>
+    </tbody></table></div>
+    <div class="callout"><b>Note</b>The flowgraph sets <span class="mono">chan_bw = min(2(dev + audio_bw), 200 kHz)</span> = 180 kHz, so the channel-power meter integrates 180 kHz, not the 200 kHz asked for in the manual; the CNR is corrected for that.</div>
+    <figure class="figx"><img class="l" src="img/report/fig1_broadcast_spectra.png" alt="Channel spectrum, detector outputs and audio spectrum"><img class="d" src="img/report/fig1_broadcast_spectra_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 1. From the raw file LB0.3: channel spectrum, detector outputs (MPX baseband) and audio. With a wide loop (0.3) the two detectors give the same audio.</figcaption></figure>
+    <h3 class="sub-h">Receiver gain in dev: Question 1 in numbers</h3>
+    <p>Halving dev doubles the detector gain f<sub>q</sub>/(2π·dev): <b>+6.02 dB</b> of audio, reproduced exactly on the raw file. Because the flowgraph also narrows the channel filter to
+      2(37.5 + 15) = 105 kHz, the real change is <b>+5.56 dB</b> with extra distortion 12.4 dB below the audio — the 105 kHz filter cuts into the 180 kHz FM signal (screenshot 7, figure 2).</p>
+    <figure class="figx"><img class="l" src="img/report/fig2_q1_dev37k.png" alt="Channel spectrum with 180 and 105 kHz filters"><img class="d" src="img/report/fig2_q1_dev37k_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 2. The received RF signal is the same; only our channel filter changes with the dev setting.</figcaption></figure>
+  </section>
+
+  <!-- ================================================================ ppm -->
+  <section class="task" id="ppm">
+    <span class="kicker">Finding</span>
+    <h2>Receiver reference error from the broadcast station</h2>
+    <p>The live “carrier frequency offset” meter (a 0.2 s average of the discriminator) wandered between −120 and +545 Hz, and the setting chosen in the session,
+      f_fine = −150 Hz, turned out to have the wrong sign. At a CNR of 8 dB the discriminator mean is pulled around by noise clicks and programme content: on the raw files it moved by
+      about 600 Hz (+397 → −210 Hz) when f_fine changed by only 150 Hz, so it cannot be trusted.</p>
+    <p>We therefore estimated the carrier from the <b>centroid of the channel power spectrum</b> (power above the noise floor) in all nine broadcast recordings, after removing each file’s f_fine.
+      The estimator passes the consistency check: 1542 Hz for the files with f_fine = 0 and 1718 Hz for those with f_fine = −150 Hz.</p>
+    <p><span class="eq">δ = +1679 ± 222 Hz  (9 recordings, spread 667 Hz)   →   ε = −δ / f_c = −18.7 ± 2.5 ppm</span></p>
+    <figure class="figx"><img class="l" src="img/report/fig8_freq_error.png" alt="Carrier offset per recording by two estimators, with the Lab 1 result"><img class="d" src="img/report/fig8_freq_error_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 8. Carrier offset of the 90.0 MHz station in every recording (f_fine removed). Band: the Lab 1 result scaled to 90 MHz, 2326 ± 683 Hz.</figcaption></figure>
+    <p>In <a href="../lab-01/#ppm">Lab 1</a> the same kind of receiver read GSM carriers 24.4 kHz high at 945 MHz, ε = −25.9 ± 7.6 ppm, which predicts +2326 ± 683 Hz at 90 MHz.
+      Same sign (the receiver reads frequencies high, its reference runs slow), difference 7.2 ppm = <b>0.9 σ</b>: the two sessions agree. Temperature drift of the TCXO between
+      sessions (a few ppm) and the asymmetric programme spectrum with indoor multipath are the remaining systematic effects. The correct f_fine would have been about +1.7 kHz.</p>
+  </section>
+
+  <!-- ================================================================ part 2 -->
+  <section class="task" id="p2">
+    <span class="kicker">Part 2</span>
+    <h2>Coherent detector (PLL) and the loop bandwidth</h2>
+    <p>“Live” columns are from the data sheet. “Offline” columns run our PLL on <b>one fixed raw file</b> (LB0.3, first 2 s) for each pll_bw, so every step sees exactly the same input.
+      “Model” is the linear loop response H at 19 and 38 kHz.</p>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th class="num">pll_bw</th><th class="num">B<sub>L</sub> (kHz)</th><th>Audio clean? (live)</th><th class="num">19 kHz: PLL − disc, live</th><th class="num">offline</th><th class="num">model</th><th class="num">L−R band (23–53 kHz), offline</th><th>Components above 23 kHz visible?</th></tr></thead><tbody>
+      <tr><td class="num">0.5</td><td class="num">127.2</td><td>yes</td><td class="num">0.00</td><td class="num"><b>+0.27</b></td><td class="num">+0.26</td><td class="num">−2.3</td><td>yes</td></tr>
+      <tr><td class="num">0.3</td><td class="num">76.3</td><td>yes</td><td class="num">−1.87</td><td class="num"><b>−1.32</b></td><td class="num">−1.26</td><td class="num">−8.3</td><td>yes</td></tr>
+      <tr><td class="num">0.15</td><td class="num">38.2</td><td>yes</td><td class="num bad">+0.55</td><td class="num"><b>−9.52</b></td><td class="num">−9.10</td><td class="num">−16.5</td><td>yes, weaker</td></tr>
+      <tr><td class="num">0.08</td><td class="num">20.4</td><td>slightly distorted</td><td class="num bad">+0.18</td><td class="num"><b>−20.73</b></td><td class="num">−19.57</td><td class="num">−23.8</td><td>very weak</td></tr>
+      <tr><td class="num">0.04</td><td class="num">10.2</td><td>slightly distorted</td><td class="num bad">−0.53</td><td class="num"><b>−34.49</b></td><td class="num">−31.57</td><td class="num">−31.0</td><td>hardly</td></tr>
+      <tr><td class="num">0.02</td><td class="num">5.1</td><td>no</td><td class="num">−17.15</td><td class="num"><b>−47.28</b></td><td class="num">−43.61</td><td class="num">−40.7</td><td>no</td></tr>
+    </tbody></table></div>
+    <figure class="figx"><img class="l" src="img/report/fig3_pll_bw_sweep.png" alt="PLL output spectra for six loop bandwidths and the loop model"><img class="d" src="img/report/fig3_pll_bw_sweep_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 3. Left: PLL output for six loop bandwidths on the same input. Right: linear model of the GNU Radio loop.</figcaption></figure>
+    <figure class="figx" style="max-width:720px"><img class="l" src="img/report/fig4_pilot_vs_bw.png" alt="Pilot attenuation versus loop bandwidth"><img class="d" src="img/report/fig4_pilot_vs_bw_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 4. Offline values follow the model and the manual’s expectation (−9 dB at 0.15, −20 dB at 0.08). Screenshot LB_0.08 shows the PLL pilot at least 13 dB below the discriminator, so the near-zero live readings were most likely taken before the meter settled.</figcaption></figure>
+  </section>
+
+  <!-- ================================================================ weak -->
+  <section class="task" id="weak">
+    <span class="kicker">Part 2</span>
+    <h2>The two detectors on a weak signal (pll_bw = 0.15)</h2>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th class="num">Gain</th><th class="num">P<sub>ch</sub> (dBFS)</th><th class="num">Disc. pilot</th><th class="num">Disc. noise 17k</th><th class="num">PLL pilot</th><th class="num">PLL noise 17k</th><th class="num">Pilot/noise disc.</th><th class="num">Pilot/noise PLL</th><th class="num">PLL advantage</th><th>Sounds better</th></tr></thead><tbody>
+      <tr><td class="num">49.6</td><td class="num">−59.21</td><td class="num">−38.30</td><td class="num">−66.39</td><td class="num">−37.72</td><td class="num">−67.79</td><td class="num">28.09</td><td class="num">30.07</td><td class="num"><b>+1.98</b></td><td>same</td></tr>
+      <tr><td class="num">35</td><td class="num">−72.03</td><td class="num">−38.30</td><td class="num">−61.85</td><td class="num">−37.62</td><td class="num">−61.10</td><td class="num">23.55</td><td class="num">23.48</td><td class="num">−0.07</td><td>same</td></tr>
+      <tr><td class="num">30</td><td class="num">−72.81</td><td class="num">−42.81</td><td class="num">−46.68</td><td class="num">−43.54</td><td class="num">−47.54</td><td class="num">3.87</td><td class="num">4.00</td><td class="num">+0.13</td><td>discriminator</td></tr>
+    </tbody></table></div>
+    <p>No files were recorded at 35 and 30 dB, so we also <b>emulated</b> the weak signal offline by adding white noise of known level to the raw file (CNR ≈ 8 dB):</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">CNR in 180 kHz</th><th class="num">Discriminator</th><th class="num">PLL 0.15</th><th class="num">PLL 0.04</th></tr></thead><tbody>
+      <tr><td class="num">8.0 dB (file)</td><td class="num"><b>16.1</b></td><td class="num">9.7</td><td class="num">−1.7</td></tr>
+      <tr><td class="num">5.0 dB</td><td class="num"><b>8.9</b></td><td class="num">7.0</td><td class="num">−2.8</td></tr>
+      <tr><td class="num">3.2 dB</td><td class="num">4.4</td><td class="num"><b>5.2</b></td><td class="num">−3.4</td></tr>
+      <tr><td class="num">1.0 dB</td><td class="num">0.4</td><td class="num"><b>1.7</b></td><td class="num">−4.4</td></tr>
+      <tr><td class="num">−2.4 dB</td><td class="num"><b>−2.5</b></td><td class="num">−3.4</td><td class="num">−4.8</td></tr>
+    </tbody></table></div>
+    <figure class="figx"><img class="l" src="img/report/fig5_weak_signal.png" alt="Pilot to noise versus signal level, live and emulated"><img class="d" src="img/report/fig5_weak_signal_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 5. Pilot-to-noise ratio at 17 kHz. Left: live readings. Right: noise added to the raw file.</figcaption></figure>
+  </section>
+
+  <!-- ================================================================ part 3 -->
+  <section class="task" id="p3">
+    <span class="kicker">Part 3 (optional)</span>
+    <h2>Our own NBFM signal over a cable</h2>
+    <p>Pluto TX → 30 dB attenuator → cable → Pluto RX at f<sub>tx</sub> = 434 MHz (channel checked empty with the antenna first). Transmitter dev = 5 kHz, f<sub>m</sub> = 1 kHz,
+      tx_atten = 40 dB; receiver dev = 5 kHz, audio 3 kHz. Level budget: P<sub>rx</sub> = 7 − 40 + 20·log<sub>10</sub>0.5 − 30 − 0.5 = <b>−69.5 dBm</b>, 59.5 dB below the −10 dBm limit.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Quantity</th><th class="num">Theory</th><th class="num">Measured</th><th class="num">Difference</th></tr></thead><tbody>
+      <tr><td>First deviation with the carrier nulled, f<sub>m</sub> = 1 kHz</td><td class="num">2404.83 Hz</td><td class="num"><b>2405 Hz</b> (± 0.35)</td><td class="num">+0.17 Hz (0.007 %)</td></tr>
+      <tr><td>Second null</td><td class="num">5520.08 Hz</td><td class="num"><b>5520 Hz</b> (± 0.07)</td><td class="num">−0.08 Hz (0.0015 %)</td></tr>
+      <tr><td>Bandwidth, lines within 20 dB, Δf = 5 kHz, f<sub>m</sub> = 1 kHz</td><td class="num">14 kHz</td><td class="num"><b>14 kHz</b></td><td class="num">0</td></tr>
+      <tr><td>Bandwidth, lines within 20 dB, Δf = 5 kHz, f<sub>m</sub> = 3 kHz</td><td class="num">18 kHz</td><td class="num"><b>18 kHz</b> (raw file)</td><td class="num">0</td></tr>
+      <tr><td>CNR at tx_atten 40 dB</td><td class="num">46.5 dB (budget, NF 5 dB)</td><td class="num">70.8 dB (P<sub>on</sub>/P<sub>off</sub>) · 59.5 dB (raw floor)</td><td class="num">+24.3 / +13.0 dB</td></tr>
+      <tr><td>P<sub>off</sub> / P<sub>on</sub></td><td class="num">—</td><td class="num">−88.9 / −18.1 dBFS</td><td class="num">—</td></tr>
+      <tr><td>SINAD (discriminator, 1 kHz)</td><td class="num">—</td><td class="num">51.14 dB live · 73.3 dB offline</td><td class="num">—</td></tr>
+      <tr><td>TX → RX frequency offset</td><td class="num">—</td><td class="num">−3.7 Hz live · −0.26 Hz offline</td><td class="num">shared reference</td></tr>
+      <tr><td>Deviation from the raw file (rms·√2)</td><td class="num">5000 Hz</td><td class="num">5000.5 / 5002.6 Hz</td><td class="num">0.01 / 0.05 %</td></tr>
+    </tbody></table></div>
+    <div class="pair">
+      <figure class="figx"><img src="img/shots/null-2405-rx.png" alt="Received spectrum with the carrier nulled at 2405 Hz"><figcaption>Δf = 2405 Hz: the carrier is 69 dB below the largest line.</figcaption></figure>
+      <figure class="figx"><img src="img/shots/null-5520-rx.png" alt="Received spectrum with the carrier nulled at 5520 Hz"><figcaption>Δf = 5520 Hz: the carrier is below the display floor.</figcaption></figure>
+    </div>
+    <figure class="figx"><img class="l" src="img/report/fig6_nbfm_bessel.png" alt="NBFM spectra from the raw files against Bessel functions"><img class="d" src="img/report/fig6_nbfm_bessel_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 6. Raw spectra with 1 Hz bins against |J<sub>n</sub>(β)|²; largest line error 0.05 dB. Dashed: 20 dB below the largest line.</figcaption></figure>
+    <figure class="figx" style="max-width:760px"><img class="l" src="img/report/fig7_carrier_nulls.png" alt="Bessel functions and the measured carrier nulls"><img class="d" src="img/report/fig7_carrier_nulls_dark.png" alt="" aria-hidden="true">
+      <figcaption>Figure 7. The carrier (J<sub>0</sub>) nulls used to calibrate the deviation.</figcaption></figure>
+    <div class="callout warn"><b>CNR</b>P<sub>off</sub> (transmitter off) contains only receiver noise; with the transmitter on its own DAC and phase noise come along (the raw-file floor, 11 dB higher).
+      The 46.5 dB budget assumes P<sub>max</sub> = +7 dBm, 0.5 dB cable loss and NF 5 dB with an uncalibrated dBFS scale; 10 dB less loss or more power would explain the rest.</div>
+  </section>
+
+  <!-- ================================================================ analyses -->
+  <section class="task" id="analysis">
+    <span class="kicker">Required analyses</span>
+    <h2>Occupied bandwidth and deviation calibration</h2>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Case</th><th class="num">β</th><th class="num">Carson 2(Δf + f<sub>m</sub>)</th><th class="num">−20 dB lines</th><th class="num">99 % power, raw</th><th class="num">99 % power, Bessel</th></tr></thead><tbody>
+      <tr><td>f<sub>m</sub> = 1 kHz</td><td class="num">5.00</td><td class="num">12 kHz</td><td class="num"><b>14 kHz</b></td><td class="num">12.0 kHz</td><td class="num">12 kHz</td></tr>
+      <tr><td>f<sub>m</sub> = 3 kHz</td><td class="num">1.67</td><td class="num">16 kHz</td><td class="num"><b>18 kHz</b></td><td class="num">18.0 kHz</td><td class="num">18 kHz</td></tr>
+    </tbody></table></div>
+    <p>The 99 % bandwidth was computed from the 1 Hz raw spectra (cumulative power) and equals the Bessel sum Σ J<sub>n</sub>² ≥ 0.99 in both cases. The team-specific deviation of
+      the original handout was removed from this session, so only the two cases of part 3 are reported. For the broadcast station the 99 % width is 180.5 kHz — the channel filter — because
+      at CNR 8 dB noise holds a large share of the power.</p>
+    <p><span class="eq">Null 1: Δf = 2405 ± 0.4 Hz → β = 2.4050 ± 0.0004 (theory 2.4048)     Null 2: Δf = 5520 ± 0.1 Hz → β = 5.5200 ± 0.0001 (theory 5.5201)</span></p>
+    <p>Calibration factor of the transmitter (actual / set deviation) = 1.0000 ± 0.0002; independently, the rms deviation of the raw file gives 1.0001.</p>
+  </section>
+
+  <!-- ================================================================ questions -->
+  <section class="task qa" id="questions">
+    <span class="kicker">Questions 1–6</span>
+    <h2>Answers to the questions of the manual</h2>
+
+    <h3>Question 1 — Receiver dev = 37.5 kHz: what happens to the audio, and why does the RF spectrum not change?</h3>
+    <p>The detector gain f<sub>q</sub>/(2π·dev) doubles, so the audio rises by 20·log<sub>10</sub>2 = <b>6.02 dB</b> (6.02 dB on the raw file; 5.56 dB with the flowgraph’s narrower channel filter).
+      dev is only a scale factor in the receiver: the transmitter still deviates ±75 kHz, so the signal at the antenna is unchanged. What changed in screenshot 7 is our own channel filter,
+      coupled to dev in this flowgraph (edges at ±52 kHz); it clips part of the 180 kHz signal and adds distortion.</p>
+
+    <h3>Question 2 — Why does a carrier-frequency error appear as a constant at the discriminator output? Is it consistent with Lab 1?</h3>
+    <p>With an offset δ the baseband signal is A·e<sup>j(2πδt + φ(t))</sup>; the discriminator outputs the phase derivative, (1/2π)dθ/dt = δ + (1/2π)dφ/dt. The message term has zero mean
+      (stations remove DC), the offset term is a <b>constant</b>, so averaging the output and multiplying by Δf reads the error. Our value, ε = −18.7 ± 2.5 ppm (δ = +1.68 kHz at 90 MHz),
+      agrees with Lab 1 (−25.9 ± 7.6 ppm) within 0.9 σ and has the same sign; both are at or inside the ±25 ppm Pluto specification (<a href="#ppm">details</a>).</p>
+
+    <h3>Question 3 — Why does a narrow-loop PLL lose the 38 and 57 kHz components?</h3>
+    <p>The PLL output is the frequency of its own oscillator, which follows the input only as fast as the loop allows: for the message the loop is a <b>second-order low-pass</b> H(f) with natural
+      frequency ≈ (2b/√(1 + √2·b + b²))·f<sub>q</sub>/2π. At pll_bw 0.15 that is ≈ 10 kHz with the −3 dB point near 12 kHz, giving −20 dB at 38 kHz and −26 dB at 57 kHz (−16.5 dB measured on the L−R band).
+      Narrowing the loop moves the cut from 57 to 38 kHz, then onto the pilot and finally into the audio (−3 dB near 2 kHz at 0.02). A narrow loop also cannot follow ±75 kHz of fast deviation:
+      the phase error grows, the loop slips cycles and the audio distorts. For stereo and RDS the discriminator (or a wide PLL, pll_bw ≥ 0.5) is the right detector.</p>
+
+    <h3>Question 4 — On a weak signal, which detector had the better pilot-to-noise ratio, and how does that relate to loop width over channel width?</h3>
+    <p>Live: the PLL was 2 dB better at the strongest level and equal (± 0.15 dB) at the two weaker ones. Emulated: above threshold the discriminator wins, because the 0.15 loop attenuates the
+      19 kHz pilot itself (−9.5 dB) more than the 17 kHz noise (−3.4 dB); near and below threshold (CNR 1–3 dB) the PLL is 0.8–1.4 dB better — threshold extension from fewer clicks — and
+      a 0.04 loop is worse everywhere because it no longer tracks. The PLL’s advantage comes from seeing noise only in B<sub>L</sub> instead of the channel: the smaller B<sub>L</sub>/B<sub>ch</sub>, the fewer cycle slips.
+      But B<sub>L</sub> must stay large enough to track the deviation; for WFM B<sub>L</sub>/B<sub>ch</sub> = 38/180 ≈ 0.21 is not small, so the gain is only 1–2 dB near threshold. NBFM allows a much smaller ratio.</p>
+
+    <h3>Question 5 (optional) — Carrier-null deviations against theory: where does the error come from?</h3>
+    <ul class="bul">
+      <li><b>Setting of dev:</b> the transmitter is digital (sensitivity exactly 2π·dev/f<sub>q</sub>); the raw-file deviation is right to 0.01 %, i.e. ±0.24 Hz at 2405 Hz.</li>
+      <li><b>Display resolution:</b> 58.6 Hz bins limit the frequency of a line, not the carrier amplitude. The real limit is the display floor 85 dB below the largest line: |J<sub>0</sub>| &lt; 2.9·10⁻⁵, i.e. ±0.06 Hz.</li>
+      <li><b>Judging “zero”:</b> with the slope |J<sub>1</sub>(2.405)| = 0.519, calling the carrier gone when it is 30 dB down gives ±32 Hz (±37 Hz at the second null). Our screenshots show it 69 dB down (±0.35 Hz) and below the floor (±0.07 Hz).</li>
+    </ul>
+    <p>Judging the zero by eye dominates; with the recorded screenshots the uncertainty is ±0.4 / ±0.1 Hz, and both measured differences lie inside it.</p>
+
+    <h3>Question 6 (optional) — Measured bandwidth against Carson’s rule</h3>
+    <p>With the −20 dB-line criterion Carson underestimates <b>both</b> cases by 2 kHz (12 vs 14, 16 vs 18 kHz). With the 99 % criterion it is right for β = 5 but underestimates
+      <b>f<sub>m</sub> = 3 kHz (β = 1.67)</b>: the n = 3 line is only 17 dB below the largest one and holds 1.3 % of the power, while Carson counts orders n ≤ β + 1 (≈ 98 %). At small β and large line spacing every
+      omitted line costs 2f<sub>m</sub>. Note: the screenshot <span class="mono">fm 3000</span> showed the ±9 kHz lines 45 dB down and read 12 kHz; the raw file of the same setting matches Bessel exactly, so we report 18 kHz.</p>
+  </section>
+
+  <!-- ================================================================ pred -->
+  <section class="task" id="pred">
+    <span class="kicker">Prediction vs measurement</span>
+    <h2>Predictions against the measurement</h2>
+    <div class="tbl-wrap"><table class="tbl small"><thead><tr><th>#</th><th>Quantity</th><th class="num">Prediction</th><th class="num">Measured</th><th class="num">Relative error</th><th>Main source of the difference (size)</th></tr></thead><tbody>
+      <tr><td>1</td><td>Audio change, dev 75 → 37.5 kHz</td><td class="num">+6.02 dB</td><td class="num">+5.56 dB (flowgraph) / +6.02 dB (gain only)</td><td class="num">−7.6 %</td><td>Coupled 105 kHz channel filter removes part of the signal (distortion −12.4 dB)</td></tr>
+      <tr><td>2</td><td>Pilot in the discriminator output</td><td class="num">−20 dB (10 % pilot)</td><td class="num">−22.7 dB (live meter −38.3)</td><td class="num">−13.5 %</td><td>This station’s pilot is 7.3 % (8–10 % allowed); the live meter has a ≈16 dB different scale</td></tr>
+      <tr><td>3</td><td>Receiver reference error</td><td class="num">−25.9 ± 7.6 ppm (Lab 1)</td><td class="num">−18.7 ± 2.5 ppm</td><td class="num">+28 % (0.9 σ)</td><td>Lab 1: two GSM carriers, 4.88 kHz bins; TCXO drift between sessions; programme asymmetry and multipath at CNR 8 dB</td></tr>
+      <tr><td>4</td><td>Narrowest clean pll_bw</td><td class="num">≈ 0.1 (manual)</td><td class="num">0.15</td><td class="num">+50 %</td><td>Sweep step 0.15 → 0.08 (±0.07); listening judgement; low CNR</td></tr>
+      <tr><td>5</td><td>Pilot attenuation, pll_bw 0.15</td><td class="num">−9.10 dB (model)</td><td class="num">−9.52 dB</td><td class="num">4.6 %</td><td>Linear model; noise and clicks act non-linearly on the loop at CNR 8 dB</td></tr>
+      <tr><td>6</td><td>Pilot attenuation, pll_bw 0.08</td><td class="num">−19.57 dB (model)</td><td class="num">−20.73 dB</td><td class="num">5.9 %</td><td>As row 5</td></tr>
+      <tr><td>7</td><td>First carrier null</td><td class="num">2404.83 Hz</td><td class="num">2405 Hz</td><td class="num">0.007 %</td><td>Zero detection ±0.35 Hz</td></tr>
+      <tr><td>8</td><td>Second carrier null</td><td class="num">5520.08 Hz</td><td class="num">5520 Hz</td><td class="num">−0.0015 %</td><td>Zero detection ±0.07 Hz</td></tr>
+      <tr><td>9</td><td>−20 dB bandwidth, β = 5 / 1.67</td><td class="num">14 / 18 kHz</td><td class="num">14 / 18 kHz</td><td class="num">0</td><td>Resolution = line spacing (1 / 3 kHz)</td></tr>
+      <tr><td>10</td><td>99 % bandwidth, β = 5 / 1.67</td><td class="num">12 / 18 kHz</td><td class="num">12.0 / 18.0 kHz</td><td class="num">0</td><td>1 Hz resolution</td></tr>
+      <tr><td>11</td><td>De-emphasis 75 vs 50 µs</td><td class="num">−2.0 dB at 3 kHz, −3.4 dB at 15 kHz</td><td class="num">−0.4 dB total level; no large audible difference</td><td class="num">—</td><td>Programme energy is concentrated below 3 kHz, where the two curves differ by &lt; 2 dB</td></tr>
+      <tr><td>12</td><td>CNR of the cable link</td><td class="num">46.5 dB</td><td class="num">70.8 dB (P<sub>on</sub>/P<sub>off</sub>) / 59.5 dB (raw)</td><td class="num">+52 %</td><td>Transmitter noise (≈11 dB) and budget assumptions (P<sub>max</sub>, loss, NF)</td></tr>
+      <tr><td>13</td><td>SINAD of the cable link</td><td class="num">84 dB (SNR<sub>o</sub> formula, CNR in B<sub>T</sub> = 71.7 dB)</td><td class="num">73.3 dB offline / 51.1 dB live</td><td class="num">−12.6 % / −39 %</td><td>Ceiling set by device distortion and noise; the live meter is probably limited by the depth of its band-reject filter (~53 dB)</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <!-- ================================================================ redo -->
+  <section class="task" id="redo">
+    <span class="kicker">Lessons</span>
+    <h2>What we would do differently</h2>
+    <ul class="bul">
+      <li>Record the empty channel (P<sub>off</sub>) and every level of the weak-signal table, so CNR and the detector comparison can be reproduced entirely from raw data.</li>
+      <li>Pick a stronger station or a better antenna position: at CNR 8 dB the live frequency-offset meter was useless.</li>
+      <li>Set f_fine from a long average of the raw file (or the spectrum centroid), and check the sign of the correction with a known tone.</li>
+      <li>Read the “Pilot: PLL − Disc” meter only after it settles and cross-check it with the spectrum.</li>
+      <li>Put our team name into <span class="mono">run_rx.bat</span> before the session (files are named Team-00) and record full 10 s files.</li>
+      <li>Calibrate the dBFS scale against a known level so the cable-link budget and CNR can be compared in dBm.</li>
+      <li>Write listening observations (de-emphasis, dev = 37.5 kHz) into the data sheet on the spot.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================ listen -->
+  <section class="task" id="listen">
+    <span class="kicker">Interactive</span>
+    <h2>Listen: demodulated audio from our recordings</h2>
+    <p>Each clip was demodulated offline from the raw I/Q file (15 kHz or 3 kHz audio filter, 50 µs de-emphasis). Compare the cable link far above threshold with the station near and below threshold.</p>
+    <div class="players">
+      <div class="card"><b>Cable link, f<sub>m</sub> = 1 kHz</b><span>NBFM, Δf = 5 kHz, SINAD &gt; 50 dB</span><audio controls preload="none" src="audio/link-fm1000.wav"></audio></div>
+      <div class="card"><b>Cable link, f<sub>m</sub> = 3 kHz</b><span>NBFM, Δf = 5 kHz, β = 1.67</span><audio controls preload="none" src="audio/link-fm3000.wav"></audio></div>
+      <div class="card"><b>90.0 MHz, gain 49.6 dB, discriminator</b><span>CNR ≈ 8 dB, near threshold</span><audio controls preload="none" src="audio/station-g49.6-disc.wav"></audio></div>
+      <div class="card"><b>90.0 MHz, gain 40 dB, discriminator</b><span>weaker, below threshold: clicks</span><audio controls preload="none" src="audio/station-g40-disc.wav"></audio></div>
+      <div class="card"><b>90.0 MHz, gain 49.6 dB, PLL 0.15</b><span>coherent detector on the same station</span><audio controls preload="none" src="audio/station-g49.6-pll0.15.wav"></audio></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ shots -->
+  <section class="task no-print" id="shots">
+    <span class="kicker">Records</span>
+    <h2>Screenshots from the session</h2>
+    <div class="shots">
+      <figure><a href="img/shots/rx-1.png"><img loading="lazy" src="img/shots/rx-1.png" alt="Receiver at gain 40"></a><figcaption>Receiver at 90.0 MHz, gain 40 dB, f_fine 0</figcaption></figure>
+      <figure><a href="img/shots/rx-2.png"><img loading="lazy" src="img/shots/rx-2.png" alt="Detector outputs"></a><figcaption>Detector outputs: discriminator (blue) and PLL 0.05 (red)</figcaption></figure>
+      <figure><a href="img/shots/rx-3.png"><img loading="lazy" src="img/shots/rx-3.png" alt="Channel spectrum and power"></a><figcaption>Channel spectrum, P<sub>on</sub> = −58.71 dBFS</figcaption></figure>
+      <figure><a href="img/shots/rx-4.png"><img loading="lazy" src="img/shots/rx-4.png" alt="Working gain"></a><figcaption>Working gain 49.6 dB, f_fine = −150 Hz</figcaption></figure>
+      <figure><a href="img/shots/rx-5.png"><img loading="lazy" src="img/shots/rx-5.png" alt="Empty channel"></a><figcaption>Empty channel 78.0 MHz, P<sub>off</sub> = −66.86 dBFS</figcaption></figure>
+      <figure><a href="img/shots/rx-6.png"><img loading="lazy" src="img/shots/rx-6.png" alt="Station with dev 75 kHz"></a><figcaption>dev = 75 kHz, channel filter 180 kHz</figcaption></figure>
+      <figure><a href="img/shots/rx-7.png"><img loading="lazy" src="img/shots/rx-7.png" alt="Station with dev 37.5 kHz"></a><figcaption>dev = 37.5 kHz, channel filter 105 kHz (Question 1)</figcaption></figure>
+      <figure><a href="img/shots/rx-8.png"><img loading="lazy" src="img/shots/rx-8.png" alt="Detector outputs with a wider loop"></a><figcaption>Detector outputs, wider loop</figcaption></figure>
+      <figure><a href="img/shots/lb-0.5-diff.png"><img loading="lazy" src="img/shots/lb-0.5-diff.png" alt="pll_bw 0.5"></a><figcaption>pll_bw 0.5: pilot equal in both detectors</figcaption></figure>
+      <figure><a href="img/shots/lb-0.3.png"><img loading="lazy" src="img/shots/lb-0.3.png" alt="pll_bw 0.3"></a><figcaption>pll_bw 0.3</figcaption></figure>
+      <figure><a href="img/shots/lb-0.15.png"><img loading="lazy" src="img/shots/lb-0.15.png" alt="pll_bw 0.15"></a><figcaption>pll_bw 0.15</figcaption></figure>
+      <figure><a href="img/shots/lb-0.08.png"><img loading="lazy" src="img/shots/lb-0.08.png" alt="pll_bw 0.08"></a><figcaption>pll_bw 0.08: PLL pilot ≥ 13 dB lower</figcaption></figure>
+      <figure><a href="img/shots/lb-0.04-diff.png"><img loading="lazy" src="img/shots/lb-0.04-diff.png" alt="pll_bw 0.04"></a><figcaption>pll_bw 0.04</figcaption></figure>
+      <figure><a href="img/shots/lb-0.02-diff.png"><img loading="lazy" src="img/shots/lb-0.02-diff.png" alt="pll_bw 0.02"></a><figcaption>pll_bw 0.02: PLL output low-passed</figcaption></figure>
+      <figure><a href="img/shots/rfg-30.png"><img loading="lazy" src="img/shots/rfg-30.png" alt="Weak signal at gain 30"></a><figcaption>rf_gain 30 dB: noise dominates</figcaption></figure>
+      <figure><a href="img/shots/link-sinad.png"><img loading="lazy" src="img/shots/link-sinad.png" alt="Cable link spectrum and SINAD"></a><figcaption>Cable link at 434 MHz: SINAD 51.14 dB, P<sub>on</sub> −18.1 dBFS</figcaption></figure>
+      <figure><a href="img/shots/null-2405-tx.png"><img loading="lazy" src="img/shots/null-2405-tx.png" alt="Transmitted spectrum at 2405 Hz"></a><figcaption>Transmitter spectrum, Δf = 2405 Hz</figcaption></figure>
+      <figure><a href="img/shots/null-5520-tx.png"><img loading="lazy" src="img/shots/null-5520-tx.png" alt="Transmitted spectrum at 5520 Hz"></a><figcaption>Transmitter spectrum, Δf = 5520 Hz</figcaption></figure>
+      <figure><a href="img/shots/bw-fm1000.png"><img loading="lazy" src="img/shots/bw-fm1000.png" alt="Bandwidth with 1 kHz tone"></a><figcaption>Δf = 5 kHz, f<sub>m</sub> = 1 kHz</figcaption></figure>
+      <figure><a href="img/shots/bw-fm3000.png"><img loading="lazy" src="img/shots/bw-fm3000.png" alt="Bandwidth with 3 kHz tone"></a><figcaption>Δf = 5 kHz, f<sub>m</sub> = 3 kHz</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ files -->
+  <section class="task no-print" id="files">
+    <span class="kicker">Files</span>
+    <h2>Data, code and team</h2>
+    <ul class="bul small">
+      <li>Analysis of the raw I/Q files (both detectors, PLL sweep, weak-signal emulation, Bessel lines, reference error, figures, audio): <a href="../labs/lab-03/files/fm_lab_analysis.py">fm_lab_analysis.py</a> → <a href="../labs/lab-03/files/results.json">results.json</a></li>
+      <li>Session data sheet: <a href="../labs/lab-03/files/lab02_session1_datasheet.xlsx">lab02_session1_datasheet.xlsx</a></li>
+      <li>Flowgraphs used in the session: <a href="../labs/lab-03/files/lab02_fm_rx.grc">lab02_fm_rx.grc</a> · <a href="../labs/lab-03/files/lab02_fm_tx.grc">lab02_fm_tx.grc</a> · pre-lab report: <a href="prelab.html">prelab.html</a></li>
+      <li>The 11 raw recordings (≈ 150 MB) are too large for this repository; their per-file results are in <span class="mono">results.json</span>.</li>
+      <li><b>Team:</b> Mohammad Amin Khoshkam and Sobhan Yarmohammadi ran the session together (flowgraphs, measurements, recordings).</li>
+      <li><b>AI tools:</b> Claude (Anthropic) was used to write the offline analysis code, produce the figures and draft this page; all measurements, screenshots and recordings were made by the team in the lab.</li>
+    </ul>
+  </section>
+
+  <section class="task" id="refs">
+    <span class="kicker">References</span>
+    <ol class="bul small">
+      <li>J. G. Proakis and M. Salehi, <i>Communication Systems Engineering</i>, 2nd ed., Prentice Hall, 2002.</li>
+      <li>M. Lichtman, <i>PySDR: A Guide to SDR and DSP using Python</i>, https://pysdr.org</li>
+      <li>ITU-R BS.450, “Transmission standards for FM sound broadcasting at VHF”; ITU-R BS.643, “Radio data system”.</li>
+      <li>GNU Radio project, GNU Radio Wiki: block documentation (PLL Freq Det, Quadrature Demod, control_loop), https://wiki.gnuradio.org</li>
+      <li>SDR Laboratory, Experiment 2 lab manual, “FM radio,” Sharif University of Technology, 2026.</li>
+    </ol>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© <span data-year></span> Team SDR — Mohammad Amin Khoshkam, Sobhan Yarmohammadi</span>
+    <a href="../">← Back to SDR Lab</a>
+  </div>
+</footer>
+<script src="../../assets/js/main.js"></script>
+<script src="../../assets/js/sdr-scope.js"></script>
+</body>
+</html>

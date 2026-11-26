@@ -1,0 +1,610 @@
+{
+ "broadcast_files": [
+  {
+   "file": "Team-00_lab02_90000000_240000_40.0_20261122T142119",
+   "gain": 40.0,
+   "tag": "",
+   "dur": 8.42,
+   "f_fine": 0.0,
+   "P_dBFS": -69.47,
+   "resid_disc_Hz": 398.3,
+   "resid_centroid_Hz": 1319.8,
+   "delta_disc_Hz": 398.3,
+   "delta_centroid_Hz": 1319.8,
+   "pilot_disc": -23.4,
+   "noise17_disc": -27.82,
+   "LR_disc": -10.44
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T142400",
+   "gain": 49.6,
+   "tag": "",
+   "dur": 7.79,
+   "f_fine": 0.0,
+   "P_dBFS": -61.85,
+   "resid_disc_Hz": 394.6,
+   "resid_centroid_Hz": 1764.5,
+   "delta_disc_Hz": 394.6,
+   "delta_centroid_Hz": 1764.5,
+   "pilot_disc": -23.28,
+   "noise17_disc": -30.46,
+   "LR_disc": -12.15
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T143354",
+   "gain": 49.6,
+   "tag": "",
+   "dur": 7.69,
+   "f_fine": -150.0,
+   "P_dBFS": -59.44,
+   "resid_disc_Hz": 42.8,
+   "resid_centroid_Hz": 3040.2,
+   "delta_disc_Hz": -107.2,
+   "delta_centroid_Hz": 2890.2,
+   "pilot_disc": -22.72,
+   "noise17_disc": -37.41,
+   "LR_disc": -16.95
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T145515_LB0.08",
+   "gain": 49.6,
+   "tag": "LB0.08",
+   "dur": 7.19,
+   "f_fine": -150.0,
+   "P_dBFS": -58.56,
+   "resid_disc_Hz": 65.8,
+   "resid_centroid_Hz": 1023.6,
+   "delta_disc_Hz": -84.2,
+   "delta_centroid_Hz": 873.6,
+   "pilot_disc": -22.57,
+   "noise17_disc": -40.33,
+   "LR_disc": -18.45
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T145900_LB0.04",
+   "gain": 49.6,
+   "tag": "LB0.04",
+   "dur": 6.72,
+   "f_fine": -150.0,
+   "P_dBFS": -56.62,
+   "resid_disc_Hz": -9.6,
+   "resid_centroid_Hz": 1573.1,
+   "delta_disc_Hz": -159.6,
+   "delta_centroid_Hz": 1423.1,
+   "pilot_disc": -22.75,
+   "noise17_disc": -42.87,
+   "LR_disc": -20.96
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T150426_LB0.02",
+   "gain": 49.6,
+   "tag": "LB0.02",
+   "dur": 8.03,
+   "f_fine": -150.0,
+   "P_dBFS": -58.36,
+   "resid_disc_Hz": -127.5,
+   "resid_centroid_Hz": 1022.0,
+   "delta_disc_Hz": -277.5,
+   "delta_centroid_Hz": 872.0,
+   "pilot_disc": -22.57,
+   "noise17_disc": -40.47,
+   "LR_disc": -18.62
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T150507_LB0.15",
+   "gain": 49.6,
+   "tag": "LB0.15",
+   "dur": 6.82,
+   "f_fine": -150.0,
+   "P_dBFS": -58.2,
+   "resid_disc_Hz": -137.1,
+   "resid_centroid_Hz": 2025.8,
+   "delta_disc_Hz": -287.1,
+   "delta_centroid_Hz": 1875.8,
+   "pilot_disc": -22.67,
+   "noise17_disc": -39.55,
+   "LR_disc": -18.82
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T150535_LB0.3",
+   "gain": 49.6,
+   "tag": "LB0.3",
+   "dur": 10.13,
+   "f_fine": -150.0,
+   "P_dBFS": -58.66,
+   "resid_disc_Hz": -114.5,
+   "resid_centroid_Hz": 2569.2,
+   "delta_disc_Hz": -264.5,
+   "delta_centroid_Hz": 2419.2,
+   "pilot_disc": -22.68,
+   "noise17_disc": -38.8,
+   "LR_disc": -18.09
+  },
+  {
+   "file": "Team-00_lab02_90000000_240000_49.6_20261122T150609_LB0.5",
+   "gain": 49.6,
+   "tag": "LB0.5",
+   "dur": 7.64,
+   "f_fine": -150.0,
+   "P_dBFS": -58.24,
+   "resid_disc_Hz": -136.3,
+   "resid_centroid_Hz": 1824.7,
+   "delta_disc_Hz": -286.3,
+   "delta_centroid_Hz": 1674.7,
+   "pilot_disc": -22.69,
+   "noise17_disc": -40.14,
+   "LR_disc": -18.86
+  }
+ ],
+ "P_on_mean": -58.25,
+ "P_on_spread": [
+  -59.46,
+  -57.27
+ ],
+ "CNR_180k_dB": 7.97,
+ "CNR_200k_dB": 7.51,
+ "CNR_min": 6.53,
+ "CNR_max": 9.08,
+ "delta_disc_mean": -74.8,
+ "delta_disc_std": 278.2,
+ "delta_centroid_mean": 1679.2,
+ "delta_centroid_std": 666.7,
+ "delta_all_mean": 802.2,
+ "delta_all_range": [
+  -287.1,
+  2890.2
+ ],
+ "eps_disc_ppm": 0.83,
+ "eps_centroid_ppm": -18.66,
+ "check_disc_pre_post": [
+  396.5,
+  -209.5
+ ],
+ "check_centroid_pre_post": [
+  1542.2,
+  1718.4
+ ],
+ "eps_ppm": -18.66,
+ "eps_unc_ppm": 2.47,
+ "lab1_delta_at_90MHz_Hz": 2326.0,
+ "lab1_delta_unc_Hz": 683.0,
+ "eps_diff_sigma": 0.9,
+ "ppm_f_fine": 1.667,
+ "bc_obw99_kHz_incl_noise": 180.5,
+ "deemph_diff_dB": {
+  "1 kHz": -0.46,
+  "3 kHz": -2.01,
+  "5 kHz": -2.76,
+  "10 kHz": -3.29,
+  "15 kHz": -3.42
+ },
+ "deemph_corner_Hz": [
+  3183,
+  2122
+ ],
+ "deemph_level_diff_dB": -0.38,
+ "Q1_gain_only_dB": 6.02,
+ "Q1_with_filter_dB": 5.56,
+ "Q1_extra_distortion_dB": -12.36,
+ "pll_sweep": [
+  {
+   "pll_bw": 0.5,
+   "B_L_kHz": 127.2,
+   "pilot_diff_meas": 0.27,
+   "LR_diff_meas": -2.27,
+   "noise17_diff_meas": 0.06,
+   "pilot_diff_lin": 0.26,
+   "LR38_diff_lin": -1.54
+  },
+  {
+   "pll_bw": 0.3,
+   "B_L_kHz": 76.32,
+   "pilot_diff_meas": -1.32,
+   "LR_diff_meas": -8.33,
+   "noise17_diff_meas": 0.69,
+   "pilot_diff_lin": -1.26,
+   "LR38_diff_lin": -8.45
+  },
+  {
+   "pll_bw": 0.15,
+   "B_L_kHz": 38.16,
+   "pilot_diff_meas": -9.52,
+   "LR_diff_meas": -16.49,
+   "noise17_diff_meas": -3.35,
+   "pilot_diff_lin": -9.1,
+   "LR38_diff_lin": -20.13
+  },
+  {
+   "pll_bw": 0.08,
+   "B_L_kHz": 20.35,
+   "pilot_diff_meas": -20.73,
+   "LR_diff_meas": -23.79,
+   "noise17_diff_meas": -10.0,
+   "pilot_diff_lin": -19.57,
+   "LR38_diff_lin": -31.02
+  },
+  {
+   "pll_bw": 0.04,
+   "B_L_kHz": 10.18,
+   "pilot_diff_meas": -34.49,
+   "LR_diff_meas": -30.95,
+   "noise17_diff_meas": -17.36,
+   "pilot_diff_lin": -31.57,
+   "LR38_diff_lin": -43.06
+  },
+  {
+   "pll_bw": 0.02,
+   "B_L_kHz": 5.09,
+   "pilot_diff_meas": -47.28,
+   "LR_diff_meas": -40.66,
+   "noise17_diff_meas": -27.02,
+   "pilot_diff_lin": -43.61,
+   "LR38_diff_lin": -55.11
+  }
+ ],
+ "disc_levels_ref": {
+  "pilot": -22.71,
+  "LR": -18.12,
+  "noise17": -39.17
+ },
+ "weak_live": [
+  {
+   "gain": 49.6,
+   "P": -59.21,
+   "disc": 28.09,
+   "pll": 30.07,
+   "adv": 1.98
+  },
+  {
+   "gain": 35,
+   "P": -72.03,
+   "disc": 23.55,
+   "pll": 23.48,
+   "adv": -0.07
+  },
+  {
+   "gain": 30,
+   "P": -72.81,
+   "disc": 3.87,
+   "pll": 4.0,
+   "adv": 0.13
+  }
+ ],
+ "weak_emulation": [
+  {
+   "CNR_dB": 8.0,
+   "disc": 16.09,
+   "pll0.15": 9.7,
+   "pll0.04": -1.68
+  },
+  {
+   "CNR_dB": 5.0,
+   "disc": 8.86,
+   "pll0.15": 6.95,
+   "pll0.04": -2.77
+  },
+  {
+   "CNR_dB": 3.2,
+   "disc": 4.4,
+   "pll0.15": 5.22,
+   "pll0.04": -3.36
+  },
+  {
+   "CNR_dB": 1.0,
+   "disc": 0.35,
+   "pll0.15": 1.7,
+   "pll0.04": -4.39
+  },
+  {
+   "CNR_dB": -2.4,
+   "disc": -2.5,
+   "pll0.15": -3.4,
+   "pll0.04": -4.77
+  }
+ ],
+ "nbfm": {
+  "fm1000": {
+   "beta": 5.0,
+   "lines": [
+    [
+     -12,
+     -82.15,
+     -82.35
+    ],
+    [
+     -11,
+     -69.14,
+     -69.1
+    ],
+    [
+     -10,
+     -56.64,
+     -56.67
+    ],
+    [
+     -9,
+     -45.14,
+     -45.16
+    ],
+    [
+     -8,
+     -34.68,
+     -34.7
+    ],
+    [
+     -7,
+     -25.43,
+     -25.45
+    ],
+    [
+     -6,
+     -17.64,
+     -17.65
+    ],
+    [
+     -5,
+     -11.65,
+     -11.66
+    ],
+    [
+     -4,
+     -8.15,
+     -8.15
+    ],
+    [
+     -3,
+     -8.76,
+     -8.76
+    ],
+    [
+     -2,
+     -26.65,
+     -26.64
+    ],
+    [
+     -1,
+     -9.7,
+     -9.69
+    ],
+    [
+     0,
+     -15.02,
+     -15.01
+    ],
+    [
+     1,
+     -9.7,
+     -9.69
+    ],
+    [
+     2,
+     -26.65,
+     -26.64
+    ],
+    [
+     3,
+     -8.76,
+     -8.76
+    ],
+    [
+     4,
+     -8.15,
+     -8.15
+    ],
+    [
+     5,
+     -11.66,
+     -11.66
+    ],
+    [
+     6,
+     -17.65,
+     -17.65
+    ],
+    [
+     7,
+     -25.45,
+     -25.45
+    ],
+    [
+     8,
+     -34.69,
+     -34.7
+    ],
+    [
+     9,
+     -45.15,
+     -45.16
+    ],
+    [
+     10,
+     -56.67,
+     -56.67
+    ],
+    [
+     11,
+     -69.15,
+     -69.1
+    ],
+    [
+     12,
+     -82.09,
+     -82.35
+    ]
+   ],
+   "max_line_err_dB": 0.053,
+   "bw20_kHz": 14.0,
+   "bw20_bessel_kHz": 14.0,
+   "bw99_raw_kHz": 12.0,
+   "bw99_bessel_kHz": 12.0,
+   "carson_kHz": 12.0,
+   "dev_rms_Hz": 5000.5,
+   "offset_Hz": -0.26,
+   "CNR200_raw_dB": 59.5,
+   "SINAD_disc": 73.32,
+   "SINAD_pll": 73.35
+  },
+  "fm3000": {
+   "beta": 1.667,
+   "lines": [
+    [
+     -12,
+     -94.99,
+     -193.08
+    ],
+    [
+     -11,
+     -95.53,
+     -169.95
+    ],
+    [
+     -10,
+     -95.41,
+     -147.58
+    ],
+    [
+     -9,
+     -96.78,
+     -126.05
+    ],
+    [
+     -8,
+     -95.68,
+     -105.45
+    ],
+    [
+     -7,
+     -85.35,
+     -85.89
+    ],
+    [
+     -6,
+     -67.47,
+     -67.52
+    ],
+    [
+     -5,
+     -50.5,
+     -50.52
+    ],
+    [
+     -4,
+     -35.14,
+     -35.16
+    ],
+    [
+     -3,
+     -21.82,
+     -21.85
+    ],
+    [
+     -2,
+     -11.24,
+     -11.26
+    ],
+    [
+     -1,
+     -4.8,
+     -4.8
+    ],
+    [
+     0,
+     -7.61,
+     -7.59
+    ],
+    [
+     1,
+     -4.8,
+     -4.8
+    ],
+    [
+     2,
+     -11.25,
+     -11.26
+    ],
+    [
+     3,
+     -21.84,
+     -21.85
+    ],
+    [
+     4,
+     -35.16,
+     -35.16
+    ],
+    [
+     5,
+     -50.52,
+     -50.52
+    ],
+    [
+     6,
+     -67.55,
+     -67.52
+    ],
+    [
+     7,
+     -85.69,
+     -85.89
+    ],
+    [
+     8,
+     -95.0,
+     -105.45
+    ],
+    [
+     9,
+     -95.44,
+     -126.05
+    ],
+    [
+     10,
+     -95.04,
+     -147.58
+    ],
+    [
+     11,
+     -95.66,
+     -169.95
+    ],
+    [
+     12,
+     -94.76,
+     -193.08
+    ]
+   ],
+   "max_line_err_dB": 0.046,
+   "bw20_kHz": 18.0,
+   "bw20_bessel_kHz": 18.0,
+   "bw99_raw_kHz": 18.0,
+   "bw99_bessel_kHz": 18.0,
+   "carson_kHz": 16.0,
+   "dev_rms_Hz": 5002.6,
+   "offset_Hz": 0.01,
+   "CNR200_raw_dB": 59.4,
+   "SINAD_disc": 80.25,
+   "SINAD_pll": 76.66
+  }
+ },
+ "null_theory_Hz": [
+  2404.83,
+  5520.08
+ ],
+ "null_uncertainty_Hz": {
+  "2.4048": {
+   "30 dB": 31.62,
+   "60 dB": 1.0,
+   "69 dB": 0.35,
+   "85 dB": 0.06
+  },
+  "5.5201": {
+   "30 dB": 36.81,
+   "60 dB": 1.16,
+   "69 dB": 0.41,
+   "85 dB": 0.07
+  }
+ },
+ "nb_CNR_meas": 70.8,
+ "nb_budget_Prx_dBm": -69.52,
+ "nb_budget_CNR": 46.47
+}
